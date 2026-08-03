@@ -1,0 +1,18 @@
+# Assessment brief is local project context only - never committed.
+docs/assessment/
+
+# Reconnaissance artefacts: large mosaics and raw tile caches.
+# The chosen study area's minimal cache is committed deliberately in Phase 2.
+outputs/recon/
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.env
+.DS_Store

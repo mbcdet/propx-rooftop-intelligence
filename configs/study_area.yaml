@@ -1,0 +1,239 @@
+# Study area and pinned building units for the PropX rooftop assessment.
+# Generated from the Phase 2 reconnaissance on 2026-08-03 and reviewed visually.
+# Source: City of Vienna open data, CC BY 4.0.
+# Attribution: "Datenquelle: Stadt Wien - data.wien.gv.at"
+
+study_area:
+  name: "sonnwendviertel"
+  label: "Sonnwendviertel / Wiedner Guertel, Vienna 3rd / 4th / 10th districts"
+  bbox_wgs84: [16.3760, 48.1830, 16.3820, 48.1880]
+  crs_metric: "EPSG:31256"
+  imagery_zoom: 20
+
+sources:
+  imagery:
+    name: "Orthofoto 2024 Wien"
+    layer: "lb2024"
+    endpoint: "https://mapsneu.wien.gv.at/wmts/lb2024/farbe/google3857/{z}/{row}/{col}.jpeg"
+    native_gsd_m: 0.15
+    flight_dates: ["2024-03-19", "2024-03-20", "2024-03-29", "2024-04-12"]
+    fetched: "2026-08-03"
+  roof_record:
+    name: "PV-Potenzial 2025 / Anlagenleistung"
+    layer: "ogdwien:ANLAGENLEISTUNG2025OGD"
+    model_basis: "2023 laser-scan surface model (DOM) at 7.5 cm; 2025 aerial imagery; 1 m DGM for far shading"
+    feature_count_citywide: 191625
+    fetched: "2026-08-03"
+  building_parts:
+    layer: "ogdwien:FMZKGEBOGD"
+    role: "cross-check and fallback via BW_GEB_ID dissolve"
+    fetched: "2026-08-03"
+  typology:
+    layer: "ogdwien:GEBAEUDETYPOGD"
+    fetched: "2026-08-03"
+  building_info:
+    layer: "ogdwien:GEBAEUDEINFOOGD"
+    fetched: "2026-08-03"
+
+# Purposive sample. Selected for attribute diversity, source availability and visual
+# interpretability. NOT statistically representative of Vienna's building stock.
+buildings:
+  - building_id: "vie-swv-001"
+    objectid: 351705                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5576530                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 59
+    adresse: "10., Karl-Popper-Straße 4"
+    dachform: "Flachdach"
+    slope_mean_deg: 4.81
+    anlagenleistung_kwp: 75
+    pot_ertrag_y_kwh: [66000, 90000]
+    suitability_area_m2: {SCHLECHT: 159, MITTEL: 231, GUT: 967, SEHRGUT: 174}
+    planimetric_area_m2: 2302.3
+    n_polygons: 1
+    n_interior_rings: 1
+    agreement_iou_vs_fmzk_unit: 0.983
+    construction_epoch: null
+    building_typology: null
+    baujahr: null
+    visual_class: "flat"
+    selection_reason: "Dense PV array visible across the roof ring; 238 m2 courtyard void correctly excluded by the source geometry."
+
+  - building_id: "vie-swv-002"
+    objectid: 358722                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5613428                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 92
+    adresse: "10., Wiedner Gürtel 5"
+    dachform: "Flachdach"
+    slope_mean_deg: 3.66
+    anlagenleistung_kwp: 166
+    pot_ertrag_y_kwh: [144000, 196000]
+    suitability_area_m2: {SCHLECHT: 1398, MITTEL: 607, GUT: 2129, SEHRGUT: 299}
+    planimetric_area_m2: 6235.2
+    n_polygons: 1
+    n_interior_rings: 2
+    agreement_iou_vs_fmzk_unit: 0.986
+    construction_epoch: null
+    building_typology: null
+    baujahr: null
+    visual_class: "flat"
+    selection_reason: "Largest interior unit (166 kWp). Reddish substrate surface across all three wings - candidate extensive green roof."
+
+  - building_id: "vie-swv-003"
+    objectid: 351704                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5576529                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 27
+    adresse: "10., Gertrude-Fröhlich-Sandner-Straße 3"
+    dachform: "Schraegdach"
+    slope_mean_deg: 7.94
+    anlagenleistung_kwp: 32
+    pot_ertrag_y_kwh: [26000, 38000]
+    suitability_area_m2: {SCHLECHT: 50, MITTEL: 136, GUT: 324, SEHRGUT: 0}
+    planimetric_area_m2: 1083.9
+    n_polygons: 1
+    n_interior_rings: 0
+    agreement_iou_vs_fmzk_unit: 0.986
+    construction_epoch: null
+    building_typology: null
+    baujahr: null
+    visual_class: "flat-ish"
+    selection_reason: "Roof almost entirely covered by a regular PV module grid. Also a threshold-disagreement case (Schraegdach at 7.9 deg)."
+
+  - building_id: "vie-swv-004"
+    objectid: 308209                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5487628                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 44
+    adresse: "10., Sonnwendgasse 3"
+    dachform: "Schraegdach"
+    slope_mean_deg: 7.82
+    anlagenleistung_kwp: 105
+    pot_ertrag_y_kwh: [85000, 120000]
+    suitability_area_m2: {SCHLECHT: 448, MITTEL: 458, GUT: 1003, SEHRGUT: 37}
+    planimetric_area_m2: 3339.2
+    n_polygons: 1
+    n_interior_rings: 0
+    agreement_iou_vs_fmzk_unit: 0.985
+    construction_epoch: null
+    building_typology: null
+    baujahr: null
+    visual_class: "flat-ish"
+    selection_reason: "Curved organic roof form. DACHFORM=Schraegdach at 7.8 deg, which the fallback threshold rule would call flat."
+
+  - building_id: "vie-swv-005"
+    objectid: 346520                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5554877                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 10
+    adresse: "04., Wiedner Gürtel 14"
+    dachform: "Flachdach"
+    slope_mean_deg: 4.33
+    anlagenleistung_kwp: 18
+    pot_ertrag_y_kwh: [15000, 22000]
+    suitability_area_m2: {SCHLECHT: 85, MITTEL: 39, GUT: 276, SEHRGUT: 12}
+    planimetric_area_m2: 544.2
+    n_polygons: 1
+    n_interior_rings: 0
+    agreement_iou_vs_fmzk_unit: 0.966
+    construction_epoch: "Keine Angabe"
+    building_typology: "W6.1.-Sonderwohnbauten-Hotel und Pension"
+    baujahr: null
+    visual_class: "flat"
+    selection_reason: "Simple low-complexity flat roof with a rooftop plant row. Control case. Has authoritative typology."
+
+  - building_id: "vie-swv-006"
+    objectid: 242275                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5371594                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 10
+    adresse: "10., Gerhard-Bronner-Straße 7"
+    dachform: "Flachdach"
+    slope_mean_deg: 3.53
+    anlagenleistung_kwp: 17
+    pot_ertrag_y_kwh: [15000, 22000]
+    suitability_area_m2: {SCHLECHT: 17, MITTEL: 26, GUT: 288, SEHRGUT: 5}
+    planimetric_area_m2: 593.4
+    n_polygons: 1
+    n_interior_rings: 0
+    agreement_iou_vs_fmzk_unit: 0.968
+    construction_epoch: null
+    building_typology: null
+    baujahr: null
+    visual_class: "flat"
+    selection_reason: "Reddish/green substrate surface at 3.5 deg - second extensive-green-roof candidate."
+
+  - building_id: "vie-swv-007"
+    objectid: 346007                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5553938                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 5
+    adresse: "04., Wiedner Gürtel 26"
+    dachform: "Schraegdach"
+    slope_mean_deg: 34.78
+    anlagenleistung_kwp: 25
+    pot_ertrag_y_kwh: [17000, 26000]
+    suitability_area_m2: {SCHLECHT: 98, MITTEL: 207, GUT: 144, SEHRGUT: 2}
+    planimetric_area_m2: 597.4
+    n_polygons: 1
+    n_interior_rings: 2
+    agreement_iou_vs_fmzk_unit: 0.957
+    construction_epoch: null
+    building_typology: "W3.3.-Mieth.s.d.Gründerzeit-Doppeltrakter mit Verbindungstr."
+    baujahr: null
+    visual_class: "pitched"
+    selection_reason: "Gruenderzeit tiled pitched roof, 34.8 deg, clear ridge, partial self-shadowing. Authoritative typology present."
+
+  - building_id: "vie-swv-008"
+    objectid: 358486                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5611476                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 11
+    adresse: "04., Wiedner Gürtel 16"
+    dachform: "Schraegdach"
+    slope_mean_deg: 42.92
+    anlagenleistung_kwp: 13
+    pot_ertrag_y_kwh: [10000, 15000]
+    suitability_area_m2: {SCHLECHT: 142, MITTEL: 90, GUT: 88, SEHRGUT: 11}
+    planimetric_area_m2: 677.4
+    n_polygons: 1
+    n_interior_rings: 0
+    agreement_iou_vs_fmzk_unit: 0.966
+    construction_epoch: null
+    building_typology: null
+    baujahr: null
+    visual_class: "discrepancy"
+    selection_reason: "Authoritative DACHFORM=Schraegdach at 42.9 deg, but the roof reads as predominantly flat in the imagery. Retained deliberately as an authoritative-vs-observed test case. HYPOTHESIS, not a conclusion."
+
+  - building_id: "vie-swv-009"
+    objectid: 358487                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5611478                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 20
+    adresse: "04., Argentinierstraße 69"
+    dachform: "Schraegdach"
+    slope_mean_deg: 38.89
+    anlagenleistung_kwp: 5
+    pot_ertrag_y_kwh: [3000, 6000]
+    suitability_area_m2: {SCHLECHT: 30, MITTEL: 32, GUT: 35, SEHRGUT: 5}
+    planimetric_area_m2: 451.5
+    n_polygons: 1
+    n_interior_rings: 0
+    agreement_iou_vs_fmzk_unit: 0.953
+    construction_epoch: null
+    building_typology: null
+    baujahr: 1891
+    visual_class: "complex"
+    selection_reason: "Articulated multi-plane roof at 38.9 deg; only 102 m2 of 451 m2 classified as suitable. BAUJAHR 1891 available."
+
+  - building_id: "vie-swv-010"
+    objectid: 257807                      # ANLAGENLEISTUNG2025OGD
+    bw_geb_id: 5398899                    # FMZKGEBOGD dissolve key
+    fmzk_part_count: 4
+    adresse: "04., Wiedner Gürtel 24"
+    dachform: "Schraegdach"
+    slope_mean_deg: 12.0
+    anlagenleistung_kwp: 9
+    pot_ertrag_y_kwh: [7000, 10000]
+    suitability_area_m2: {SCHLECHT: 132, MITTEL: 37, GUT: 85, SEHRGUT: 2}
+    planimetric_area_m2: 382.1
+    n_polygons: 1
+    n_interior_rings: 0
+    agreement_iou_vs_fmzk_unit: 0.967
+    construction_epoch: null
+    building_typology: "W4.1.-soz.u.gemeinn.Wohnb.-Baulückenbebauungen"
+    baujahr: null
+    visual_class: "abstain-band"
+    selection_reason: "12.0 deg - inside the 10-15 deg abstain band of the fallback rule. Bare tree overhangs the roof edge: occlusion test case."

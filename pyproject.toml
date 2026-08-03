@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "propx-rooftop-intelligence"
+version = "0.1.0"
+description = "Rooftop detection and attribute extraction from open Vienna imagery and geodata"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+    "shapely>=2.0",
+    "pyproj>=3.6",
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+    "pillow>=10.0",
+    "jsonschema>=4.20",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "ruff>=0.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
