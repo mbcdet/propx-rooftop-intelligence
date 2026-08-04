@@ -1,8 +1,9 @@
 {
  "run": {
-  "generated_at": "2026-08-04T13:17:05.262476+02:00",
+  "generated_at": "2026-08-04T17:17:35.035007+02:00",
   "pipeline_version": "0.1.0",
-  "config_hash": "04e3fbda3d850b35",
+  "config_hash": "2f7dd2a97dcd640a",
+  "algorithm_parameters_hash": "cd96abe1b9118c3f",
   "study_area": {
    "name": "sonnwendviertel",
    "label": "Sonnwendviertel / Wiedner Guertel, Vienna 3rd / 4th / 10th districts",
@@ -328,14 +329,30 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9685,
+     "exterior_iou": 0.9777,
      "symmetric_difference_ratio": 0.0317,
-     "hausdorff_m": 1.541,
+     "hausdorff_m": 0.859,
+     "hausdorff_full_boundary_m": 1.541,
      "boundary_gradient_ratio": 1.3724
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 1,
+     "cv_interior_rings": 1,
+     "authoritative_interior_ring_areas_m2": [
+      239.33
+     ],
+     "cv_interior_ring_areas_m2": [
+      237.39
+     ],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -437,6 +454,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 62,
+       "p01_luminance": 76.0,
+       "p05_luminance": 79.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 234683,
        "judgeable_fraction": 1.0,
@@ -640,7 +660,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -658,6 +679,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 62,
+       "p01_luminance": 76.0,
+       "p05_luminance": 79.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -739,7 +763,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -758,6 +782,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 62,
+       "p01_luminance": 76.0,
+       "p05_luminance": 79.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 234683,
        "judgeable_fraction": 1.0,
@@ -803,7 +830,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -817,7 +844,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 234683,
        "roof_area_m2": 2325.0,
@@ -826,6 +853,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 62,
+       "p01_luminance": 76.0,
+       "p05_luminance": 79.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 234683,
        "vegetated_fraction": 0.0,
@@ -875,6 +905,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 62,
+       "p01_luminance": 76.0,
+       "p05_luminance": 79.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 234683,
        "judgeable_fraction": 1.0,
@@ -1607,14 +1640,32 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9707,
+     "exterior_iou": 0.9779,
      "symmetric_difference_ratio": 0.0295,
-     "hausdorff_m": 1.413,
+     "hausdorff_m": 1.269,
+     "hausdorff_full_boundary_m": 1.413,
      "boundary_gradient_ratio": 1.4043
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 2,
+     "cv_interior_rings": 2,
+     "authoritative_interior_ring_areas_m2": [
+      147.19,
+      140.32
+     ],
+     "cv_interior_ring_areas_m2": [
+      154.5,
+      138.28
+     ],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -1716,6 +1767,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 76.0,
+       "p05_luminance": 80.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 634724,
        "judgeable_fraction": 1.0,
@@ -1917,7 +1971,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -1935,6 +1990,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 76.0,
+       "p05_luminance": 80.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -2054,7 +2112,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -2073,6 +2131,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 76.0,
+       "p05_luminance": 80.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 634724,
        "judgeable_fraction": 1.0,
@@ -2118,7 +2179,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -2132,7 +2193,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 634724,
        "roof_area_m2": 6288.1,
@@ -2141,6 +2202,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 76.0,
+       "p05_luminance": 80.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 634724,
        "vegetated_fraction": 0.0003,
@@ -2190,6 +2254,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 76.0,
+       "p05_luminance": 80.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 634724,
        "judgeable_fraction": 1.0,
@@ -2489,14 +2556,26 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9421,
+     "exterior_iou": 0.9421,
      "symmetric_difference_ratio": 0.0599,
      "hausdorff_m": 1.328,
+     "hausdorff_full_boundary_m": 1.328,
      "boundary_gradient_ratio": 1.8049
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 0,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -2598,6 +2677,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 77.0,
+       "p05_luminance": 81.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 110787,
        "judgeable_fraction": 1.0,
@@ -2801,7 +2883,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -2819,6 +2902,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 77.0,
+       "p05_luminance": 81.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -2885,7 +2971,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -2904,6 +2990,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 77.0,
+       "p05_luminance": 81.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 110787,
        "judgeable_fraction": 1.0,
@@ -2949,7 +3038,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.4% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.4% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -2963,7 +3052,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.4% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.4% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 110787,
        "roof_area_m2": 1097.6,
@@ -2972,6 +3061,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 77.0,
+       "p05_luminance": 81.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 110787,
        "vegetated_fraction": 0.0039,
@@ -3021,6 +3113,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 77.0,
+       "p05_luminance": 81.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 110787,
        "judgeable_fraction": 1.0,
@@ -4367,14 +4462,26 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.976,
+     "exterior_iou": 0.976,
      "symmetric_difference_ratio": 0.0245,
      "hausdorff_m": 1.002,
+     "hausdorff_full_boundary_m": 1.002,
      "boundary_gradient_ratio": 1.3236
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 0,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -4476,6 +4583,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 84.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 340270,
        "judgeable_fraction": 1.0,
@@ -4677,7 +4787,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -4695,6 +4806,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 84.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -4793,7 +4907,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -4812,6 +4926,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 84.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 340270,
        "judgeable_fraction": 1.0,
@@ -4857,7 +4974,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -4871,7 +4988,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 340270,
        "roof_area_m2": 3371.4,
@@ -4880,6 +4997,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 84.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 340270,
        "vegetated_fraction": 0.0,
@@ -4929,6 +5049,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 84.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 340270,
        "judgeable_fraction": 1.0,
@@ -5315,14 +5438,26 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9099,
+     "exterior_iou": 0.9099,
      "symmetric_difference_ratio": 0.0905,
      "hausdorff_m": 1.584,
+     "hausdorff_full_boundary_m": 1.584,
      "boundary_gradient_ratio": 1.4043
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 0,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -5424,6 +5559,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 81.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 55689,
        "judgeable_fraction": 1.0,
@@ -5627,7 +5765,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -5645,6 +5784,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 81.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -5703,7 +5845,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -5722,6 +5864,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 81.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 55689,
        "judgeable_fraction": 1.0,
@@ -5767,7 +5912,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -5781,7 +5926,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 55689,
        "roof_area_m2": 551.7,
@@ -5790,6 +5935,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 81.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 55689,
        "vegetated_fraction": 0.0,
@@ -5839,6 +5987,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 81.0,
+       "p05_luminance": 91.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 55689,
        "judgeable_fraction": 1.0,
@@ -5892,22 +6043,19 @@
      }
     },
     "construction_epoch": {
-     "value": "Keine Angabe",
-     "availability": "authoritative",
+     "value": null,
+     "availability": "not_in_source",
      "confidence": {
-      "score": 0.902,
-      "method": "authoritative_typology_best_overlap",
+      "score": null,
+      "method": "source_consulted_no_value",
       "sources": [
        "ogdwien:GEBAEUDETYPOGD"
       ],
-      "rationale": "from the GEBAEUDETYPOGD polygon covering 66% of the authoritative roof outline",
+      "rationale": "the overlapping GEBAEUDETYPOGD polygon carries 'Keine Angabe' in OBJ_STR_TXT, which is the source declining to state a value rather than a value",
       "limitations": [
-       "context only; the construction epoch is never used as a prior for roof type (design section 5.1)",
-       "the typology cadastre is cut differently from the roof record, so the match is a best geometric overlap and its share is published"
+       "the source was consulted and carries no value here; null is the finding, not a placeholder for zero"
       ],
-      "factors": {
-       "source_recency": 0.95
-      },
+      "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
      },
      "source_detail": {
@@ -5917,7 +6065,7 @@
       "overlap_fraction_of_roof": 0.6649,
       "matched_by": "best_geometric_overlap",
       "OBJ_STR2_TXT": "nach 1945",
-      "note": "OBJ_STR2_TXT is carried verbatim for reference; the published field is OBJ_STR_TXT, which is the one named in the design. No precedence rule is invented between them."
+      "note": "raw_value is preserved verbatim so the placeholder stays traceable. OBJ_STR2_TXT is carried for reference only and is never promoted into the published value: no precedence rule is invented between the two epoch columns."
      }
     },
     "building_typology": {
@@ -6219,14 +6367,26 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9553,
+     "exterior_iou": 0.9553,
      "symmetric_difference_ratio": 0.0462,
      "hausdorff_m": 1.604,
+     "hausdorff_full_boundary_m": 1.604,
      "boundary_gradient_ratio": 1.1589
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 0,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -6328,6 +6488,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 73,
+       "p01_luminance": 86.0,
+       "p05_luminance": 89.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 60895,
        "judgeable_fraction": 1.0,
@@ -6531,7 +6694,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -6549,6 +6713,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 73,
+       "p01_luminance": 86.0,
+       "p05_luminance": 89.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -6606,7 +6773,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -6625,6 +6792,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 73,
+       "p01_luminance": 86.0,
+       "p05_luminance": 89.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 60895,
        "judgeable_fraction": 1.0,
@@ -6670,7 +6840,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -6684,7 +6854,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 60895,
        "roof_area_m2": 603.4,
@@ -6693,6 +6863,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 73,
+       "p01_luminance": 86.0,
+       "p05_luminance": 89.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 60895,
        "vegetated_fraction": 0.0002,
@@ -6742,6 +6915,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 73,
+       "p01_luminance": 86.0,
+       "p05_luminance": 89.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 60895,
        "judgeable_fraction": 1.0,
@@ -7363,26 +7539,29 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9216,
+     "exterior_iou": 0.9246,
      "symmetric_difference_ratio": 0.0822,
-     "hausdorff_m": 5.705,
+     "hausdorff_m": 1.476,
+     "hausdorff_full_boundary_m": 5.705,
      "boundary_gradient_ratio": 1.4103
     },
     "boundary_alignment_warning": {
+     "flag": false,
+     "metrics": null,
+     "note": null
+    },
+    "topology_mismatch": {
      "flag": true,
-     "status": "requires_visual_review",
-     "metrics": {
-      "iou": 0.9216,
-      "hausdorff_m": 5.705,
-      "symmetric_difference_ratio": 0.0822,
-      "triggers": [
-       "hausdorff 5.71 m above 5.0 m"
-      ],
-      "thresholds": {
-       "iou_below": 0.7,
-       "hausdorff_above_m": 5.0
-      }
-     },
-     "note": "The image-derived candidate boundary differs materially from the authoritative outline in this area. Possible causes include segmentation error, shadow or occlusion, roof overhang, or a difference in epoch between imagery and the roof record. This is a flag for human inspection and does not indicate that the authoritative data is incorrect or outdated."
+     "authoritative_interior_rings": 2,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [
+      1.21,
+      0.69
+     ],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The two outlines carry different numbers of interior rings. The candidate segmenter does not produce interior rings below its configured minimum hole area (4.0 m2), so wherever the authoritative outline records a void smaller than that, a mismatch is the expected consequence of that setting rather than a finding about the roof. This is a diagnostic only: it does not indicate that the authoritative data is incorrect or outdated, it does not indicate that the candidate outline is the better one, and it does not on its own require visual review. Perimeter agreement is measured on exterior rings (exterior_iou, hausdorff_m) so that it is unaffected by this difference; hausdorff_full_boundary_m includes interior rings and therefore is affected."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -7484,6 +7663,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 71,
+       "p01_luminance": 84.0,
+       "p05_luminance": 88.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 61353,
        "judgeable_fraction": 1.0,
@@ -7688,7 +7870,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -7706,6 +7889,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 71,
+       "p01_luminance": 84.0,
+       "p05_luminance": 88.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -7788,7 +7974,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -7807,6 +7993,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 71,
+       "p01_luminance": 84.0,
+       "p05_luminance": 88.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 61353,
        "judgeable_fraction": 1.0,
@@ -7852,7 +8041,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -7866,7 +8055,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 61353,
        "roof_area_m2": 607.8,
@@ -7875,6 +8064,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 71,
+       "p01_luminance": 84.0,
+       "p05_luminance": 88.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 61353,
        "vegetated_fraction": 0.0,
@@ -7924,6 +8116,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 71,
+       "p01_luminance": 84.0,
+       "p05_luminance": 88.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 61353,
        "judgeable_fraction": 1.0,
@@ -7995,7 +8190,12 @@
      },
      "source_detail": {
       "layer": "ogdwien:GEBAEUDETYPOGD",
-      "field": "OBJ_STR_TXT"
+      "field": "OBJ_STR_TXT",
+      "raw_value": null,
+      "overlap_fraction_of_roof": 0.491,
+      "matched_by": "best_geometric_overlap",
+      "OBJ_STR2_TXT": "1848 -1918",
+      "note": "raw_value is preserved verbatim so the placeholder stays traceable. OBJ_STR2_TXT is carried for reference only and is never promoted into the published value: no precedence rule is invented between the two epoch columns."
      }
     },
     "building_typology": {
@@ -8070,13 +8270,7 @@
      }
     }
    },
-   "review_flags": [
-    {
-     "status": "requires_visual_review",
-     "trigger": "boundary_alignment_warning",
-     "reason": "The image-derived candidate boundary differs materially from the authoritative outline (hausdorff 5.71 m above 5.0 m). Possible causes include segmentation error, shadow or occlusion, roof overhang, or a difference in epoch between imagery and the roof record. This does not indicate that the authoritative data is incorrect or outdated."
-    }
-   ],
+   "review_flags": [],
    "overlay": "overlays/vie-swv-007.png"
   },
   {
@@ -8356,14 +8550,26 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9293,
+     "exterior_iou": 0.9293,
      "symmetric_difference_ratio": 0.071,
      "hausdorff_m": 1.693,
+     "hausdorff_full_boundary_m": 1.693,
      "boundary_gradient_ratio": 1.4197
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 0,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -8465,6 +8671,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 75.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 69316,
        "judgeable_fraction": 1.0,
@@ -8669,7 +8878,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -8687,6 +8897,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 75.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -8761,7 +8974,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -8780,6 +8993,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 75.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 69316,
        "judgeable_fraction": 1.0,
@@ -8825,7 +9041,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -8839,7 +9055,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 69316,
        "roof_area_m2": 686.7,
@@ -8848,6 +9064,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 75.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 69316,
        "vegetated_fraction": 0.0,
@@ -8897,6 +9116,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 65,
+       "p01_luminance": 75.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 69316,
        "judgeable_fraction": 1.0,
@@ -9540,14 +9762,26 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.8971,
+     "exterior_iou": 0.8971,
      "symmetric_difference_ratio": 0.1095,
      "hausdorff_m": 2.442,
+     "hausdorff_full_boundary_m": 2.442,
      "boundary_gradient_ratio": 1.2697
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 0,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -9649,6 +9883,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 78.0,
+       "p05_luminance": 84.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 46473,
        "judgeable_fraction": 1.0,
@@ -9850,7 +10087,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -9868,6 +10106,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 78.0,
+       "p05_luminance": 84.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -9942,7 +10183,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -9961,6 +10202,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 78.0,
+       "p05_luminance": 84.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 46473,
        "judgeable_fraction": 1.0,
@@ -10006,7 +10250,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -10020,7 +10264,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 46473,
        "roof_area_m2": 460.4,
@@ -10029,6 +10273,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 78.0,
+       "p05_luminance": 84.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 46473,
        "vegetated_fraction": 0.001,
@@ -10078,6 +10325,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 66,
+       "p01_luminance": 78.0,
+       "p05_luminance": 84.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 46473,
        "judgeable_fraction": 1.0,
@@ -10432,14 +10682,26 @@
     "segmenter": "grabcut+geometric_refinement",
     "agreement_with_authoritative_geometry": {
      "iou": 0.9364,
+     "exterior_iou": 0.9364,
      "symmetric_difference_ratio": 0.0655,
      "hausdorff_m": 1.487,
+     "hausdorff_full_boundary_m": 1.487,
      "boundary_gradient_ratio": 1.0165
     },
     "boundary_alignment_warning": {
      "flag": false,
      "metrics": null,
      "note": null
+    },
+    "topology_mismatch": {
+     "flag": false,
+     "authoritative_interior_rings": 0,
+     "cv_interior_rings": 0,
+     "authoritative_interior_ring_areas_m2": [],
+     "cv_interior_ring_areas_m2": [],
+     "crs": "EPSG:31256",
+     "cv_min_hole_area_m2": 4.0,
+     "note": "The candidate and the authoritative outline carry the same number of interior rings. Reported for completeness; ring counts are a diagnostic and are not an input to boundary_alignment_warning."
     },
     "failure_reason": null,
     "note": "Comparison evidence only. The CV polygon is seeded from the authoritative outline, so this is agreement between related estimates, not segmentation accuracy. The primary outline is authoritative geodata, not a CV product."
@@ -10541,6 +10803,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 68,
+       "p01_luminance": 78.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 39203,
        "judgeable_fraction": 1.0,
@@ -10745,7 +11010,8 @@
       "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
       "limitations": [
        "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "no gate was moved after the spot check to change any building's verdict",
        "candidate diagnostics are published for future validation, not as a finding"
       ],
       "factors": {},
@@ -10763,6 +11029,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 68,
+       "p01_luminance": 78.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "thresholds": {
         "max_value": 145.0,
@@ -10829,7 +11098,7 @@
       "limitations": [
        "visible surface class only; RGB at 15 cm cannot establish construction material",
        "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-       "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+       "pixels below the configured shadow-luminance threshold are excluded; on this dataset that excluded none, so a self-shadowed plane was classified alongside its lit ones",
        "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
        "confidence for roof_surface_class is capped at 0.6"
       ],
@@ -10848,6 +11117,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 68,
+       "p01_luminance": 78.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 39203,
        "judgeable_fraction": 1.0,
@@ -10893,7 +11165,7 @@
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof; absence of evidence is weak evidence of absence",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "limitations": [
        "no NIR band, so no NDVI; ExG and VARI respond to greenness, not to chlorophyll",
        "imagery flown 19/20 March, 29 March and 12 April 2024 with DORMANT vegetation: an extensive sedum roof reads reddish-brown, so under-detection is expected and a negative or abstaining result on a real green roof is a known failure mode (design 5.2)",
@@ -10907,7 +11179,7 @@
      "image_evidence": {
       "indicates": false,
       "method": "rgb_vegetation_index_exg_with_vari_cross_check",
-      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected with adequate image quality over the roof interior; this is absence of evidence, which is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
+      "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 39203,
        "roof_area_m2": 388.4,
@@ -10916,6 +11188,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 68,
+       "p01_luminance": 78.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "roof_pixels_with_imagery": 39203,
        "vegetated_fraction": 0.0005,
@@ -10965,6 +11240,9 @@
        "no_data_fraction": 0.0,
        "shadow_fraction_excluding_no_data": 0.0,
        "shadow_luminance_threshold": 55.0,
+       "min_luminance": 68,
+       "p01_luminance": 78.0,
+       "p05_luminance": 82.0,
        "missing_tile_count": 0,
        "judgeable_pixel_count": 39203,
        "judgeable_fraction": 1.0,
@@ -11036,7 +11314,12 @@
      },
      "source_detail": {
       "layer": "ogdwien:GEBAEUDETYPOGD",
-      "field": "OBJ_STR_TXT"
+      "field": "OBJ_STR_TXT",
+      "raw_value": null,
+      "overlap_fraction_of_roof": 0.4479,
+      "matched_by": "best_geometric_overlap",
+      "OBJ_STR2_TXT": "nach 1945",
+      "note": "raw_value is preserved verbatim so the placeholder stays traceable. OBJ_STR2_TXT is carried for reference only and is never promoted into the published value: no precedence rule is invented between the two epoch columns."
      }
     },
     "building_typology": {

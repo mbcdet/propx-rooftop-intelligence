@@ -41,8 +41,11 @@ def threshold(cfg: Any, *path: str, default: Any = _REQUIRED) -> Any:
 
     Missing key and no ``default`` raises: a threshold that silently defaults to zero is worse
     than a crash, because it ships. ``default`` is used only for the algorithm-shape parameters
-    documented in this package (see ``segment/__init__.py`` and ``attributes/__init__.py``);
-    every *published decision* threshold lives in ``configs/pipeline.yaml``.
+    documented in this package (see ``segment/__init__.py`` and ``attributes/__init__.py``).
+    Most published decision thresholds live in ``configs/pipeline.yaml``, but **not all**: some
+    values in those two dicts also decide published output (``warn_iou_below``,
+    ``solar_internal_texture_min``, ``ridge_plane_contrast_min``). They are fingerprinted by
+    ``config.algorithm_parameters_hash`` rather than by ``config_hash``.
     """
     node: Any = getattr(cfg, "thresholds", cfg)
     for key in path:
@@ -368,5 +371,11 @@ def shadow_stats(crop: ImageCrop, cfg: Any) -> dict[str, Any]:
             round(float((grey[with_data] < limit).mean()), 4) if n_data else None
         ),
         "shadow_luminance_threshold": limit,
+        # Measured luminance, published so shadow_fraction is self-evidencing. A reader can
+        # see how far the darkest roof pixels actually sit from the configured threshold
+        # instead of taking a 0.0 on trust: visibly shadowed roof can still be well above it.
+        "min_luminance": int(grey[with_data].min()) if n_data else None,
+        "p01_luminance": round(float(np.percentile(grey[with_data], 1)), 1) if n_data else None,
+        "p05_luminance": round(float(np.percentile(grey[with_data], 5)), 1) if n_data else None,
         "missing_tile_count": len(crop.missing_tiles),
     }

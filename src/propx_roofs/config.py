@@ -11,6 +11,9 @@ Nothing in the pipeline reads a threshold from a literal; if it is a decision, i
 from __future__ import annotations
 
 import hashlib
+import json
+import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -24,6 +27,94 @@ DEFAULT_CACHE_ROOT = REPO_ROOT / "data" / "cache"
 
 ATTRIBUTION = "Datenquelle: Stadt Wien - data.wien.gv.at"
 LICENCE = "CC BY 4.0"
+
+
+# --- algorithm-parameter fingerprint ---------------------------------------------------------
+#
+# config_hash covers configs/study_area.yaml + configs/pipeline.yaml. It cannot cover the ~35
+# algorithm-shape constants in segment.SEGMENT_PARAMS and attributes.ATTRIBUTE_PARAMS, several of
+# which decide published output. This fingerprint covers those, so the pair
+# (config_hash, algorithm_parameters_hash) pins every number the run depended on.
+ALGORITHM_PARAMETERS_NAMESPACE = "propx_roofs.algorithm_parameters"
+ALGORITHM_PARAMETERS_VERSION = 1
+# 16 hex characters = 64 bits, the same width as config_hash so the two read as siblings.
+ALGORITHM_PARAMETERS_DIGEST_CHARS = 16
+
+
+def _canonical_parameter(name: str, value: object) -> str:
+    """One parameter value as an exact, format-frozen string.
+
+    ``float.hex()`` rather than ``repr``: it is an exact base-2 rendering of the IEEE-754 double,
+    so ``5`` and ``5.0`` collapse to one string and no future change to Python's float repr can
+    move the fingerprint. Non-finite values are refused because ``nan != nan`` would make "the
+    same parameters" untestable, and ``bool`` is refused so ``True`` cannot become ``1.0``.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(
+            f"algorithm parameter {name!r} must be an int or a float, got {type(value).__name__}"
+        )
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError(f"algorithm parameter {name!r} is not finite: {number!r}")
+    return number.hex()
+
+
+def algorithm_parameters_payload(
+    segment_params: Mapping[str, float], attribute_params: Mapping[str, float]
+) -> str:
+    """The exact bytes :func:`algorithm_parameters_hash` digests, for tests and inspection."""
+    payload = {
+        "namespace": ALGORITHM_PARAMETERS_NAMESPACE,
+        "version": ALGORITHM_PARAMETERS_VERSION,
+        "segment": {str(k): _canonical_parameter(str(k), v) for k, v in segment_params.items()},
+        "attributes": {
+            str(k): _canonical_parameter(str(k), v) for k, v in attribute_params.items()
+        },
+    }
+    return json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    )
+
+
+def algorithm_parameters_hash(
+    segment_params: Mapping[str, float] | None = None,
+    attribute_params: Mapping[str, float] | None = None,
+) -> str:
+    """Fingerprint of the in-code algorithm parameter **values**, as 16 hex characters.
+
+    Covers every name and value in ``segment.SEGMENT_PARAMS`` and ``attributes.ATTRIBUTE_PARAMS``
+    — the constants ``config_hash`` cannot see, several of which decide published output
+    (``warn_iou_below``, ``solar_internal_texture_min``, ``ridge_plane_contrast_min``,
+    ``grabcut_iterations``, ``grabcut_rng_seed``). Adding, removing, renaming or changing any one
+    of them changes this value; reordering the dict literals does not.
+
+    What it does NOT cover, and must never be read as covering:
+
+    * **source code.** This is not a code hash. Rewriting a detector, changing an operator order
+      or fixing a bug leaves the fingerprint unchanged as long as the parameter values are equal,
+      so two runs agreeing here can still differ in output. ``pipeline_version`` speaks about code.
+    * **the two YAML config files.** Those are ``config_hash``.
+    * **the effective value when the config overrides a default.** An override lives in
+      ``config_hash``; this field still reports the in-code default. Only the two hashes together
+      determine the effective parameters.
+    * constants outside those two dicts. Widening the scope is deliberate: bump
+      ``ALGORITHM_PARAMETERS_VERSION``, which is inside the hashed payload, so a v1 and a v2
+      fingerprint can never be silently compared.
+    """
+    if segment_params is None or attribute_params is None:
+        # Function-scoped: segment reaches cv2/numpy/shapely through imaging, and config must
+        # stay cheap to import (tools/build_cache.py imports it).
+        from .attributes import ATTRIBUTE_PARAMS
+        from .segment import SEGMENT_PARAMS
+
+        if segment_params is None:
+            segment_params = SEGMENT_PARAMS
+        if attribute_params is None:
+            attribute_params = ATTRIBUTE_PARAMS
+    canonical = algorithm_parameters_payload(segment_params, attribute_params)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[
+        :ALGORITHM_PARAMETERS_DIGEST_CHARS
+    ]
 
 
 @dataclass(frozen=True)

@@ -29,7 +29,8 @@ METHOD = "rgb_colour_and_texture_statistics"
 LIMITATIONS = (
     "visible surface class only; RGB at 15 cm cannot establish construction material",
     "15 cm GSD with JPEG compression; small dormers and plant rooms may dominate a small roof",
-    "shadowed pixels are excluded, so a self-shadowed pitched roof is judged on its lit planes",
+    "pixels below the configured shadow-luminance threshold are excluded; on this dataset that "
+    "excluded none, so a self-shadowed plane was classified alongside its lit ones",
     "dormant March/April 2024 vegetation reads as reddish-brown substrate, so an extensive "
     "green roof can classify as bitumen_gravel rather than vegetated (design 5.2)",
 )

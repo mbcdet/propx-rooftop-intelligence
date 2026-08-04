@@ -141,7 +141,18 @@
       "properties": {
         "iou": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "symmetric_difference_ratio": { "type": ["number", "null"], "minimum": 0 },
-        "hausdorff_m": { "type": ["number", "null"], "minimum": 0 },
+        "exterior_iou": {
+          "description": "IoU after removing interior rings from BOTH geometries. The figure boundary_alignment_warning is measured against, because it cannot be moved by a hole-count mismatch.",
+          "type": ["number", "null"], "minimum": 0, "maximum": 1
+        },
+        "hausdorff_m": {
+          "description": "Symmetric Hausdorff distance between the EXTERIOR rings only. Redefined in Phase 4A: a polygon's .boundary includes interior rings, so the previous all-rings figure conflated edge disagreement with hole-count mismatch. The all-rings value is retained as hausdorff_full_boundary_m.",
+          "type": ["number", "null"], "minimum": 0
+        },
+        "hausdorff_full_boundary_m": {
+          "description": "The previous all-rings symmetric Hausdorff distance, retained so nothing is lost. Sensitive to interior-ring topology and therefore NOT used by boundary_alignment_warning.",
+          "type": ["number", "null"], "minimum": 0
+        },
         "boundary_gradient_ratio": { "type": ["number", "null"], "minimum": 0 }
       }
     },
@@ -174,6 +185,27 @@
                 },
                 "metrics": { "type": ["object", "null"] },
                 "note": { "type": ["string", "null"] }
+              }
+            }
+          ]
+        },
+        "topology_mismatch": {
+          "description": "DIAGNOSTIC, not a review trigger. Reports differing interior-ring counts between the authoritative outline and the CV candidate. The candidate segmenter discards holes below its configured minimum area, so a mismatch is expected behaviour rather than a finding about the roof, and it deliberately carries no requires_visual_review status.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["flag"],
+              "additionalProperties": false,
+              "properties": {
+                "flag": { "type": "boolean" },
+                "authoritative_interior_rings": { "type": "integer", "minimum": 0 },
+                "cv_interior_rings": { "type": "integer", "minimum": 0 },
+                "authoritative_interior_ring_areas_m2": { "type": "array", "items": { "type": "number" } },
+                "cv_interior_ring_areas_m2": { "type": "array", "items": { "type": "number" } },
+                "crs": { "type": "string" },
+                "cv_min_hole_area_m2": { "type": "number" },
+                "note": { "type": "string" }
               }
             }
           ]
@@ -273,7 +305,7 @@
         "pv_potential_annual_yield_kwh": { "$ref": "#/$defs/attribute" },
         "pv_suitability_area_m2": { "$ref": "#/$defs/attribute" },
         "solar_panels": {
-          "description": "WITHHELD PENDING VALIDATION. The RGB detector was spot-checked against the imagery and found anti-correlated on all four checkable cases, so no Boolean is published: value is always null, availability is 'unavailable' and confidence.score is always null. The detector's raw candidate diagnostics are retained under image_evidence.quality, labelled unvalidated candidate evidence, for a future labelled validation. Thresholds were deliberately NOT adjusted to fit the selected sample.",
+          "description": "WITHHELD PENDING VALIDATION. The RGB detector was spot-checked against the imagery and found anti-correlated on all four checkable cases, so no Boolean is published: value is always null, availability is 'unavailable' and confidence.score is always null. The detector's raw candidate diagnostics are retained under image_evidence.quality, labelled unvalidated candidate evidence, for a future labelled validation. Threshold provenance: two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute. No gate was moved after the spot check to change any building's verdict.",
           "allOf": [
             { "$ref": "#/$defs/attribute" },
             {
@@ -360,6 +392,7 @@
         "generated_at",
         "pipeline_version",
         "config_hash",
+        "algorithm_parameters_hash",
         "study_area",
         "sources",
         "confidence_note",
@@ -371,6 +404,11 @@
         "generated_at": { "type": "string", "minLength": 1 },
         "pipeline_version": { "type": "string", "minLength": 1 },
         "config_hash": { "type": "string", "minLength": 1 },
+        "algorithm_parameters_hash": {
+          "description": "Fingerprint of the in-code algorithm parameter VALUES in propx_roofs.segment.SEGMENT_PARAMS and propx_roofs.attributes.ATTRIBUTE_PARAMS, which config_hash does not cover: sha256 of a canonical JSON payload, truncated to 16 hex characters. It is NOT a source-code hash and NOT a hash of the whole algorithm - a code change that leaves every parameter value equal leaves this field unchanged, so two runs agreeing here can still differ in output. Where configs/pipeline.yaml overrides a default, the override is covered by config_hash and this field still reports the in-code default; only the two hashes together determine the effective parameters.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{16}$"
+        },
         "study_area": {
           "type": "object",
           "required": ["name", "bbox_wgs84", "crs_metric", "imagery_zoom"],

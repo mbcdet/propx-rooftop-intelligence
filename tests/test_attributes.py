@@ -43,6 +43,30 @@ def test_asymmetric_rule_abstains_under_shadow_and_never_invents_a_negative() ->
     assert "absence of evidence" in resolve_asymmetric_detection(False, 0.0, ABSTAIN_ABOVE)[1]
 
 
+def test_the_negative_rationale_reports_the_measured_shadow_fraction_not_a_literal() -> None:
+    """The rationale must quote the fraction it was given, not the one this dataset happens to have.
+
+    Every selected building measures 0.0%, so a hardcoded "0 percent" was indistinguishable from
+    a measurement here and would have silently lied on the first darker roof. A fraction below
+    the abstention threshold still returns False — that behaviour is unchanged; only the text is.
+    """
+    fraction = ABSTAIN_ABOVE / 2  # 17.5% with the shipped 0.35 threshold: below the gate
+    assert fraction < ABSTAIN_ABOVE
+    value, rationale = resolve_asymmetric_detection(False, fraction, ABSTAIN_ABOVE)
+
+    assert value is False, "a fraction below the gate must still yield a negative, not abstention"
+    assert f"{fraction:.1%}" in rationale
+    assert "0.0%" not in rationale
+    assert "0 percent" not in rationale
+    # The gate it was tested against is named too, so the number is interpretable.
+    assert f"{ABSTAIN_ABOVE:.0%}" in rationale
+
+    # ...and the real-data case still reads 0.0%, which is the honest measurement there.
+    zero_value, zero_rationale = resolve_asymmetric_detection(False, 0.0, ABSTAIN_ABOVE)
+    assert zero_value is False
+    assert "0.0%" in zero_rationale
+
+
 # --------------------------------------------------------------------------------------------
 # surface class
 

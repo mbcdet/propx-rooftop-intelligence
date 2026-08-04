@@ -13,9 +13,12 @@ absence of evidence is weak evidence of absence, and the city's own 7.5 cm pipel
 rule, shared by ``solar.py`` and ``vegetation.py`` so the two cannot drift apart.
 
 ``ATTRIBUTE_PARAMS`` holds algorithm-shape parameters in ground metres or as ratios of the
-observed pixel population. The published decision thresholds — ``image.shadow_*``,
-``image.solar_panels.*``, ``image.green_roof.*`` — are read directly from
-``configs/pipeline.yaml`` and are never duplicated here. :func:`param` prefers an ``image.tuning``
+observed pixel population. Several values here also decide published output
+(``solar_internal_texture_min``, ``ridge_plane_contrast_min``, ``tiled_saturation_min``), so
+calling this dict "shape only" would be wrong. ``image.shadow_*``, ``image.solar_panels.*`` and
+``image.green_roof.*`` are read directly from ``configs/pipeline.yaml`` and are never duplicated
+here; everything in this dict is fingerprinted by ``config.algorithm_parameters_hash`` rather
+than by ``config_hash``. :func:`param` prefers an ``image.tuning``
 block in that file if one is ever added.
 """
 
@@ -139,7 +142,12 @@ def resolve_asymmetric_detection(
             f"below the shadow luminance threshold (abstain above {abstain_above:.0%}); a "
             f"shadowed roof cannot support a negative claim"
         )
+    # The measured fraction, not a literal: on this dataset it is always 0.0%, but hardcoding
+    # that would publish a number the function did not measure the moment a darker roof appears.
     return False, (
-        "nothing detected with adequate image quality over the roof interior; this is "
-        "absence of evidence, which is weak evidence of absence"
+        f"nothing detected; {shadow_fraction:.1%} of the roof interior measured below the "
+        f"configured shadow-luminance threshold (abstain above {abstain_above:.0%}), which is "
+        f"what the abstention gate tests. Visibly shadowed roof can still sit above that "
+        f"threshold, so this is absence of evidence rather than a demonstration that the roof "
+        f"was easy to read, and absence of evidence is weak evidence of absence"
     )

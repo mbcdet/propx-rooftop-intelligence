@@ -1,8 +1,10 @@
 # Pipeline thresholds.
 #
 # Every value here is a DOCUMENTED HEURISTIC chosen to be conservative. None is a calibrated
-# accuracy figure, and none was tuned to make a particular building produce a particular
-# answer. Where a threshold was picked from reconnaissance evidence, the evidence is cited.
+# accuracy figure. Where a threshold was picked from measured evidence, the evidence and the
+# buildings it was measured on are cited at the threshold itself - see image.solar_panels
+# below, two of whose gates were calibrated from pixels on vie-swv-001 and vie-swv-003 inside
+# the selected sample. No threshold was moved after a visual spot check to change a verdict.
 
 crs:
   # Every published metric value comes from this projected CRS via pyproj. The local

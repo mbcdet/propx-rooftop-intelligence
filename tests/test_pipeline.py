@@ -20,12 +20,14 @@ Two rules govern what is asserted about content:
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 import pytest
 from shapely.geometry import box
 
 from propx_roofs import config, geometry, pipeline, provenance, units
+from propx_roofs.segment import agreement
 from propx_roofs.types import CARDINALITY_BASIS, ImageObservation
 
 GENERATED_AT_A = "2026-08-04T00:00:00+00:00"
@@ -406,29 +408,100 @@ def test_the_withheld_solar_detector_still_produced_its_candidate_diagnostics(bu
     assert "coverage_fraction" in quality
 
 
-def test_a_fired_boundary_alignment_warning_reaches_the_top_level_review_flags(buildings):
-    """vie-swv-007 fires the warning; review_flags is the single answer to 'what needs a human?'.
+def test_a_fired_boundary_alignment_warning_reaches_the_top_level_review_flags(cfg):
+    """Routing is tested on SYNTHETIC divergence, because no real building fires the warning.
 
-    Previously the warning carried its own requires_visual_review status while review_flags was
-    empty, so a reader scanning only review_flags would have missed the one building the
-    pipeline had already marked for inspection.
+    Until Phase 4A the warning was measured on the full polygon boundary, which includes
+    interior rings. vie-swv-007 therefore fired at 5.705 m — a distance to an unmatched 1.21 m²
+    light shaft, not a disagreement about where the roof edge is. Measured on exterior rings the
+    same building is 1.476 m apart, well inside the 5.0 m threshold, so the sample now has zero
+    fired warnings. Pinning the routing to a real building would mean re-basing this test every
+    time the geometry moves; constructed evidence keeps the mechanism verified either way.
     """
-    building = buildings["vie-swv-007"]
-    warning = building["delineation"]["boundary_alignment_warning"]
+    warning = agreement.alignment_warning(
+        0.985,  # exterior_iou, comfortably above warn_iou_below
+        7.0,  # exterior-ring hausdorff, above warn_hausdorff_above_m
+        0.03,
+        cfg,
+    )
     assert warning["flag"] is True
     assert warning["status"] == "requires_visual_review"
 
-    triggers = [flag["trigger"] for flag in building["review_flags"]]
+    flags = provenance.review_flags(cfg, boundary_alignment_warning=warning)
+    triggers = [flag["trigger"] for flag in flags]
     assert "boundary_alignment_warning" in triggers
-    flag = next(f for f in building["review_flags"] if f["trigger"] == "boundary_alignment_warning")
+    flag = next(f for f in flags if f["trigger"] == "boundary_alignment_warning")
     assert flag["status"] == "requires_visual_review"
     # The reason must not assert the official data is wrong (design section 4.2).
     assert "does not indicate that the authoritative data is incorrect" in flag["reason"]
 
-    # ...and a building whose warning did not fire carries no such flag.
-    quiet = buildings["vie-swv-001"]
-    assert not (quiet["delineation"]["boundary_alignment_warning"] or {}).get("flag")
-    assert "boundary_alignment_warning" not in [f["trigger"] for f in quiet["review_flags"]]
+    # A warning that did not fire routes nothing.
+    quiet = agreement.alignment_warning(0.99, 0.4, 0.01, cfg)
+    assert quiet["flag"] is False
+    assert provenance.review_flags(cfg, boundary_alignment_warning=quiet) == []
+
+
+def test_no_real_building_fires_a_boundary_warning_or_carries_a_review_flag(buildings):
+    """The honest post-Phase-4A state of the sample: zero fired warnings, zero review flags."""
+    for building_id, building in buildings.items():
+        warning = building["delineation"]["boundary_alignment_warning"] or {}
+        assert warning.get("flag") is not True, f"{building_id} unexpectedly fired the warning"
+        assert building["review_flags"] == [], f"{building_id} carries an unexpected review flag"
+
+
+def test_vie_swv_007_reports_a_topology_mismatch_without_a_review_flag(buildings):
+    """The real diagnostic that replaced the mis-measured warning.
+
+    Two ~1 m² light shafts in the authoritative outline have no counterpart in the candidate,
+    because GrabCut discards holes below its configured minimum area. That is expected segmenter
+    behaviour, so it is reported as a diagnostic and deliberately routes nowhere.
+    """
+    building = buildings["vie-swv-007"]
+    topology = building["delineation"]["topology_mismatch"]
+    assert topology["flag"] is True
+    assert topology["authoritative_interior_rings"] == 2
+    assert topology["cv_interior_rings"] == 0
+    assert topology["authoritative_interior_ring_areas_m2"] == [1.21, 0.69]
+    assert topology["cv_interior_ring_areas_m2"] == []
+    assert topology["crs"] == "EPSG:31256"
+    # A diagnostic, not a review trigger: no status key, and nothing in review_flags.
+    assert "status" not in topology
+    assert building["review_flags"] == []
+
+    # The two Hausdorff figures must disagree here, or the fix did nothing.
+    agree = building["delineation"]["agreement_with_authoritative_geometry"]
+    assert agree["hausdorff_m"] == pytest.approx(1.476, abs=0.01)
+    assert agree["hausdorff_full_boundary_m"] == pytest.approx(5.705, abs=0.01)
+    assert agree["hausdorff_m"] < agree["hausdorff_full_boundary_m"]
+
+
+def test_the_epoch_placeholder_is_absent_but_still_traceable(buildings):
+    """GEBAEUDETYPOGD's "Keine Angabe" is the source declining to answer, not a value.
+
+    vie-swv-005 is the one building whose typology polygon carries the placeholder. Publishing
+    it as an authoritative value asserted 0.902 confidence in a non-answer, and a reader could
+    read it as a real epoch.
+    """
+    epoch = buildings["vie-swv-005"]["attributes"]["construction_epoch"]
+    assert epoch["value"] is None
+    assert epoch["availability"] == "not_in_source"
+    assert epoch["confidence"]["score"] is None
+
+    # Absent, but the bytes behind that judgement stay auditable.
+    detail = epoch["source_detail"]
+    assert detail["raw_value"] == "Keine Angabe"
+    assert detail["OBJ_STR2_TXT"] == "nach 1945"
+    # ...and the secondary column is never promoted into the published value.
+    assert epoch["value"] != detail["OBJ_STR2_TXT"]
+
+
+def test_both_run_fingerprints_are_published_and_distinct(document, cfg):
+    """config_hash covers the YAML; algorithm_parameters_hash covers the in-code parameters."""
+    run = document["run"]
+    assert run["config_hash"] == cfg.config_hash
+    assert run["algorithm_parameters_hash"] == config.algorithm_parameters_hash()
+    assert run["algorithm_parameters_hash"] != run["config_hash"]
+    assert re.fullmatch(r"[0-9a-f]{16}", run["algorithm_parameters_hash"])
 
 
 def test_no_forced_conflict_on_vie_swv_008(buildings):

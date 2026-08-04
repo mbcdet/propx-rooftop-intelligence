@@ -258,21 +258,30 @@ class CvDelineation:
     polygon: dict[str, Any] | None  # GeoJSON, EPSG:4326
     iou: float | None
     symmetric_difference_ratio: float | None
+    # Exterior rings only. The all-rings figure is `hausdorff_full_boundary_m`: a polygon's
+    # `.boundary` includes its interior rings, so measuring on it conflates disagreement about
+    # where the roof edge is with a mismatch in how many holes each estimate found.
     hausdorff_m: float | None
     boundary_gradient_ratio: float | None
     alignment_warning: dict[str, Any] | None
     failure_reason: str | None = None
+    exterior_iou: float | None = None
+    hausdorff_full_boundary_m: float | None = None
+    topology_mismatch: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "segmenter": self.segmenter,
             "agreement_with_authoritative_geometry": {
                 "iou": self.iou,
+                "exterior_iou": self.exterior_iou,
                 "symmetric_difference_ratio": self.symmetric_difference_ratio,
                 "hausdorff_m": self.hausdorff_m,
+                "hausdorff_full_boundary_m": self.hausdorff_full_boundary_m,
                 "boundary_gradient_ratio": self.boundary_gradient_ratio,
             },
             "boundary_alignment_warning": self.alignment_warning,
+            "topology_mismatch": self.topology_mismatch,
             "failure_reason": self.failure_reason,
             "note": (
                 "Comparison evidence only. The CV polygon is seeded from the authoritative "

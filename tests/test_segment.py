@@ -7,12 +7,31 @@ crop is defined exactly once; pytest puts the tests directory on ``sys.path``.
 from __future__ import annotations
 
 import hashlib
+import json
+import math
+from pathlib import Path
 
 import numpy as np
 import pytest
-from test_imaging import CFG, override, square_wgs84, synthetic_crop
+from shapely.geometry import MultiPolygon, Polygon
+from test_imaging import (
+    CENTRE_LAT,
+    CENTRE_LON,
+    CFG,
+    override,
+    square_wgs84,
+    synthetic_crop,
+    usable_tile_cache,
+)
 
 from propx_roofs.segment import agreement, grabcut
+
+# The two published thresholds, written out rather than read from the config: a test that takes
+# its expectation from the same file as the code cannot catch the file being misread.
+WARN_IOU_BELOW = 0.70
+WARN_HAUSDORFF_ABOVE_M = 5.0
+
+ROOF_ATTRIBUTES = Path(__file__).resolve().parents[1] / "outputs" / "roof_attributes.json"
 
 
 def bright_roof(size: int = 300, margin: int = 60) -> tuple[np.ndarray, np.ndarray]:
@@ -180,7 +199,257 @@ def test_alignment_warning_is_cautious_and_names_no_fault() -> None:
     assert warning["flag"] is True
     assert warning["status"] == "requires_visual_review"
     assert len(warning["metrics"]["triggers"]) == 2
+    # The warning names what it was measured on, so a reader never has to wonder whether a
+    # ring-count difference could have contributed to it.
+    assert warning["metrics"]["basis"] == "exterior_rings_only"
+    assert warning["metrics"]["exterior_iou"] == 0.4
+    assert warning["metrics"]["thresholds"] == {
+        "iou_below": WARN_IOU_BELOW,
+        "hausdorff_above_m": WARN_HAUSDORFF_ABOVE_M,
+    }
     note = warning["note"]
     assert "does not indicate that the authoritative data is incorrect or outdated" in note
     quiet = agreement.alignment_warning(iou=0.95, hausdorff_m=0.4, sym_ratio=0.05, cfg=CFG)
     assert quiet == {"flag": False, "metrics": None, "note": None}
+
+
+# --------------------------------------------------------------------------------------------
+# interior rings: edge disagreement measured apart from ring-count disagreement
+#
+# ``shapely``'s ``.boundary`` of a polygon with holes is the exterior ring *plus* every interior
+# ring, so a Hausdorff distance over it conflates "the perimeters sit apart" with "one outline
+# records a void the other does not". The candidate segmenter drops holes below
+# ``min_hole_area_m2`` by design, so the second condition is guaranteed on any roof with a small
+# light shaft and must not be able to fire the alignment warning by itself.
+
+
+def _flat_crop(size: int = 400) -> object:
+    """A featureless crop: these tests are about geometry, so the imagery must contribute nothing.
+
+    ``boundary_gradient_ratio`` is ``None`` on a uniform crop, which is the honest answer and
+    keeps the fixtures from asserting anything about pixels.
+    """
+    return synthetic_crop(np.full((size, size, 3), 120, np.uint8))
+
+
+def _offset_wgs84(east_m: float, north_m: float) -> tuple[float, float]:
+    """A lon/lat offset in metres from the study-area centre, as in ``square_wgs84``."""
+    return (
+        CENTRE_LON + east_m / (111320.0 * math.cos(math.radians(CENTRE_LAT))),
+        CENTRE_LAT + north_m / 110574.0,
+    )
+
+
+def _rect_wgs84(x0: float, y0: float, x1: float, y1: float) -> Polygon:
+    """Rectangle given in metres east/north of the study-area centre.
+
+    The degree conversion is the small-angle one, so a length asserted against it is good to a
+    fraction of a percent — every assertion below is written with a tolerance to match, because
+    the number under test is measured in EPSG:31256 and not in this frame.
+    """
+    corners = [
+        _offset_wgs84(x0, y0),
+        _offset_wgs84(x1, y0),
+        _offset_wgs84(x1, y1),
+        _offset_wgs84(x0, y1),
+    ]
+    return Polygon(corners)
+
+
+def test_identical_outlines_with_a_hole_agree_on_the_exterior_and_show_no_mismatch() -> None:
+    """The control case: a shared courtyard must not cost anything anywhere."""
+    outline = square_wgs84(15.0, hole_m=3.0)  # 30 x 30 m with a 6 x 6 m void
+    result = agreement.compare(outline, outline, _flat_crop(), CFG)
+
+    assert result.failure_reason is None
+    assert result.exterior_iou == 1.0
+    assert result.iou == 1.0
+    assert result.hausdorff_m == pytest.approx(0.0, abs=1e-6)
+    assert result.hausdorff_full_boundary_m == pytest.approx(0.0, abs=1e-6)
+
+    mismatch = result.topology_mismatch
+    assert mismatch["flag"] is False
+    assert mismatch["authoritative_interior_rings"] == 1
+    assert mismatch["cv_interior_rings"] == 1
+    assert (
+        mismatch["authoritative_interior_ring_areas_m2"]
+        == mismatch["cv_interior_ring_areas_m2"]
+    )
+    assert mismatch["crs"] == str(CFG.threshold("crs", "metric"))
+    assert result.alignment_warning["flag"] is False
+
+
+def test_a_hole_only_the_authoritative_outline_has_moves_only_the_full_boundary_figure() -> None:
+    """The regression this split exists for.
+
+    Same perimeter on both sides, one courtyard on one side. ``hausdorff_m`` must not notice;
+    ``hausdorff_full_boundary_m`` must, because the void ring sits 12 m from the perimeter and
+    the old single figure reported that 12 m as boundary divergence.
+    """
+    authoritative = square_wgs84(15.0, hole_m=3.0)
+    candidate = square_wgs84(15.0)  # the segmenter did not reproduce the void
+    result = agreement.compare(candidate, authoritative, _flat_crop(), CFG)
+
+    assert result.hausdorff_m == pytest.approx(0.0, abs=1e-6), "the exterior rings are identical"
+    assert result.hausdorff_full_boundary_m == pytest.approx(12.0, rel=0.02)
+    assert result.hausdorff_full_boundary_m > result.hausdorff_m
+
+    # The void is real, so iou still reports it; exterior_iou is what removes it deliberately.
+    assert result.exterior_iou == 1.0
+    assert result.iou < 1.0
+
+    mismatch = result.topology_mismatch
+    assert mismatch["flag"] is True
+    assert mismatch["authoritative_interior_rings"] == 1
+    assert mismatch["cv_interior_rings"] == 0
+    assert mismatch["authoritative_interior_ring_areas_m2"] == [pytest.approx(36.0, rel=0.01)]
+    assert mismatch["cv_interior_ring_areas_m2"] == []
+
+
+def test_diverging_exterior_rings_fire_the_alignment_warning() -> None:
+    """A 7 m spur off one wall: high overlap, and a perimeter that genuinely wandered.
+
+    Written so that only the Hausdorff trigger can fire — ``exterior_iou`` stays well above its
+    threshold — which is what makes it a test of the exterior-ring measurement rather than of
+    the overlap.
+    """
+    authoritative = square_wgs84(15.0)
+    candidate = square_wgs84(15.0).union(_rect_wgs84(15.0, -1.0, 22.0, 1.0))
+    result = agreement.compare(candidate, authoritative, _flat_crop(), CFG)
+
+    assert result.hausdorff_m == pytest.approx(7.0, rel=0.02)
+    assert result.hausdorff_m > WARN_HAUSDORFF_ABOVE_M
+    assert result.exterior_iou > WARN_IOU_BELOW
+
+    warning = result.alignment_warning
+    assert warning["flag"] is True
+    assert warning["status"] == "requires_visual_review"
+    triggers = warning["metrics"]["triggers"]
+    assert len(triggers) == 1 and "hausdorff" in triggers[0]
+    assert warning["metrics"]["basis"] == "exterior_rings_only"
+    assert "does not indicate that the authoritative data is incorrect" in warning["note"]
+    assert result.topology_mismatch["flag"] is False
+
+
+def test_a_topology_mismatch_alone_does_not_fire_the_alignment_warning() -> None:
+    """The published defect: a light shaft the segmenter cannot reproduce is not a divergence."""
+    authoritative = square_wgs84(15.0, hole_m=1.5)  # a 3 x 3 m shaft, 13.5 m from the perimeter
+    candidate = square_wgs84(15.0)
+    result = agreement.compare(candidate, authoritative, _flat_crop(), CFG)
+
+    # The all-rings figure crosses the trigger on its own; the warning must not be looking at it.
+    assert result.hausdorff_full_boundary_m > WARN_HAUSDORFF_ABOVE_M
+    assert result.exterior_iou > WARN_IOU_BELOW
+    assert result.alignment_warning == {"flag": False, "metrics": None, "note": None}
+
+    mismatch = result.topology_mismatch
+    assert mismatch["flag"] is True
+    # A diagnostic, not a route to review: no status of its own, and nothing to route.
+    assert "status" not in mismatch
+    assert "requires_visual_review" not in json.dumps(mismatch)
+    note = mismatch["note"]
+    assert "does not indicate that the authoritative data is incorrect or outdated" in note
+    assert "does not indicate that the candidate outline is the better one" in note
+    assert "expected consequence" in note
+
+
+def test_a_multipart_outline_is_measured_without_crashing() -> None:
+    """Both parts contribute their exterior ring, and a hole in one part is still bookkept."""
+    west = _rect_wgs84(-20.0, -8.0, -6.0, 8.0)
+    east = _rect_wgs84(6.0, -8.0, 20.0, 8.0)
+    west_with_void = Polygon(west.exterior, [_rect_wgs84(-15.0, -3.0, -11.0, 3.0).exterior])
+    result = agreement.compare(
+        MultiPolygon([west, east]), MultiPolygon([west_with_void, east]), _flat_crop(), CFG
+    )
+
+    assert result.failure_reason is None
+    assert result.exterior_iou == 1.0
+    assert result.hausdorff_m == pytest.approx(0.0, abs=1e-6)
+    assert result.hausdorff_full_boundary_m > 3.0
+    assert result.topology_mismatch["authoritative_interior_rings"] == 1
+    assert result.topology_mismatch["cv_interior_rings"] == 0
+    assert result.alignment_warning["flag"] is False
+
+
+def test_as_dict_publishes_every_value_the_schema_has_to_expect() -> None:
+    """The output contract, asserted key by key: the JSON Schema forbids additional properties."""
+    result = agreement.compare(
+        square_wgs84(15.0), square_wgs84(15.0, hole_m=3.0), _flat_crop(), CFG
+    )
+    published = result.as_dict()
+
+    assert set(published) == {
+        "segmenter",
+        "agreement_with_authoritative_geometry",
+        "boundary_alignment_warning",
+        "topology_mismatch",
+        "failure_reason",
+        "note",
+    }
+    assert set(published["agreement_with_authoritative_geometry"]) == {
+        "iou",
+        "exterior_iou",
+        "symmetric_difference_ratio",
+        "hausdorff_m",
+        "hausdorff_full_boundary_m",
+        "boundary_gradient_ratio",
+    }
+    assert published["topology_mismatch"]["flag"] is True
+
+    # A candidate that never existed publishes the same keys with every metric null, so the
+    # shape of the record does not depend on whether segmentation converged.
+    failed = agreement.compare(
+        None, square_wgs84(15.0), _flat_crop(), CFG, failure_reason="synthetic"
+    ).as_dict()
+    assert set(failed) == set(published)
+    assert all(
+        value is None for value in failed["agreement_with_authoritative_geometry"].values()
+    )
+    assert failed["topology_mismatch"] is None
+    assert failed["boundary_alignment_warning"] is None
+
+
+@pytest.mark.skipif(
+    usable_tile_cache() is None or not ROOF_ATTRIBUTES.is_file(),
+    reason="needs the committed tile cache and a previous run's outputs/roof_attributes.json",
+)
+def test_vie_swv_007_agreement_is_not_driven_by_its_two_light_shafts() -> None:
+    """The real case that exposed the defect, against the committed run's own polygons.
+
+    vie-swv-007 carries two interior rings of 1.21 and 0.69 m2 — both far below the segmenter's
+    4.0 m2 minimum hole area, so the candidate cannot have them. Measured over the full boundary
+    the record published 5.705 m and fired the warning; measured on the exterior rings the two
+    perimeters are 1.476 m apart and nothing about the roof is in question.
+    """
+    from propx_roofs import imaging
+
+    document = json.loads(ROOF_ATTRIBUTES.read_text(encoding="utf-8"))
+    building = next(b for b in document["buildings"] if b["building_id"] == "vie-swv-007")
+    authoritative = {
+        "type": building["authoritative_roof_polygon"]["type"],
+        "coordinates": building["authoritative_roof_polygon"]["coordinates"],
+    }
+    candidate = {
+        "type": building["cv_candidate_polygon"]["type"],
+        "coordinates": building["cv_candidate_polygon"]["coordinates"],
+    }
+    crop = imaging.build_crop(authoritative, CFG.study_area.cache_dir, CFG)
+    result = agreement.compare(candidate, authoritative, crop, CFG)
+
+    assert result.hausdorff_full_boundary_m == pytest.approx(5.705, abs=0.002)
+    assert result.hausdorff_m == pytest.approx(1.476, abs=0.002)
+    assert result.iou == pytest.approx(0.9216, abs=0.001)
+    assert result.exterior_iou == pytest.approx(0.9246, abs=0.001)
+
+    mismatch = result.topology_mismatch
+    assert mismatch["flag"] is True
+    assert mismatch["authoritative_interior_rings"] == 2
+    assert mismatch["cv_interior_rings"] == 0
+    assert mismatch["authoritative_interior_ring_areas_m2"] == [1.21, 0.69]
+    assert mismatch["cv_interior_ring_areas_m2"] == []
+    assert mismatch["crs"] == "EPSG:31256"
+
+    # Both exterior figures sit comfortably inside the unchanged thresholds.
+    assert result.hausdorff_m < WARN_HAUSDORFF_ABOVE_M
+    assert result.exterior_iou > WARN_IOU_BELOW
+    assert result.alignment_warning["flag"] is False

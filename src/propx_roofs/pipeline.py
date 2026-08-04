@@ -87,6 +87,12 @@ SUITABILITY_LABELS = {
 # OBJ_STR2_TXT is carried verbatim in source_detail so a reader can see what the other column
 # said without the pipeline inventing a precedence rule the design does not define.
 TYPOLOGY_EPOCH_FIELD = "OBJ_STR_TXT"
+# GEBAEUDETYPOGD writes this exact string when it holds no epoch for a building. It is the
+# source declining to answer, so publishing it as an authoritative VALUE would assert 0.9
+# confidence in a non-answer and a reader could mistake it for a real epoch. Treated as
+# absent (design section 5: "absent is availability not_in_source"), with the raw string kept
+# in source_detail so nothing is lost and the placeholder stays traceable.
+TYPOLOGY_NO_VALUE_PLACEHOLDER = "Keine Angabe"
 TYPOLOGY_EPOCH_SECONDARY = "OBJ_STR2_TXT"
 TYPOLOGY_TYPE_FIELD = "BAUTYP_TXT"
 
@@ -389,8 +395,19 @@ def source_names(cfg: Config) -> dict[str, str]:
     return names
 
 
-def _absent(layer: str, field: str, reason: str, source: str) -> Attribute:
-    """A value the source genuinely does not carry. Null, never zero, never inferred."""
+def _absent(
+    layer: str,
+    field: str,
+    reason: str,
+    source: str,
+    extra_source_detail: dict[str, Any] | None = None,
+) -> Attribute:
+    """A value the source genuinely does not carry. Null, never zero, never inferred.
+
+    ``extra_source_detail`` keeps the raw source content visible when the source *did* return
+    something that does not amount to a value — e.g. GEBAEUDETYPOGD's ``"Keine Angabe"``
+    placeholder. The value is absent; the bytes behind that judgement stay auditable.
+    """
     return Attribute(
         value=None,
         availability=Availability.NOT_IN_SOURCE,
@@ -404,7 +421,7 @@ def _absent(layer: str, field: str, reason: str, source: str) -> Attribute:
                 "a placeholder for zero",
             ),
         ),
-        source_detail={"layer": layer, "field": field},
+        source_detail={"layer": layer, "field": field, **(extra_source_detail or {})},
     )
 
 
@@ -420,6 +437,12 @@ def _unvalidated_candidate(obs: ImageObservation, source: str) -> Attribute:
     A detector in that state has no business emitting a Boolean at 0.75 confidence, and the
     honest repair is *not* to move the gates until this particular sample agrees — that would
     be fitting the instrument to ten eyeballed guesses and calling the result a detection.
+
+    Two gates *were* calibrated from measured pixels inside this sample before the spot check:
+    ``image.solar_panels.max_value`` from vie-swv-001 and vie-swv-003, and
+    ``solar_internal_texture_min`` across the ten. So the held-out labelled case count for this
+    attribute is zero, which is a second and independent reason to withhold the verdict:
+    nothing here has been validated against anything the calibration did not help choose.
     Design section 6.1 already prefers abstention over an unsupported confident prediction, so
     the detector is demoted to what it has actually been shown to be: a **candidate generator**.
 
@@ -462,7 +485,11 @@ def _unvalidated_candidate(obs: ImageObservation, source: str) -> Attribute:
             limitations=(
                 "no labelled ground truth exists for this attribute, so no accuracy claim of "
                 "any kind can be made",
-                "thresholds were deliberately NOT adjusted to fit the ten selected buildings",
+                "two brightness/texture gates (image.solar_panels.max_value and "
+                "solar_internal_texture_min) were calibrated from measured pixels on "
+                "vie-swv-001 and vie-swv-003 within the selected sample, so there is no "
+                "held-out labelled case for this attribute",
+                "no gate was moved after the spot check to change any building's verdict",
                 "candidate diagnostics are published for future validation, not as a finding",
             ),
         ),
@@ -852,6 +879,7 @@ def build_attributes(
         ("building_typology", TYPOLOGY_TYPE_FIELD, "building_typology"),
     ):
         raw = (typology_props or {}).get(field)
+        placeholder = raw == TYPOLOGY_NO_VALUE_PLACEHOLDER
         out[name] = (
             _authoritative(
                 raw,
@@ -885,16 +913,38 @@ def build_attributes(
                 ),
                 cfg=cfg,
             )
-            if raw is not None
+            if raw is not None and not placeholder
             else _absent(
                 typology_layer,
                 field,
                 (
                     "no GEBAEUDETYPOGD polygon overlaps this roof outline"
                     if typology_props is None
+                    else (
+                        f"the overlapping GEBAEUDETYPOGD polygon carries "
+                        f"{TYPOLOGY_NO_VALUE_PLACEHOLDER!r} in {field}, which is the source "
+                        f"declining to state a value rather than a value"
+                    )
+                    if placeholder
                     else f"the overlapping GEBAEUDETYPOGD polygon carries no {field}"
                 ),
                 typology_source,
+                {
+                    "raw_value": raw,
+                    "overlap_fraction_of_roof": round(float(typology_share), 4),
+                    "matched_by": "best_geometric_overlap",
+                    TYPOLOGY_EPOCH_SECONDARY: (typology_props or {}).get(
+                        TYPOLOGY_EPOCH_SECONDARY
+                    ),
+                    "note": (
+                        f"raw_value is preserved verbatim so the placeholder stays traceable. "
+                        f"{TYPOLOGY_EPOCH_SECONDARY} is carried for reference only and is "
+                        f"never promoted into the published value: no precedence rule is "
+                        f"invented between the two epoch columns."
+                    ),
+                }
+                if typology_props is not None
+                else None,
             )
         )
 

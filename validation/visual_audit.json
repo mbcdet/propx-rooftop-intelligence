@@ -1,0 +1,629 @@
+{
+  "review_type": "model_assisted_visual_qa",
+  "disclaimer": "Model-assisted readings of a single-epoch 15 cm RGB true-orthophoto (Vienna, flights 19/20 March, 29 March and 12 April 2024) at ~10 cm/px. These observations are NOT labelled ground truth, NOT an accuracy or performance measurement, and NOT human validation. Independent human review would be required before operational use. No published value was changed by this audit and none may be changed on the basis of it alone.",
+  "generated_at": "2026-08-04T13:01:59+00:00",
+  "audited_document": "outputs/roof_attributes.json",
+  "audited_document_sha256": "ce9e792405da36e013af3c5cfbc4d1fab48f1e2a4ffa0dc499ea43db736e34b1",
+  "baseline_commit": "c86cbf4",
+  "reviewers": {
+    "A": "visual inspection, vie-swv-001 to vie-swv-005",
+    "B": "visual inspection, vie-swv-006 to vie-swv-010",
+    "C": "methodology, honesty, schema/output consistency and RGB-supportability audit (no per-building visual reads)"
+  },
+  "n": 10,
+  "aggregate_framing": "Counts below are descriptive over 10 purposively selected buildings. They are not a performance estimate and are not generalisable. n=10 manual spot check, not a validation metric.",
+  "buildings": [
+    {
+      "building_id": "vie-swv-001",
+      "objectid": 351705,
+      "address": "10., Karl-Popper-Straße 4",
+      "reviewer": "A",
+      "authoritative_outline": {
+        "assessment": "visually_aligned",
+        "notes": "Ring follows the outer roof edge on all four sides; the 238.9 m2 courtyard void is correctly cut out. Any outward bias is <=0.5 m and not separable from a parapet/eave at this GSD."
+      },
+      "cv_candidate": {
+        "assessment": "visually_aligned",
+        "notes": "Slight inward trim on the exterior and a re-cut of the courtyard hole (east side, south bulge). Auth->CV median 0.26 m, max 0.84 m exterior.",
+        "published_iou": 0.9685,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "flat",
+        "authoritative_value": "flat",
+        "authoritative_raw": "Flachdach",
+        "verdict": "supports",
+        "notes": "Single-level deck with parapet, plant boxes and module rows; no ridge, no two differently-facing planes.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": null,
+        "footprint_axis_deg": 68.69,
+        "assessment": "visually_plausible",
+        "notes": "No ridge discernible; abstention well founded."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "plausible",
+        "notes": "Most of the visible surface is covered BY MODULES, so the classifier largely describes the panel field and the reddish perimeter band.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "visible",
+        "notes": "Unmistakable continuous grid of dark blue-grey modules in regular rows around the whole roof ring, with row self-shadowing. PV vs solar-thermal not distinguishable at this GSD.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "unclear",
+        "notes": "No green pixels (ExG>0.06 on ~0.0-0.1%). A broad reddish-brown perimeter band is equally consistent with dormant sedum or red gravel ballast.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "good",
+        "notes": "No occlusion, no missing tiles, roof interior fully lit.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "pv_suitability_area_m2 totals 1531 m2 on a 2320 m2 roof, i.e. the city model does not appear to have excluded this existing array from the potential."
+    },
+    {
+      "building_id": "vie-swv-002",
+      "objectid": 358722,
+      "address": "10., Wiedner Gürtel 5",
+      "reviewer": "A",
+      "authoritative_outline": {
+        "assessment": "questionable",
+        "notes": "Along the south-west (plaza) edge the outline sits ~0.5-1.3 m outside the apparent roof edge, with the CV candidate on the visible edge. Overhang or the documented mutual re-cut; not judgeable at 10 cm/px."
+      },
+      "cv_candidate": {
+        "assessment": "visually_aligned",
+        "notes": "Exterior auth->CV median 0.36 m, max 1.27 m. CV hole 1 ~10% larger and shifted west; hole 2 ~6% smaller.",
+        "published_iou": 0.9707,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "flat",
+        "authoritative_value": "flat",
+        "authoritative_raw": "Flachdach",
+        "verdict": "supports",
+        "notes": "Multiple wings, all flat decks with raised light-coloured wing roofs; no ridge anywhere.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": null,
+        "footprint_axis_deg": 68.71,
+        "assessment": "visually_plausible",
+        "notes": "149 lines but dominant orientation carries only 10% of line length - expected on a many-wing flat complex."
+      },
+      "surface_class": {
+        "published": "mixed",
+        "assessment": "questionable",
+        "notes": "Published 'mixed'; the 'tiled' component is a defensible colour match on warm reddish-brown pixels, but this is a modern flat roof and those same pixels are the dormant-substrate signature.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "No module grid inside the outline. The obvious array at bottom-right of the crop is vie-swv-001, outside this polygon.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "visible_candidate",
+        "notes": "Large reddish-brown surfaces across the wings consistent with dormant extensive sedum. Greenness genuinely absent (ExG>0.06 on <0.5%). CANDIDATE ONLY.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "good",
+        "notes": "No occlusion or missing data; roof interiors lit.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "boundary_gradient_ratio 1.4043 is byte-identical to vie-swv-005 at 4 dp; no shared state found in agreement.py, probably coincidence but worth one check. Pale yellow patches on the plaza read as real ground objects."
+    },
+    {
+      "building_id": "vie-swv-003",
+      "objectid": 351704,
+      "address": "10., Gertrude-Fröhlich-Sandner-Straße 3",
+      "reviewer": "A",
+      "authoritative_outline": {
+        "assessment": "visually_aligned",
+        "notes": "Simple rectangle following the roof edge on all four sides; reddish-brown gravel border strip is roof, not ground."
+      },
+      "cv_candidate": {
+        "assessment": "visually_aligned",
+        "notes": "Auth->CV median 0.44 m, max 1.32 m. Highest boundary_gradient_ratio in A's set (1.805): the CV boundary sits on markedly stronger image structure. Evidence only.",
+        "published_iou": 0.9421,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "unclear",
+        "authoritative_value": "pitched",
+        "authoritative_raw": "Schraegdach",
+        "verdict": "abstain",
+        "notes": "Reads as one plane with two flush module fields and a central plant spine; no ridge. But at SLOPE_MEAN 7.94 deg a shallow monopitch and a flat roof with fall are not separable at 10 cm/px. SOFT disagreement, not a conflict.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": null,
+        "footprint_axis_deg": 158.73,
+        "assessment": "visually_plausible",
+        "notes": "Strongest line 159.34 deg is within 0.6 deg of footprint axis 158.73 deg - almost certainly the long parapet; plane-contrast gate (12.8% vs 15%) correctly refused it."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "plausible",
+        "notes": "Low information: the majority of the visible roof is modules.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "visible",
+        "notes": "Two large unambiguous fields of blue-grey modules in regular rows (north and south).",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "no_visible_evidence",
+        "notes": "Uniform panel/gravel surface; ExG>0.06 on 0.2-1.5%.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "good",
+        "notes": "Roof interior fully lit; the large dark area east is ground shadow outside the polygon.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "Detector's raw clusters land ON the arrays (287.8 m2 accepted + 342.5 m2 rejected as not_rectangular_enough, ~630 m2 of a 1092 m2 roof) and the withheld verdict is still false."
+    },
+    {
+      "building_id": "vie-swv-004",
+      "objectid": 308209,
+      "address": "10., Sonnwendgasse 3",
+      "reviewer": "A",
+      "authoritative_outline": {
+        "assessment": "questionable",
+        "notes": "Line tracks the curved edge well (243 vertices). The issue is that this polygon has NO interior hole while 001 and 002 have theirs cut out; the enclosed inner area reads as a lower landscaped/terrace deck. Evidence favours a built-over podium (FMZK IoU 0.985, symmetric containment 0.992) but imagery cannot settle it."
+      },
+      "cv_candidate": {
+        "assessment": "visually_aligned",
+        "notes": "Tightest in A's set: median 0.27 m, max 1.00 m. CV reproduces the no-hole topology, so it adds no independent evidence on the courtyard question.",
+        "published_iou": 0.976,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "unclear",
+        "authoritative_value": "pitched",
+        "authoritative_raw": "Schraegdach",
+        "verdict": "abstain",
+        "notes": "Two large visible surfaces read flat; the light band following the curved perimeter could be a sloping perimeter roof or a sunlit parapet. SLOPE_MEAN 7.82 deg.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": null,
+        "footprint_axis_deg": 134.76,
+        "assessment": "visually_plausible",
+        "notes": "A curved organic roof has no single ridge; dominant orientation carries only 9% of line length."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "plausible",
+        "notes": "Neutral light grey, fine texture. A light membrane or paved deck would look similar; 'unclear' equally acceptable.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "No module grid. NW wing carries HVAC plant, ducting and rooflights - the classic mimics.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "unclear",
+        "notes": "Two cells inside the courtyard at R-G +12 to +18 (possible dormant planting beds); greenness essentially zero. If the inner area is a landscaped podium, dormant planting is exactly what RGB cannot see in March/April.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "good",
+        "notes": "Fully lit, no missing tiles, bare-crown street trees do not reach the roof.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "roof_area_m2 3364.35 depends on whether the inner area is roof. Cross-check evidence says yes; the imagery cannot confirm it. A ranks this first for human review."
+    },
+    {
+      "building_id": "vie-swv-005",
+      "objectid": 346520,
+      "address": "04., Wiedner Gürtel 14",
+      "reviewer": "A",
+      "authoritative_outline": {
+        "assessment": "visually_aligned",
+        "notes": "Follows the roof edge north, west and east. The south/south-east edge includes a lighter finely striped strip that the CV excludes - canopy, awning or bright membrane; that specific edge is not_judgeable."
+      },
+      "cv_candidate": {
+        "assessment": "questionable",
+        "notes": "Lowest agreement in A's set. The CV drops the southern strip, cutting a straight diagonal across the authoritative step. CV 503 m2 vs auth 547 m2 (~8% smaller). Systematic, not noise.",
+        "published_iou": 0.9099,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "flat",
+        "authoritative_value": "flat",
+        "authoritative_raw": "Flachdach",
+        "verdict": "supports",
+        "notes": "Uniform single-level pale grey deck with parapet and a row of small units along the eastern edge.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": null,
+        "footprint_axis_deg": 64.69,
+        "assessment": "visually_plausible",
+        "notes": "Only 5 lines, all co-oriented (dominant share 1.0) - the rectangular parapet. Plane-contrast could not be run on a roof this small."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "plausible",
+        "notes": "Weakest majority in A's set (57%). A light single-ply membrane and light gravel ballast are not separable here; 'unclear' acceptable.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "A darker patch on the NE is only ~10 grey levels below the deck - far too bright and unstructured for modules; reads as staining or plant.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "no_visible_evidence",
+        "notes": "Uniform grey; ExG>0.06 on 0.09%.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "good",
+        "notes": "Best-lit in A's set; adjacent structures shadow the street but not the roof interior.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "construction_epoch publishes the source placeholder string 'Keine Angabe' with availability 'authoritative'. Faithful to the source but a reader could mistake it for a real epoch."
+    },
+    {
+      "building_id": "vie-swv-006",
+      "objectid": 242275,
+      "address": "10., Gerhard-Bronner-Straße 7",
+      "reviewer": "B",
+      "authoritative_outline": {
+        "assessment": "visually_aligned",
+        "notes": "Tracks the parapet band cleanly on all four sides. OPEN QUESTION: the outline has zero interior rings yet the roof contains 3-4 dark rectangular voids (~20, ~27, ~20 m2, of order 10-12% of 597.9 m2). Open light wells or dark-glazed rooflights - unclear at this GSD."
+      },
+      "cv_candidate": {
+        "assessment": "visually_aligned",
+        "notes": "Magenta bulges ~1-1.5 m outward on the west and at the NE corner and cuts the north notch. CV 611.5 m2 vs auth 597.9 m2.",
+        "published_iou": 0.9553,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "flat",
+        "authoritative_value": "flat",
+        "authoritative_raw": "Flachdach",
+        "verdict": "supports",
+        "notes": "Large single deck with parapets, plant and rooflight strips; no second plane.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": null,
+        "footprint_axis_deg": 12.76,
+        "assessment": "visually_plausible",
+        "notes": "No ridge visible. Dominant orientation was driven by the long grey plant/rooflight spine; the 15% contrast gate (8.5% measured) correctly refused it."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "questionable",
+        "notes": "Published bitumen_gravel (85%). The dominant surface is a fine mottled WARM-toned mat in bays separated by pale paver walkways: R-B +14 to +22 vs grey plant at -13 to -16. Reddish ballast and dormant sedum are not separable here.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "No module grid anywhere inside the outline at 6x. The detector's single accepted cluster (359.6 m2, 59.6% coverage, rect_angle 12.5 deg = the footprint axis) IS the mottled substrate field. Clear false positive.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": true,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "visible_candidate",
+        "notes": "On TEXTURE AND LAYOUT, not colour: planted-looking bays bounded by a paver walkway grid and a gravel margin is a characteristic extensive-green-roof layout. Measured ExG -0.021 to -0.031 (less green than neutral). CANDIDATE ONLY.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "good",
+        "notes": "No shadow over the interior, no occlusion, no missing tiles, fully judgeable.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "The substrate-as-panel-cluster false positive and the unexcluded dark voids are the two items B wants a human to look at."
+    },
+    {
+      "building_id": "vie-swv-007",
+      "objectid": 346007,
+      "address": "04., Wiedner Gürtel 26",
+      "reviewer": "B",
+      "authoritative_outline": {
+        "assessment": "visually_aligned",
+        "notes": "Both wings tracked well; follows the eaves/gutter line of the street wing and the stepped rear elevation. Two ~1 m2 interior rings are real light shafts visible beside chimney stacks. Partial shadow from a taller neighbour on the east flank."
+      },
+      "cv_candidate": {
+        "assessment": "questionable",
+        "notes": "Exterior-ring agreement is good (max 1.48 m auth->cv, 1.043 m cv->auth (remeasured in Phase 4A)). The divergence is TOPOLOGICAL: the CV output is a simple Polygon with no holes while the authoritative geometry carries two interior rings.",
+        "published_iou": 0.9216,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "pitched",
+        "authoritative_value": "pitched",
+        "authoritative_raw": "Schraegdach",
+        "verdict": "supports",
+        "notes": "Unambiguous on both wings.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": 65.04,
+        "footprint_axis_deg": 154.81,
+        "assessment": "visually_plausible",
+        "notes": "B looked hard and could not falsify it. A bright continuous ridge line runs lower-left to upper-right on the NW wing with a dark self-shadowed NW-facing plane above and a lit pinkish-tan tiled plane below. The perpendicular-to-long-axis concern carries no weight here: the min-rotated-rectangle is 31.66 x 27.43 m, elongation 1.154 - near-square, so the long axis is essentially arbitrary."
+      },
+      "surface_class": {
+        "published": "mixed",
+        "assessment": "questionable",
+        "notes": "Published 'mixed'. B reads predominantly clay/concrete tile on both lit planes with a very large self-shadowed NW plane; the shadowed tiled plane is likely being binned into bitumen_gravel/metal. 'mixed' is defensible as a label; the shares are not three real materials.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "No module grid. One accepted 31.9 m2 cluster; three larger clusters rejected as interior_too_smooth are almost certainly the self-shadowed planes.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "no_visible_evidence",
+        "notes": "No planted surface visible.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "questionable",
+        "notes": "Good over the lit planes, but the NW-facing plane is in deep self-shadow across roughly a third of the outline and the east flank is shadowed by a taller neighbour - while the record publishes shadow_fraction 0.0 / judgeable_fraction 1.0.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": [],
+        "published_review_flags_at_audit_time": [
+          "boundary_alignment_warning"
+        ],
+        "note": "At audit time this building carried a boundary_alignment_warning review flag. Phase 4A showed that warning was measuring interior-ring topology rather than exterior-boundary misalignment; on exterior rings the two estimates are 1.476 m apart, inside the 5.0 m threshold, so the flag no longer fires and the ring-count difference is reported as topology_mismatch instead."
+      },
+      "notes": "Cleanest, most legible pitched roof in the set and the best-behaved ridge detection. See the dedicated boundary-warning assessment."
+    },
+    {
+      "building_id": "vie-swv-008",
+      "objectid": 358486,
+      "address": "04., Wiedner Gürtel 16",
+      "reviewer": "B",
+      "authoritative_outline": {
+        "assessment": "questionable",
+        "notes": "The entire ~38 m south-east long side of the outline encloses what reads as a BUILDING FACADE, not a roof: a 5-8 m wide mid-grey band containing regularly spaced window openings with visible glazing bars, frames and reveals, seen obliquely. The NW corner sits over open shadow."
+      },
+      "cv_candidate": {
+        "assessment": "questionable",
+        "notes": "CV 641.0 m2 vs auth 682.4 m2 (-6%). Magenta consistently trims the shadowed NW/N wedge and the SW pavement-side strip. Understandable as GrabCut excluding low-luminance regions; no warning fired (Hausdorff 1.69 m).",
+        "published_iou": 0.9293,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "flat",
+        "authoritative_value": "pitched",
+        "authoritative_raw": "Schraegdach",
+        "verdict": "conflicts",
+        "notes": "B's VISUAL reading is flat: a large bright near-uniform deck, skylight strips or roof monitors, a raised penthouse and substantial mechanical plant. No pair of differently-facing pitched planes covers this footprint. The authoritative value is NOT overridden and B recommends no change.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": 65.24,
+        "footprint_axis_deg": 65.0,
+        "assessment": "questionable",
+        "notes": "The detected 65.24 deg is within 0.24 deg of footprint_axis_orientation_deg 65.00. The strongest ~65 deg brightness edge is the boundary between the bright deck (mean lum ~201) and the dark facade band (~151-116) - a deck/parapet/facade boundary, not a ridge between two roof planes. Interior erosion is 1.5 m and contrast is sampled +/-1.5 m, nowhere near enough to keep a 5-8 m wide band out of the search."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "questionable",
+        "notes": "Plausible for the visible deck (light-grey membrane/ballast), but ~20% 'metal' and the whole facade band are being classified as roof surface when they are, on B's reading, a wall.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "Three clusters rejected as not_rectangular_enough are the rooftop plant and skylight/monitor strips. Agrees with the withheld false.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "no_visible_evidence",
+        "notes": "None visible.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "questionable",
+        "notes": "The deck is bright and fully readable; the NW third of the outline is open shadow (mean ~116, p05 ~73 on the overlay) yet shadow_fraction publishes 0.0.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "THE FACADE OBSERVATION IS THE MOST CONSEQUENTIAL FINDING IN THE SET. Either residual building lean (the orthophoto is not fully true-ortho at this tall building - design section 10 assumption 1, still untested) or a stepped setback whose wall face is visible in plan. Either way a near-vertical surface lies inside the roof outline, which is visually CONSISTENT WITH section 5 hypotheses 1 and 3 for why SLOPE_MEAN is 42.9 deg on a roof that looks flat. B names a consistency, not a confirmation."
+    },
+    {
+      "building_id": "vie-swv-009",
+      "objectid": 358487,
+      "address": "04., Argentinierstraße 69",
+      "reviewer": "B",
+      "authoritative_outline": {
+        "assessment": "questionable",
+        "notes": "A dumbbell: two roof blocks joined by a narrow neck over what appears to be a courtyard or low link. The western block is well tracked; on the eastern block the outline extends noticeably further east than the CV, over a strip that is dark in the imagery."
+      },
+      "cv_candidate": {
+        "assessment": "questionable",
+        "notes": "Max separation 2.44 m at the eastern edge and around the neck; the CV smooths the neck's stepped geometry into an arc. CV 463.5 m2 vs auth 454.9 m2.",
+        "published_iou": 0.8971,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "unclear",
+        "authoritative_value": "pitched",
+        "authoritative_raw": "Schraegdach",
+        "verdict": "abstain",
+        "notes": "The surface is articulated with what could be valleys and hips, but at 10 cm/px shallow multi-plane geometry and a flat roof with raised strips are not separable. The immediate neighbour to the north IS an unmistakable red-tiled pitched roof, and 009 does not look like it.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": null,
+        "footprint_axis_deg": 70.21,
+        "assessment": "not_judgeable",
+        "notes": "Only 1 of 2 segments agreed, so no ridge was published. B cannot assert a ridge either. The abstention is honest and is not evidence of a flat roof."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "plausible",
+        "notes": "Light beige/grey granular with darker seams. Worth flagging only that on a BAUJAHR 1891, 38.9 deg record one might have expected tile; tiled share is 0.08%.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "Three clusters rejected as not_rectangular_enough. Agrees with the withheld false.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": false,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "no_visible_evidence",
+        "notes": "vegetated_fraction 0.001.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "questionable",
+        "notes": "Lit roof surfaces readable; eastern and southern margins and the neck sit in shadow. No missing tiles.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "An authoritative 38.9 deg pitch with a bitumen-gravel visible surface and no detectable ridge is internally odd, but each field is individually defensible and separately reported - the design behaving correctly."
+    },
+    {
+      "building_id": "vie-swv-010",
+      "objectid": 257807,
+      "address": "04., Wiedner Gürtel 24",
+      "reviewer": "B",
+      "authoritative_outline": {
+        "assessment": "questionable",
+        "notes": "Roughly the southern 55% is a bright legible flat deck; the northern ~45% is a large dark region (shadowed rear courtyard or dark rear roof) that B cannot resolve, with a bare tree crown overhanging the NW corner. Whether the north half is roof at all is not judgeable."
+      },
+      "cv_candidate": {
+        "assessment": "visually_aligned",
+        "notes": "Best agreement in B's set in absolute terms (383.7 vs 385.0 m2; boundary_gradient_ratio 1.0165, closest to parity). Separation <=1.5 m everywhere.",
+        "published_iou": 0.9364,
+        "note": "IoU is agreement between related estimates, NOT accuracy; the CV polygon is seeded from the authoritative outline."
+      },
+      "roof_type": {
+        "visual_evidence": "unclear",
+        "authoritative_value": "pitched",
+        "authoritative_raw": "Schraegdach",
+        "verdict": "abstain",
+        "notes": "The readable southern half reads flat; the northern half is unreadable. SLOPE_MEAN 12.00 deg sits inside the 10-15 deg fallback abstain band.",
+        "note": "The authoritative value is never overridden by this audit."
+      },
+      "ridge": {
+        "detected_value_deg": 64.74,
+        "footprint_axis_deg": 170.33,
+        "assessment": "questionable",
+        "notes": "The lit deck (~180) against the dark northern region (~91) is a ~2:1 step, comfortably enough for the reported 28.6% plane contrast, and the boundary runs at roughly the reported orientation. Only 3 Hough segments, longest 10.0 m - the minimum viable configuration. Footprint axis 170.33 deg vs ridge 64.74 deg is ~74 deg apart, and here the axis IS meaningfully defined (elongation 1.672), so the perpendicularity is a genuine oddity."
+      },
+      "surface_class": {
+        "published": "bitumen_gravel",
+        "assessment": "questionable",
+        "notes": "55% is a bare majority and a large share of the outline is the unreadable dark region; 'mixed' would have been at least as defensible.",
+        "note": "Visible surface appearance only; never a claim about construction material."
+      },
+      "solar_panels": {
+        "visual_qa_label": "not_visible",
+        "notes": "NOT VISIBLE INSIDE the yellow polygon; unmistakably visible immediately OUTSIDE it to the east. B checked at 5x: a large field of blue-grey PV modules with individual module and cell grids resolved sits on the neighbouring building(s), beginning several metres east across a clear roof gap. No part of any module field lies inside the polygon. The detector's accepted cluster is only 14.3 m2 (3.7%) on the deck, so the 'true' is a small-cluster artefact, not leakage from the neighbour.",
+        "published_value": null,
+        "published_availability": "unavailable",
+        "withheld_detector_verdict": true,
+        "note": "QA evidence only. The published value is null and remains null. This is NOT ground truth."
+      },
+      "green_roof": {
+        "visual_qa_label": "no_visible_evidence",
+        "notes": "vegetated_fraction 0.0005.",
+        "published_value": false,
+        "note": "Dormant March/April vegetation and no NIR band. A visual candidate is NOT ground truth."
+      },
+      "image_quality": {
+        "assessment": "questionable",
+        "notes": "Poorest in B's set: ~45% of the outline is a dark, effectively unreadable region and a bare tree crown overhangs the NW corner - yet shadow_fraction publishes 0.0 and judgeable_fraction 1.0.",
+        "published_shadow_fraction": 0.0,
+        "published_judgeable_fraction": 1.0
+      },
+      "review_routing": {
+        "published_review_flags": []
+      },
+      "notes": "This is where the reported quality block and the visual read diverge most."
+    }
+  ],
+  "audited_document_provenance": "This sha256 is the Phase 2B baseline document the reviewers actually looked at, and is deliberately NOT updated when the pipeline is re-run. The live outputs/roof_attributes.json has since been regenerated (Phase 4A corrections, then the Phase 4B diagnostic rename), so the two hashes differ by design. The current hash is not recorded here because it changes with every regeneration and a stale copy would be worse than none; compute it with `shasum -a 256 outputs/roof_attributes.json` and read what changed in docs/phase3_visual_validation.md. Silently re-pointing this hash would claim the reviewers saw a document that did not exist when they worked.",
+  "phase4a_corrections_applied": [
+    "hausdorff_m redefined as exterior-rings-only; the all-rings value retained as hausdorff_full_boundary_m; exterior_iou and topology_mismatch added",
+    "vie-swv-007 no longer fires boundary_alignment_warning, so the sample now has zero review flags (this file records the pre-correction state and is annotated per building)",
+    "construction_epoch 'Keine Angabe' now publishes null / not_in_source with the raw value preserved in source_detail",
+    "min/p01/p05 luminance published beside shadow_fraction",
+    "algorithm_parameters_hash added beside config_hash"
+  ]
+}

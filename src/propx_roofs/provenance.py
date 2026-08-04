@@ -16,12 +16,19 @@ computes an attribute value, and nothing here can change one:
 The two review triggers are not equally exercised by the selected sample, and that is recorded
 rather than engineered around (``docs/study_area_selection.md`` sections 4 and 5):
 
-* ``authoritative_image_conflict`` has **no exemplar in the selected sample** on the evidence
-  the implemented detector actually produces. vie-swv-008 / OBJECTID 358486 was picked during
+* ``authoritative_image_conflict`` is **one-directional by construction**, which matters more
+  than whether the sample happens to exercise it. ``pipeline.image_roof_type`` returns
+  ``"pitched"`` when a ridge is detected and ``None`` otherwise — it can never return
+  ``"flat"``, because absence of a ridge is abstention, not evidence of flatness. So the only
+  reachable pairing is authoritative ``Flachdach`` + image ``pitched``. Authoritative
+  ``Schraegdach`` against a flat-looking roof **cannot** fire this flag under any detector
+  reading. It also has **no exemplar in the selected sample** on the evidence the detector
+  actually produces. vie-swv-008 / OBJECTID 358486 was picked during
   reconnaissance because a manual read of the imagery suggested a predominantly flat roof
   against ``DACHFORM = "Schraegdach"`` at ``SLOPE_MEAN = 42.92``. That remains a **manual
-  visual hypothesis**: the ridge detector reports a ridge at ~65.2 deg, which supports the
-  authoritative class rather than contradicting it, so the flag does not fire. The
+  visual hypothesis**, and it sits in the unreachable direction: 008 is ``Schraegdach``, so no
+  ridge reading could have fired the flag. (The detector separately reports a ridge at
+  ~65.2 deg, which supports the authoritative class rather than contradicting it.) The
   disagreement between manual interpretation and algorithmic evidence is itself worth
   reporting, but neither the detector nor the threshold is adjusted to force the flag on.
 * ``slope_mean_above_review_threshold`` has **no exemplar at all**: both ``SLOPE_MEAN > 60``
@@ -40,7 +47,7 @@ from datetime import date, datetime
 from typing import Any
 
 from . import __version__
-from .config import ATTRIBUTION, LICENCE, Config
+from .config import ATTRIBUTION, LICENCE, Config, algorithm_parameters_hash
 from .types import JoinEvidence
 
 # All WFS layers come from this endpoint (design section 1.1). The imagery endpoint is a WMTS
@@ -198,6 +205,8 @@ def run_block(
         "generated_at": stamp,
         "pipeline_version": pipeline_version,
         "config_hash": cfg.config_hash,
+        # Not a source-code hash: identical parameter values with changed code hash the same.
+        "algorithm_parameters_hash": algorithm_parameters_hash(),
         "study_area": {
             "name": area.name,
             "label": area.label,
@@ -269,8 +278,10 @@ def review_flags(
     Four triggers, in the order a reader should weigh them:
 
     (a) an authoritative-vs-image conflict — the better-motivated trigger, fired only when the
-        implemented evidence rule genuinely disagrees. No selected building currently produces
-        one; see the module docstring on vie-swv-008;
+        implemented evidence rule genuinely disagrees. One-directional by construction: only
+        authoritative ``Flachdach`` + image ``pitched`` can reach it, so for every
+        ``Schraegdach`` record it is structurally impossible rather than merely unexercised.
+        See the module docstring on vie-swv-008;
     (b) ``SLOPE_MEAN`` above ``roof_type.slope_review_above_deg`` — unusual for a whole-roof
         mean but not impossible, and no selected building exercises it;
     (c) an ambiguous join — the match itself is uncertain, so every attribute drawn through it
