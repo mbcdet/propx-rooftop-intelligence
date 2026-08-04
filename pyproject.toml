@@ -24,6 +24,11 @@ dev = ["pytest>=7.4", "ruff>=0.4"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# The JSON Schema is validated at runtime, so it must survive installation. Without this an
+# installed wheel imports fine and then fails at the point of writing output.
+[tool.setuptools.package-data]
+propx_roofs = ["schema/*.json"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]

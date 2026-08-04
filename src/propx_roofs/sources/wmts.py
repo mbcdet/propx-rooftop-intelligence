@@ -119,6 +119,26 @@ def tile_range(
     return col_min, row_min, col_max, row_max
 
 
+def tile_is_valid(path: Path, expected_px: int = TILE_SIZE) -> bool:
+    """True when ``path`` is a fully decodable JPEG of exactly ``expected_px`` square.
+
+    A size check alone is not enough. A truncated download leaves a non-empty file with a
+    valid header, which a "size > 0" cache test happily reuses forever. ``Image.load()``
+    forces the entropy-coded data to be decoded, so a half-written tile fails here rather
+    than surfacing later as a band of grey across a roof.
+    """
+    from PIL import Image
+
+    try:
+        if path.stat().st_size == 0:
+            return False
+        with Image.open(path) as image:
+            image.load()
+            return image.size == (expected_px, expected_px)
+    except Exception:  # noqa: BLE001 - any failure to decode means "not usable"
+        return False
+
+
 def fetch_tile(
     layer: str,
     zoom: int,
@@ -135,8 +155,13 @@ def fetch_tile(
     import requests
 
     path = cache_dir / layer / str(zoom) / str(row) / f"{col}.jpeg"
-    if path.exists() and path.stat().st_size > 0:
-        return path
+    if path.exists():
+        if tile_is_valid(path):
+            return path
+        # A corrupt tile must not be cached forever behind a size check. Removing it here is
+        # what makes a re-run a repair rather than a no-op.
+        logger.warning("cached tile %s is not decodable; refetching", path)
+        path.unlink(missing_ok=True)
     path.parent.mkdir(parents=True, exist_ok=True)
 
     url = TILE_URL_TEMPLATE.format(layer=layer, z=zoom, row=row, col=col)
@@ -153,6 +178,9 @@ def fetch_tile(
             if not response.content:
                 raise ValueError(f"Empty tile body from {url}")
             path.write_bytes(response.content)
+            if not tile_is_valid(path):
+                path.unlink(missing_ok=True)
+                raise ValueError(f"Tile from {url} did not decode as a {TILE_SIZE}px JPEG")
             time.sleep(delay)  # be a polite client of a public service
             return path
         except FileNotFoundError:

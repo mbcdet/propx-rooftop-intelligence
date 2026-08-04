@@ -1,0 +1,104 @@
+# Pipeline thresholds.
+#
+# Every value here is a DOCUMENTED HEURISTIC chosen to be conservative. None is a calibrated
+# accuracy figure, and none was tuned to make a particular building produce a particular
+# answer. Where a threshold was picked from reconnaissance evidence, the evidence is cited.
+
+crs:
+  # Every published metric value comes from this projected CRS via pyproj. The local
+  # cos(latitude) scaling used in reconnaissance is diagnostic-only and may not produce
+  # published values.
+  metric: "EPSG:31256"
+  imagery: "EPSG:3857"
+
+imagery:
+  layer: "lb2024"
+  zoom: 20
+  native_gsd_m: 0.15
+  # Crop margin around each roof outline. 12 m keeps every selected building inside the
+  # committed tile cache and gives GrabCut ~120 px of background ring at 0.0995 m/px.
+  crop_margin_m: 12.0
+
+join:
+  # FMZK is fetched for the study bbox expanded by this buffer BEFORE dissolving, so units
+  # extending outside the bbox are not truncated. Reconnaissance measured 22 of 54 matched
+  # units truncated without a buffer, which depresses IoU for reasons unrelated to the data.
+  fmzk_buffer_m: 150.0
+  min_iou: 0.50            # below this the match is flagged ambiguous
+  ambiguity_margin: 0.70   # second_best_iou / best_iou above this is flagged ambiguous
+
+roof_type:
+  # DACHFORM is the primary source. These thresholds are the documented FALLBACK, used only
+  # where no 2025 roof record exists. Reconnaissance measured the fallback disagreeing with
+  # DACHFORM on 25.9% of records in this study area, which is why it is not primary.
+  fallback_flat_below_deg: 10.0
+  fallback_pitched_above_deg: 15.0
+  # Unusual for a whole-roof mean but not impossible (steep mansard, tower, spire). Flags for
+  # visual review only; no value is rejected on this threshold alone.
+  slope_review_above_deg: 60.0
+
+confidence:
+  base:
+    authoritative: 0.95
+    derived: 0.85
+    observed: 0.80
+    inferred: 0.65
+  # Multiplicative penalties, each in [0.5, 1.0], at most three per attribute.
+  penalty:
+    source_recency: 0.95        # 2023/2025 model inputs read against 2024 imagery
+    image_conflict: 0.70        # authoritative class disagrees with image evidence
+    join_ambiguous: 0.85
+    threshold_margin_min: 0.75  # applied when a value sits near a class boundary
+    shadow_heavy: 0.70
+  # Absence of evidence is weak evidence of absence.
+  negative_detection_cap: 0.45
+  # Caps for every attribute in design §5. Incomplete coverage here means an attribute
+  # publishes uncapped, so the list must match the design table exactly.
+  positive_cap:
+    solar_panels: 0.75
+    green_roof: 0.65
+    roof_surface_class: 0.60
+    roof_type_authoritative: 0.90
+    ridge_orientation: 0.70
+    roof_area_m2: 0.85
+    roof_subtype: 0.60
+    footprint_axis_orientation_deg: 0.80
+    mean_slope_deg: 0.90
+    pv_potential_kwp: 0.90
+    pv_potential_annual_yield_kwh: 0.90
+    pv_suitability_area_m2: 0.90
+    construction_epoch: 0.95
+    building_typology: 0.95
+    year_built: 0.95
+    architect: 0.95
+    address: 0.95
+
+image:
+  # Roof interior considered too dark to judge; observations abstain rather than report false.
+  shadow_luminance_threshold: 55
+  shadow_fraction_abstain: 0.35
+  solar_panels:
+    # Dark, low-saturation, regularly spaced rectangular clusters.
+    #
+    # max_value was set a priori at 110 and MEASURED WRONG against this imagery. On the two
+    # roofs that are unambiguously module-covered at 10 cm/px (vie-swv-001 / 351705 and
+    # vie-swv-003 / 351704) the module pixels sit at mean V 113-128, with roof V p25/p50 =
+    # 127/144 on 001. At V<=110 the candidate mask captured parapet shadow instead of panels
+    # (clusters of 215 m2 and 76 m2 with internal texture 14.0/19.7 - smooth, i.e. shadow);
+    # at V<=145 the array resolves as one 933 m2 cluster with texture 34.1.
+    #
+    # This is instrument calibration against measured pixel values, not fitting to a desired
+    # answer. The control is green_roof below: it was NOT adjusted, and both of its visual
+    # candidates remain negative. Precision is protected by the internal-texture gate
+    # (module grids 27-38, shaded planes 8-22), which removed four false positives.
+    max_value: 145
+    max_saturation: 70
+    min_cluster_area_m2: 8.0
+    min_coverage_fraction: 0.03
+  green_roof:
+    # RGB-only vegetation index. There is no NIR band, and the March/April 2024 imagery has
+    # DORMANT vegetation, so sedum roofs read reddish-brown. Under-detection is expected and
+    # `unknown` is an accepted output. These are NOT tuned to make the two visual candidates
+    # come out positive.
+    exg_threshold: 0.06
+    min_coverage_fraction: 0.10

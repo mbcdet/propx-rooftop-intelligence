@@ -37,6 +37,12 @@ sources:
 
 # Purposive sample. Selected for attribute diversity, source availability and visual
 # interpretability. NOT statistically representative of Vienna's building stock.
+#
+# Every attribute below is SELECTION METADATA recorded at Phase 2, not pipeline output. The
+# pipeline reads live values from the cached source and is never seeded from this file.
+# `recon_diagnostic_area_m2` in particular was computed in the reconnaissance cos(latitude)
+# frame and is ~0.743% LOW against EPSG:31256. It is not a published area; `roof_area_m2` in
+# outputs/roof_attributes.json is, and the two are expected to differ by that offset.
 buildings:
   - building_id: "vie-swv-001"
     objectid: 351705                      # ANLAGENLEISTUNG2025OGD
@@ -48,7 +54,7 @@ buildings:
     anlagenleistung_kwp: 75
     pot_ertrag_y_kwh: [66000, 90000]
     suitability_area_m2: {SCHLECHT: 159, MITTEL: 231, GUT: 967, SEHRGUT: 174}
-    planimetric_area_m2: 2302.3
+    recon_diagnostic_area_m2: 2302.3
     n_polygons: 1
     n_interior_rings: 1
     agreement_iou_vs_fmzk_unit: 0.983
@@ -68,7 +74,7 @@ buildings:
     anlagenleistung_kwp: 166
     pot_ertrag_y_kwh: [144000, 196000]
     suitability_area_m2: {SCHLECHT: 1398, MITTEL: 607, GUT: 2129, SEHRGUT: 299}
-    planimetric_area_m2: 6235.2
+    recon_diagnostic_area_m2: 6235.2
     n_polygons: 1
     n_interior_rings: 2
     agreement_iou_vs_fmzk_unit: 0.986
@@ -88,7 +94,7 @@ buildings:
     anlagenleistung_kwp: 32
     pot_ertrag_y_kwh: [26000, 38000]
     suitability_area_m2: {SCHLECHT: 50, MITTEL: 136, GUT: 324, SEHRGUT: 0}
-    planimetric_area_m2: 1083.9
+    recon_diagnostic_area_m2: 1083.9
     n_polygons: 1
     n_interior_rings: 0
     agreement_iou_vs_fmzk_unit: 0.986
@@ -108,7 +114,7 @@ buildings:
     anlagenleistung_kwp: 105
     pot_ertrag_y_kwh: [85000, 120000]
     suitability_area_m2: {SCHLECHT: 448, MITTEL: 458, GUT: 1003, SEHRGUT: 37}
-    planimetric_area_m2: 3339.2
+    recon_diagnostic_area_m2: 3339.2
     n_polygons: 1
     n_interior_rings: 0
     agreement_iou_vs_fmzk_unit: 0.985
@@ -128,7 +134,7 @@ buildings:
     anlagenleistung_kwp: 18
     pot_ertrag_y_kwh: [15000, 22000]
     suitability_area_m2: {SCHLECHT: 85, MITTEL: 39, GUT: 276, SEHRGUT: 12}
-    planimetric_area_m2: 544.2
+    recon_diagnostic_area_m2: 544.2
     n_polygons: 1
     n_interior_rings: 0
     agreement_iou_vs_fmzk_unit: 0.966
@@ -148,7 +154,7 @@ buildings:
     anlagenleistung_kwp: 17
     pot_ertrag_y_kwh: [15000, 22000]
     suitability_area_m2: {SCHLECHT: 17, MITTEL: 26, GUT: 288, SEHRGUT: 5}
-    planimetric_area_m2: 593.4
+    recon_diagnostic_area_m2: 593.4
     n_polygons: 1
     n_interior_rings: 0
     agreement_iou_vs_fmzk_unit: 0.968
@@ -168,7 +174,7 @@ buildings:
     anlagenleistung_kwp: 25
     pot_ertrag_y_kwh: [17000, 26000]
     suitability_area_m2: {SCHLECHT: 98, MITTEL: 207, GUT: 144, SEHRGUT: 2}
-    planimetric_area_m2: 597.4
+    recon_diagnostic_area_m2: 597.4
     n_polygons: 1
     n_interior_rings: 2
     agreement_iou_vs_fmzk_unit: 0.957
@@ -188,7 +194,7 @@ buildings:
     anlagenleistung_kwp: 13
     pot_ertrag_y_kwh: [10000, 15000]
     suitability_area_m2: {SCHLECHT: 142, MITTEL: 90, GUT: 88, SEHRGUT: 11}
-    planimetric_area_m2: 677.4
+    recon_diagnostic_area_m2: 677.4
     n_polygons: 1
     n_interior_rings: 0
     agreement_iou_vs_fmzk_unit: 0.966
@@ -208,7 +214,7 @@ buildings:
     anlagenleistung_kwp: 5
     pot_ertrag_y_kwh: [3000, 6000]
     suitability_area_m2: {SCHLECHT: 30, MITTEL: 32, GUT: 35, SEHRGUT: 5}
-    planimetric_area_m2: 451.5
+    recon_diagnostic_area_m2: 451.5
     n_polygons: 1
     n_interior_rings: 0
     agreement_iou_vs_fmzk_unit: 0.953
@@ -228,7 +234,7 @@ buildings:
     anlagenleistung_kwp: 9
     pot_ertrag_y_kwh: [7000, 10000]
     suitability_area_m2: {SCHLECHT: 132, MITTEL: 37, GUT: 85, SEHRGUT: 2}
-    planimetric_area_m2: 382.1
+    recon_diagnostic_area_m2: 382.1
     n_polygons: 1
     n_interior_rings: 0
     agreement_iou_vs_fmzk_unit: 0.967

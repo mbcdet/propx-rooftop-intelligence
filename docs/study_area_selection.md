@@ -150,7 +150,7 @@ bbox with an untruncated matched unit, so no selected geometry is a query artefa
 | vie-swv-005 | 346520 | 5554877 | 544 | Flachdach | 4.3° | 18 | 0.973 | simple low-complexity flat roof, control case; **[AUTHORITATIVE]** typology present |
 | vie-swv-006 | 242275 | 5371594 | 593 | Flachdach | 3.5° | 17 | 0.972 | **[OBSERVED]** reddish/green substrate — second green-roof candidate |
 | vie-swv-007 | 346007 | 5553938 | 597 | Schraegdach | 34.8° | 25 | 0.957 | Gründerzeit tiled pitched roof with clear ridge; **[AUTHORITATIVE]** Gründerzeit typology |
-| vie-swv-008 | 358486 | 5611476 | 677 | Schraegdach | 42.9° | 13 | 0.967 | **deliberate discrepancy case** — see §5 |
+| vie-swv-008 | 358486 | 5611476 | 677 | Schraegdach | 42.9° | 13 | 0.967 | selected on a manual reading of a possible authoritative/image discrepancy; the implemented detector does **not** reproduce it — see §5 |
 | vie-swv-009 | 358487 | 5611478 | 451 | Schraegdach | 38.9° | 5 | 0.953 | articulated multi-plane roof; only 102 of 451 m² classified suitable; `BAUJAHR` 1891 |
 | vie-swv-010 | 257807 | 5398899 | 382 | Schraegdach | 12.0° | 9 | 0.972 | inside the 10–15° abstain band; bare tree overhangs the roof edge |
 
@@ -173,12 +173,26 @@ pipeline but will be exercised by no selected building. Recorded rather than eng
 > availability, and visual interpretability. They are not statistically representative of
 > Vienna's building stock.
 
-## 5. vie-swv-008 (OBJECTID 358486) — an authoritative/observed conflict, kept on purpose
+## 5. vie-swv-008 (OBJECTID 358486) — manual reading vs algorithmic evidence
 
 **[AUTHORITATIVE]** `DACHFORM = "Schraegdach"`, `SLOPE_MEAN = 42.92°`.
-**[OBSERVED]** At ~10 cm/px the roof reads as **predominantly flat**: a large light-grey
-surface carrying HVAC plant, skylight strips and a raised penthouse. No 43° plane covers this
-footprint.
+
+**[HYPOTHESIS — manual visual reading, not confirmed]** At ~10 cm/px the roof *appeared*
+predominantly flat to me during reconnaissance: a large light-grey surface carrying HVAC
+plant, skylight strips and a raised penthouse, with no 43° plane obviously covering the
+footprint. This was recorded as an observation at the time and is retained here because it is
+what drove the selection.
+
+**[OBSERVED — implemented detector]** The ridge detector built in Phase 2B **does not support
+that reading**. It reports a ridge at ≈65.2° with plane-brightness contrast 0.23, which is
+evidence *for* the authoritative `Schraegdach`. The automatic conflict flag therefore **does
+not fire** on this building.
+
+The disagreement between a human reading and the algorithm is the interesting part and is kept
+on the record rather than resolved by decree. What must not happen is retuning the detector or
+the threshold until the earlier hypothesis reappears — that would be fitting the instrument to
+a guess. Whether the manual reading or the detector is right is unresolved and needs Phase 3
+inspection.
 
 **[HYPOTHESIS]** — none of these is confirmed, and they are not mutually exclusive:
 
@@ -205,7 +219,7 @@ Under `outputs/recon/_review/` (git-ignored; regenerable):
 |---|---|
 | `sonn_selection_sheet.png` | **the review artefact** — labelled crop of each of the 10 selected roofs, outlines including courtyard holes |
 | `sonn_candidates_sheet.png` | all 29 interior candidates, for auditing what was *not* chosen |
-| `closeup_pair.png` | vie-swv-001 (PV confirmation) beside vie-swv-008 (the §5 conflict) |
+| `closeup_pair.png` | vie-swv-001 (PV confirmation) beside vie-swv-008 (the §5 manual reading the detector does not reproduce) |
 | `<area>_overlay_thumb.png`, `<area>_mosaic_thumb.png` | whole-area context for all three candidates |
 | `sonn_pv_complex.png`, `sonn_mid_blocks.png`, `sonn_south_resid.png`, `karls_dense_blocks.png`, `karls_modern_flat.png`, `see_pv_green.png` | full-resolution crops behind the §2 judgements |
 | `selection.json` | machine-readable record of the 10, as generated |
@@ -223,7 +237,12 @@ reprojected to mosaic pixels; every attribute quoted is the raw source field val
 3. **`DACHFORM` can conflict with the imagery (§5).** *Design aligned* (Amendment B4): authoritative
    value, image evidence and a conflict flag are kept separately visible, with a conflict penalty
    labelled as a heuristic. **Outstanding:** implement and test the three-field output and the
-   penalty, and confirm the flag fires on vie-swv-008.
+   penalty. The conflict mechanism is tested **synthetically**, on constructed evidence that
+   genuinely disagrees — not by requiring any particular real building to trigger it. The
+   implemented ridge detector reports a ridge on vie-swv-008 at ≈65.2°, which *supports* the
+   authoritative `Schraegdach` rather than contradicting it; §5's "appears predominantly flat"
+   remains a manual visual hypothesis and has not been confirmed by the algorithm. Neither the
+   evidence nor the threshold may be adjusted to force the flag on.
 4. **Join rule is best-IoU overlap, not boundary identity** (§3). *Design aligned* (Amendment B1/B2).
    **Outstanding implementation requirement:** buffered FMZK fetch before dissolve, best-IoU
    matching, recorded containment ratios and `second_best_iou`, ambiguity detection, and 1:1 / 1:n

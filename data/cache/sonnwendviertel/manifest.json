@@ -1,0 +1,33 @@
+{
+  "study_area": "sonnwendviertel",
+  "generated_at": "2026-08-03T23:14:55+00:00",
+  "config_hash": "04e3fbda3d850b35",
+  "licence": "CC BY 4.0",
+  "attribution": "Datenquelle: Stadt Wien - data.wien.gv.at",
+  "requests": {
+    "study_bbox_wgs84": [
+      16.376,
+      48.183,
+      16.382,
+      48.188
+    ],
+    "fmzk_requested_bbox_wgs84": [
+      16.373977961835383,
+      48.18164795932669,
+      16.384023097097593,
+      48.18935191440487
+    ],
+    "fmzk_buffer_m": 150.0,
+    "fmzk_subset": "complete buffered extent, untrimmed",
+    "imagery_layer": "lb2024",
+    "imagery_zoom": 20,
+    "crop_margin_m": 12.0,
+    "crs_metric": "EPSG:31256"
+  },
+  "counts": {
+    "pinned_buildings": 10,
+    "fmzk_parts": 2967,
+    "tiles": 118,
+    "stale_tiles_pruned": 0
+  }
+}

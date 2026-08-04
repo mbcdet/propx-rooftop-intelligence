@@ -183,7 +183,14 @@ accuracy figures**:
    (a) `best_iou` < a minimum-overlap threshold (default 0.50), or
    (b) `second_best_iou / best_iou` exceeds a margin (default 0.70) — two units compete for the same roof.
    An ambiguous match still reports its candidates; it does not silently pick one and move on.
-5. **Genuine 1:n and n:1 are preserved, never collapsed.** Reconnaissance found real 1:n cases — Seestadt
+5. **Genuine 1:n is preserved, never collapsed.** **Cardinality is always read from the `BW_GEB_ID`
+   building unit to the authoritative roof records** — one unit with one record is `1:1`, one unit with
+   several records is `1:n`, no match is `unmatched`. The orientation is published beside every value as
+   `cardinality_basis: "building_unit_to_roof_records"`, and `"n:1"` is not a permitted value, because
+   reversing the notation silently inverts the meaning of every join rather than failing. Reconnaissance
+   found real 1:n cases — the building unit is known and unambiguous; what is unresolved is that several
+   authoritative roof records describe that same unit, and collapsing them into one building value would
+   invent a figure the sources do not agree on. Seestadt
    units `5729190` (4 roof records) and `5576077` (2). Where a building genuinely maps to multiple roof
    records, the pipeline **does not average or dissolve by default**. It records
    `cardinality: "1:n"`, lists every record, and emits the attribute as `ambiguous_multiple_records` unless
@@ -268,11 +275,17 @@ isotropy — `pyproj` was not required for that. That frame is **diagnostic only
 | IoU, containment ratios, join diagnostics | local cos(lat) scaling (recon) **or** EPSG:31256 | comparison evidence only |
 | `roof_area_m2`, distances, azimuths, every published metric | **EPSG:31256 via `pyproj`, exclusively** | final output values |
 
-The local scaling is a small-angle approximation and carries ~0.1–0.3% area error over a study-area-sized
-box — negligible for a ratio, not acceptable in a published area. So the geometry module exposes the
+**Measured, not estimated:** the local scaling carries **≈0.743% area error** at this latitude — identical
+for a 30 m square and for the full study bbox. The cause is not the small-angle approximation but a wrong
+constant: `M_PER_DEG_LAT = 110574.0` is the *equatorial* meridian-arc length, where the value at 48.19° is
+≈111,200 m. Negligible for a ratio, not acceptable in a published area. So the geometry module exposes the
 projected transform as the only route to a metric value, `roof_area_m2` is computed solely from it, and a
 test asserts that a known polygon's EPSG:31256 area differs from its locally-scaled area, so the two can
 never be quietly interchanged.
+
+The same 0.743% appears as a systematic offset between `configs/study_area.yaml`'s reconnaissance
+diagnostic areas and pipeline output (e.g. vie-swv-001: 2302.3 m² diagnostic vs 2319.5 m² in EPSG:31256).
+The config field is named `recon_diagnostic_area_m2` so it cannot be mistaken for a published area.
 
 **Dependencies (approved):** `requests`, `shapely`, `pyproj`, `numpy`, `opencv-python-headless`, `Pillow`,
 `jsonschema`, `PyYAML`. No GDAL / rasterio / geopandas — the tile grid is analytic, so the mosaic transform is
@@ -477,6 +490,15 @@ The output design keeps the three things **separately visible** and never resolv
 both and the flag. Confidence is reduced when they conflict, and that reduction is labelled a heuristic
 (§6.2) — not a probability that the authoritative source is wrong.
 
+**The flag fires only when the implemented evidence rule genuinely disagrees — never to satisfy an
+expectation.** The visual reading above is a *manual hypothesis*, and the implemented ridge detector does
+not currently support it: it reports a ridge on vie-swv-008 at ≈65.2° with plane-brightness contrast 0.23,
+which is evidence *for* `Schraegdach`. On that evidence the conflict flag stays off for this building and
+the authoritative value publishes unmodified. Retuning the detector or the threshold to reproduce the
+earlier hypothesis would be fitting the instrument to a guess. The conflict mechanism is therefore tested
+**synthetically**, on constructed evidence that genuinely disagrees, so its correctness never depends on
+any particular real building behaving a particular way.
+
 The other honest limitation on `roof_type` is **epoch mismatch**: a roof rebuilt between the 2023 model
 inputs and the 2024 imagery.
 
@@ -605,6 +627,7 @@ filled review file produces byte-identical `roof_attributes.json`, and a test as
     "fmzk_crosscheck": {
       "matched_by": "best_geometric_overlap",
       "cardinality": "1:1",
+      "cardinality_basis": "building_unit_to_roof_records",
       "bw_geb_id": 5611476,
       "iou": 0.967,
       "containment_roof_in_unit": 0.983,
@@ -700,8 +723,11 @@ tests/  README.md  DATA_SOURCES.md  pyproject.toml  Makefile  Dockerfile  .gitig
    `BAUJAHR`. `GEBAEUDETYPOGD` and `GEBAEUDEINFOOGD` cover historic stock and most of the Sonnwendviertel is
    post-2010. Correct behaviour (`not_in_source`), thin result, stated in the README.
 2c. **No `requires_visual_review` slope exemplar** in the sample: both `SLOPE_MEAN > 60°` records in the study
-   bbox failed the interior/IoU filter. The §5.1 conflict flag *does* have an exemplar (vie-swv-008), which is
-   the better-motivated trigger anyway.
+   bbox failed the interior/IoU filter. **The §5.1 conflict flag has no exemplar either**, on the evidence
+   the implemented detector produces: vie-swv-008 was selected on a manual reading that the ridge detector
+   does not support (§5.1). Both review triggers are therefore tested synthetically, and no selected
+   building exercises either one. That is the honest position; forcing a real building to trigger a flag
+   would be fitting the instrument to an expectation.
 3. The CV stage contributes attributes, agreement evidence and an alignment diagnostic but never a primary
    polygon. That is the correct architecture; the README must frame it so it is not misread as the CV stage
    doing nothing.
