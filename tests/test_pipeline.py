@@ -675,3 +675,42 @@ def test_overlays_are_written_one_per_building(run_a):
 def test_every_building_names_its_overlay(document):
     for building in document["buildings"]:
         assert building["overlay"] == f"overlays/{building['building_id']}.png"
+
+
+def test_overlay_is_null_when_no_overlay_is_written(cfg, tmp_path):
+    """``--no-overlays`` must not leave the field naming a PNG that was never written.
+
+    The schema permits ``null`` here precisely so the field can say "there is no overlay"
+    rather than pointing a consumer at a path that does not resolve.
+    """
+    out = tmp_path / "no-overlays"
+    document = pipeline.run(
+        cfg, output_dir=out, generated_at=GENERATED_AT_A, write_overlays=False
+    )
+
+    assert not (out / "overlays").exists()
+    for building in document["buildings"]:
+        assert building["overlay"] is None
+
+
+def test_the_overlay_green_roof_caption_keeps_abstention_distinct_from_a_negative():
+    """``None`` must not be drawn as "not detected".
+
+    The caption used to test truthiness, so an abstention and a negative finding produced
+    identical words on the image — the one conflation the whole abstention design exists to
+    prevent. Thresholds and JSON values are not involved here; only the caption text is.
+    """
+    detected = pipeline._green_roof_caption(True)
+    absent = pipeline._green_roof_caption(False)
+    unknown = pipeline._green_roof_caption(None)
+
+    assert detected.startswith("detected")
+    assert absent.startswith("not detected")
+    assert unknown.startswith("unavailable")
+
+    # The three must be mutually distinguishable, and the abstention must not contain the
+    # word a reader would parse as a negative finding.
+    assert len({detected, absent, unknown}) == 3
+    assert "not detected" not in unknown
+    # Both real verdicts stay hedged: dormant-season RGB is weak evidence either way.
+    assert "low confidence" in detected and "low confidence" in absent

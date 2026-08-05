@@ -1,8 +1,8 @@
 {
  "run": {
-  "generated_at": "2026-08-04T17:17:35.035007+02:00",
+  "generated_at": "2026-08-06T00:20:53.740789+02:00",
   "pipeline_version": "0.1.0",
-  "config_hash": "2f7dd2a97dcd640a",
+  "config_hash": "e8305ca21106c6db",
   "algorithm_parameters_hash": "cd96abe1b9118c3f",
   "study_area": {
    "name": "sonnwendviertel",
@@ -272,7 +272,7 @@
       ],
       [
        16.37986488640308,
-       48.18634186666852
+       48.18634186666855
       ],
       [
        16.379925236105915,
@@ -333,7 +333,7 @@
      "symmetric_difference_ratio": 0.0317,
      "hausdorff_m": 0.859,
      "hausdorff_full_boundary_m": 1.541,
-     "boundary_gradient_ratio": 1.3724
+     "boundary_gradient_ratio": 1.396
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -362,9 +362,9 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5576530,
-    "iou": 0.9831357534198906,
-    "containment_roof_in_unit": 0.9914962837860946,
-    "containment_unit_in_roof": 0.9914960589710747,
+    "iou": 0.9831357533997571,
+    "containment_roof_in_unit": 0.9914962837744454,
+    "containment_unit_in_roof": 0.9914960589622466,
     "second_best_iou": null,
     "second_best_bw_geb_id": null,
     "ambiguous": false,
@@ -448,7 +448,10 @@
       "rationale": "no flat-or-pitched reading is offered from the imagery: no ridge line detected: the two sides of the strongest line could not both be sampled inside the roof interior, so no plane contrast test was possible. No orientation is reported; absence of a detected ridge is not evidence that the roof has none. Absence of a detected ridge is not evidence of a flat roof, so no image class is asserted and no conflict with the authoritative value is claimed.",
       "quality": {
        "roof_pixel_count": 234683,
-       "roof_area_m2": 2325.0,
+       "roof_mask_area_m2_approx": 2325.0,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.69,
        "no_data_fraction": 0.0,
@@ -471,7 +474,10 @@
        "dominant_pixel_angle_deg": 158.92,
        "n_supporting_lines": 18,
        "dominant_length_share": 0.5756,
-       "longest_supporting_line_m": 29.78,
+       "longest_supporting_line_m_approx": 29.78,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": null
       }
      }
@@ -673,7 +679,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 234683,
-       "roof_area_m2": 2325.0,
+       "roof_mask_area_m2_approx": 2325.0,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.69,
        "no_data_fraction": 0.0,
@@ -700,14 +709,14 @@
        "coverage_fraction": 0.0141,
        "clusters": [
         {
-         "area_m2": 21.6,
+         "area_m2_approx": 21.6,
          "rectangularity": 0.657,
          "rect_angle_deg": 68.9,
          "internal_texture": 54.2,
          "periodicity": 0.2544
         },
         {
-         "area_m2": 11.2,
+         "area_m2_approx": 11.2,
          "rectangularity": 0.696,
          "rect_angle_deg": 68.6,
          "internal_texture": 35.8,
@@ -716,15 +725,15 @@
        ],
        "rejected_clusters": [
         {
-         "area_m2": 932.8,
+         "area_m2_approx": 932.8,
          "rectangularity": 0.455,
          "rect_angle_deg": 68.1,
          "internal_texture": 34.1,
-         "periodicity": 0.5976,
+         "periodicity": 0.5975,
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 8.1,
+         "area_m2_approx": 8.1,
          "rectangularity": 0.314,
          "rect_angle_deg": 50.4,
          "internal_texture": 53.3,
@@ -732,6 +741,9 @@
          "rejected_because": "not_rectangular_enough"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": 0.3,
        "best_cluster_periodicity": 0.2544,
        "regularity_evidence": {
@@ -776,7 +788,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 73% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 234683,
-       "roof_area_m2": 2325.0,
+       "roof_mask_area_m2_approx": 2325.0,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.69,
        "no_data_fraction": 0.0,
@@ -847,7 +862,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 234683,
-       "roof_area_m2": 2325.0,
+       "roof_mask_area_m2_approx": 2325.0,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.69,
        "no_data_fraction": 0.0,
@@ -899,7 +917,10 @@
       "rationale": "no ridge line detected: the two sides of the strongest line could not both be sampled inside the roof interior, so no plane contrast test was possible. No orientation is reported; absence of a detected ridge is not evidence that the roof has none",
       "quality": {
        "roof_pixel_count": 234683,
-       "roof_area_m2": 2325.0,
+       "roof_mask_area_m2_approx": 2325.0,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.69,
        "no_data_fraction": 0.0,
@@ -922,7 +943,10 @@
        "dominant_pixel_angle_deg": 158.92,
        "n_supporting_lines": 18,
        "dominant_length_share": 0.5756,
-       "longest_supporting_line_m": 29.78,
+       "longest_supporting_line_m_approx": 29.78,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": null
       }
      }
@@ -1389,7 +1413,7 @@
       ],
       [
        16.379041448235526,
-       48.18732003336322
+       48.1873200333632
       ],
       [
        16.378926113247886,
@@ -1473,7 +1497,7 @@
       ],
       [
        16.37885101139547,
-       48.18673438735629
+       48.18673438735626
       ],
       [
        16.379104480147376,
@@ -1489,11 +1513,11 @@
       ],
       [
        16.379394158720984,
-       48.186876552421886
+       48.18687655242191
       ],
       [
        16.379573866724982,
-       48.186927517160704
+       48.186927517160726
       ],
       [
        16.37946389615537,
@@ -1523,7 +1547,7 @@
       ],
       [
        16.37828774750234,
-       48.186923046571614
+       48.18692304657159
       ],
       [
        16.37830920517446,
@@ -1547,7 +1571,7 @@
       ],
       [
        16.378310546278968,
-       48.18673706971967
+       48.18673706971965
       ],
       [
        16.37829311192037,
@@ -1559,7 +1583,7 @@
       ],
       [
        16.378254219889655,
-       48.186825587632384
+       48.186825587632406
       ],
       [
        16.378252878785148,
@@ -1571,7 +1595,7 @@
       ],
       [
        16.37823142111303,
-       48.18687476418453
+       48.1868747641845
       ],
       [
        16.378212645649924,
@@ -1644,7 +1668,7 @@
      "symmetric_difference_ratio": 0.0295,
      "hausdorff_m": 1.269,
      "hausdorff_full_boundary_m": 1.413,
-     "boundary_gradient_ratio": 1.4043
+     "boundary_gradient_ratio": 1.3851
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -1675,9 +1699,9 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5613428,
-    "iou": 0.9861228802339839,
-    "containment_roof_in_unit": 0.9930259023207764,
-    "containment_unit_in_roof": 0.9930000182613655,
+    "iou": 0.9861228802144556,
+    "containment_roof_in_unit": 0.9930259023102108,
+    "containment_unit_in_roof": 0.9930000182521288,
     "second_best_iou": null,
     "second_best_bw_geb_id": null,
     "ambiguous": false,
@@ -1761,7 +1785,10 @@
       "rationale": "no flat-or-pitched reading is offered from the imagery: no ridge line detected: the dominant orientation carries only 10% of the detected line length, below 50%: the lines disagree. No orientation is reported; absence of a detected ridge is not evidence that the roof has none. Absence of a detected ridge is not evidence of a flat roof, so no image class is asserted and no conflict with the authoritative value is claimed.",
       "quality": {
        "roof_pixel_count": 634724,
-       "roof_area_m2": 6288.1,
+       "roof_mask_area_m2_approx": 6288.1,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 144.9,
        "no_data_fraction": 0.0,
@@ -1984,7 +2011,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 634724,
-       "roof_area_m2": 6288.1,
+       "roof_mask_area_m2_approx": 6288.1,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 144.9,
        "no_data_fraction": 0.0,
@@ -2011,28 +2041,28 @@
        "coverage_fraction": 0.012,
        "clusters": [
         {
-         "area_m2": 34.1,
+         "area_m2_approx": 34.1,
          "rectangularity": 0.839,
          "rect_angle_deg": 69.0,
          "internal_texture": 28.1,
          "periodicity": 0.2054
         },
         {
-         "area_m2": 17.1,
+         "area_m2_approx": 17.1,
          "rectangularity": 0.849,
          "rect_angle_deg": 68.2,
          "internal_texture": 30.4,
          "periodicity": 0.2392
         },
         {
-         "area_m2": 15.2,
+         "area_m2_approx": 15.2,
          "rectangularity": 0.811,
          "rect_angle_deg": 68.2,
          "internal_texture": 41.6,
          "periodicity": 0.2869
         },
         {
-         "area_m2": 8.9,
+         "area_m2_approx": 8.9,
          "rectangularity": 0.827,
          "rect_angle_deg": 68.2,
          "internal_texture": 35.2,
@@ -2041,7 +2071,7 @@
        ],
        "rejected_clusters": [
         {
-         "area_m2": 1121.5,
+         "area_m2_approx": 1121.5,
          "rectangularity": 0.355,
          "rect_angle_deg": 64.7,
          "internal_texture": 12.4,
@@ -2049,7 +2079,7 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 201.6,
+         "area_m2_approx": 201.6,
          "rectangularity": 0.457,
          "rect_angle_deg": 68.7,
          "internal_texture": 12.6,
@@ -2057,7 +2087,7 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 195.2,
+         "area_m2_approx": 195.2,
          "rectangularity": 0.542,
          "rect_angle_deg": 54.9,
          "internal_texture": 20.7,
@@ -2065,7 +2095,7 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 91.6,
+         "area_m2_approx": 91.6,
          "rectangularity": 0.371,
          "rect_angle_deg": 19.1,
          "internal_texture": 17.7,
@@ -2073,7 +2103,7 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 64.4,
+         "area_m2_approx": 64.4,
          "rectangularity": 0.311,
          "rect_angle_deg": 28.6,
          "internal_texture": 29.9,
@@ -2081,6 +2111,9 @@
          "rejected_because": "not_rectangular_enough"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": 0.8,
        "best_cluster_periodicity": 0.3167,
        "regularity_evidence": {
@@ -2125,7 +2158,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: no single signature dominates: bitumen_gravel 50% and tiled 25% share the roof. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 634724,
-       "roof_area_m2": 6288.1,
+       "roof_mask_area_m2_approx": 6288.1,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 144.9,
        "no_data_fraction": 0.0,
@@ -2196,7 +2232,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 634724,
-       "roof_area_m2": 6288.1,
+       "roof_mask_area_m2_approx": 6288.1,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 144.9,
        "no_data_fraction": 0.0,
@@ -2248,7 +2287,10 @@
       "rationale": "no ridge line detected: the dominant orientation carries only 10% of the detected line length, below 50%: the lines disagree. No orientation is reported; absence of a detected ridge is not evidence that the roof has none",
       "quality": {
        "roof_pixel_count": 634724,
-       "roof_area_m2": 6288.1,
+       "roof_mask_area_m2_approx": 6288.1,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 144.9,
        "no_data_fraction": 0.0,
@@ -2585,9 +2627,9 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5576529,
-    "iou": 0.9863470218835725,
-    "containment_roof_in_unit": 0.9931502207422475,
-    "containment_unit_in_roof": 0.9931029597451908,
+    "iou": 0.9863470218881537,
+    "containment_roof_in_unit": 0.9931502207414888,
+    "containment_unit_in_roof": 0.9931029597505937,
     "second_best_iou": null,
     "second_best_bw_geb_id": null,
     "ambiguous": false,
@@ -2671,7 +2713,10 @@
       "rationale": "no flat-or-pitched reading is offered from the imagery: no ridge line detected: brightness across the strongest line differs by only 12.8%, below 15.0%: consistent with a parapet, seam or panel row rather than a ridge between two differently-facing planes. No orientation is reported; absence of a detected ridge is not evidence that the roof has none. Absence of a detected ridge is not evidence of a flat roof, so no image class is asserted and no conflict with the authoritative value is claimed.",
       "quality": {
        "roof_pixel_count": 110787,
-       "roof_area_m2": 1097.6,
+       "roof_mask_area_m2_approx": 1097.6,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.25,
        "no_data_fraction": 0.0,
@@ -2694,7 +2739,10 @@
        "dominant_pixel_angle_deg": 159.34,
        "n_supporting_lines": 21,
        "dominant_length_share": 0.658,
-       "longest_supporting_line_m": 13.4,
+       "longest_supporting_line_m_approx": 13.4,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.1283
       }
      }
@@ -2896,7 +2944,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 110787,
-       "roof_area_m2": 1097.6,
+       "roof_mask_area_m2_approx": 1097.6,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.25,
        "no_data_fraction": 0.0,
@@ -2923,7 +2974,7 @@
        "coverage_fraction": 0.2622,
        "clusters": [
         {
-         "area_m2": 287.8,
+         "area_m2_approx": 287.8,
          "rectangularity": 0.573,
          "rect_angle_deg": 70.6,
          "internal_texture": 27.3,
@@ -2932,14 +2983,17 @@
        ],
        "rejected_clusters": [
         {
-         "area_m2": 342.5,
+         "area_m2_approx": 342.5,
          "rectangularity": 0.549,
          "rect_angle_deg": 68.6,
          "internal_texture": 38.3,
-         "periodicity": 0.0835,
+         "periodicity": 0.0834,
          "rejected_because": "not_rectangular_enough"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.1331,
        "regularity_evidence": {
@@ -2984,7 +3038,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 72% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 110787,
-       "roof_area_m2": 1097.6,
+       "roof_mask_area_m2_approx": 1097.6,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.25,
        "no_data_fraction": 0.0,
@@ -3055,7 +3112,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.4% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 110787,
-       "roof_area_m2": 1097.6,
+       "roof_mask_area_m2_approx": 1097.6,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.25,
        "no_data_fraction": 0.0,
@@ -3107,7 +3167,10 @@
       "rationale": "no ridge line detected: brightness across the strongest line differs by only 12.8%, below 15.0%: consistent with a parapet, seam or panel row rather than a ridge between two differently-facing planes. No orientation is reported; absence of a detected ridge is not evidence that the roof has none",
       "quality": {
        "roof_pixel_count": 110787,
-       "roof_area_m2": 1097.6,
+       "roof_mask_area_m2_approx": 1097.6,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 129.25,
        "no_data_fraction": 0.0,
@@ -3130,7 +3193,10 @@
        "dominant_pixel_angle_deg": 159.34,
        "n_supporting_lines": 21,
        "dominant_length_share": 0.658,
-       "longest_supporting_line_m": 13.4,
+       "longest_supporting_line_m_approx": 13.4,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.1283
       }
      }
@@ -4491,9 +4557,9 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5487628,
-    "iou": 0.9848635845601265,
-    "containment_roof_in_unit": 0.992426310685531,
-    "containment_unit_in_roof": 0.9923218502447136,
+    "iou": 0.9848635845626026,
+    "containment_roof_in_unit": 0.9924263106832035,
+    "containment_unit_in_roof": 0.9923218502495543,
     "second_best_iou": null,
     "second_best_bw_geb_id": null,
     "ambiguous": false,
@@ -4577,7 +4643,10 @@
       "rationale": "no flat-or-pitched reading is offered from the imagery: no ridge line detected: the dominant orientation carries only 9% of the detected line length, below 50%: the lines disagree. No orientation is reported; absence of a detected ridge is not evidence that the roof has none. Absence of a detected ridge is not evidence of a flat roof, so no image class is asserted and no conflict with the authoritative value is claimed.",
       "quality": {
        "roof_pixel_count": 340270,
-       "roof_area_m2": 3371.4,
+       "roof_mask_area_m2_approx": 3371.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 149.49,
        "no_data_fraction": 0.0,
@@ -4800,7 +4869,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 340270,
-       "roof_area_m2": 3371.4,
+       "roof_mask_area_m2_approx": 3371.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 149.49,
        "no_data_fraction": 0.0,
@@ -4827,7 +4899,7 @@
        "coverage_fraction": 0.0027,
        "clusters": [
         {
-         "area_m2": 9.0,
+         "area_m2_approx": 9.0,
          "rectangularity": 0.663,
          "rect_angle_deg": 72.8,
          "internal_texture": 46.3,
@@ -4836,7 +4908,7 @@
        ],
        "rejected_clusters": [
         {
-         "area_m2": 490.4,
+         "area_m2_approx": 490.4,
          "rectangularity": 0.443,
          "rect_angle_deg": 21.8,
          "internal_texture": 21.8,
@@ -4844,15 +4916,15 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 197.3,
+         "area_m2_approx": 197.3,
          "rectangularity": 0.231,
          "rect_angle_deg": 2.6,
          "internal_texture": 25.2,
-         "periodicity": 0.3778,
+         "periodicity": 0.3729,
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 63.9,
+         "area_m2_approx": 63.9,
          "rectangularity": 0.176,
          "rect_angle_deg": 51.3,
          "internal_texture": 39.0,
@@ -4860,7 +4932,7 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 33.7,
+         "area_m2_approx": 33.7,
          "rectangularity": 0.456,
          "rect_angle_deg": 69.0,
          "internal_texture": 33.5,
@@ -4868,14 +4940,17 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 26.3,
+         "area_m2_approx": 26.3,
          "rectangularity": 0.286,
          "rect_angle_deg": 29.1,
          "internal_texture": 46.2,
-         "periodicity": 0.065,
+         "periodicity": 0.0647,
          "rejected_because": "not_rectangular_enough"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.0101,
        "regularity_evidence": {
@@ -4920,7 +4995,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 74% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 340270,
-       "roof_area_m2": 3371.4,
+       "roof_mask_area_m2_approx": 3371.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 149.49,
        "no_data_fraction": 0.0,
@@ -4991,7 +5069,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 340270,
-       "roof_area_m2": 3371.4,
+       "roof_mask_area_m2_approx": 3371.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 149.49,
        "no_data_fraction": 0.0,
@@ -5043,7 +5124,10 @@
       "rationale": "no ridge line detected: the dominant orientation carries only 9% of the detected line length, below 50%: the lines disagree. No orientation is reported; absence of a detected ridge is not evidence that the roof has none",
       "quality": {
        "roof_pixel_count": 340270,
-       "roof_area_m2": 3371.4,
+       "roof_mask_area_m2_approx": 3371.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 149.49,
        "no_data_fraction": 0.0,
@@ -5347,7 +5431,7 @@
       ],
       [
        16.378079876303687,
-       48.18781447432389
+       48.187814474323915
       ],
       [
        16.37792833149435,
@@ -5387,7 +5471,7 @@
       ],
       [
        16.378212645649924,
-       48.18767320596475
+       48.18767320596472
       ],
       [
        16.378211304545417,
@@ -5411,7 +5495,7 @@
       ],
       [
        16.37833602726461,
-       48.18774294608943
+       48.18774294608946
       ],
       [
        16.37835748493673,
@@ -5442,7 +5526,7 @@
      "symmetric_difference_ratio": 0.0905,
      "hausdorff_m": 1.584,
      "hausdorff_full_boundary_m": 1.584,
-     "boundary_gradient_ratio": 1.4043
+     "boundary_gradient_ratio": 1.3984
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -5467,10 +5551,10 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5554877,
-    "iou": 0.9661765324307161,
-    "containment_roof_in_unit": 0.9827970610372638,
-    "containment_unit_in_roof": 0.9827976177606625,
-    "second_best_iou": 0.0006148216519279095,
+    "iou": 0.96617653241518,
+    "containment_roof_in_unit": 0.9827970610334751,
+    "containment_unit_in_roof": 0.9827976177483765,
+    "second_best_iou": 0.0006148216578415238,
     "second_best_bw_geb_id": 5611476,
     "ambiguous": false,
     "ambiguity_reasons": [],
@@ -5553,7 +5637,10 @@
       "rationale": "no flat-or-pitched reading is offered from the imagery: no ridge line detected: the two sides of the strongest line could not both be sampled inside the roof interior, so no plane contrast test was possible. No orientation is reported; absence of a detected ridge is not evidence that the roof has none. Absence of a detected ridge is not evidence of a flat roof, so no image class is asserted and no conflict with the authoritative value is claimed.",
       "quality": {
        "roof_pixel_count": 55689,
-       "roof_area_m2": 551.7,
+       "roof_mask_area_m2_approx": 551.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 158.52,
        "no_data_fraction": 0.0,
@@ -5576,7 +5663,10 @@
        "dominant_pixel_angle_deg": 153.83,
        "n_supporting_lines": 5,
        "dominant_length_share": 1.0,
-       "longest_supporting_line_m": 16.07,
+       "longest_supporting_line_m_approx": 16.07,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": null
       }
      }
@@ -5778,7 +5868,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 55689,
-       "roof_area_m2": 551.7,
+       "roof_mask_area_m2_approx": 551.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 158.52,
        "no_data_fraction": 0.0,
@@ -5806,14 +5899,17 @@
        "clusters": [],
        "rejected_clusters": [
         {
-         "area_m2": 102.4,
+         "area_m2_approx": 102.4,
          "rectangularity": 0.31,
          "rect_angle_deg": 52.5,
          "internal_texture": 30.2,
-         "periodicity": 0.0978,
+         "periodicity": 0.0977,
          "rejected_because": "not_rectangular_enough"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.0,
        "regularity_evidence": {
@@ -5858,7 +5954,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 57% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 55689,
-       "roof_area_m2": 551.7,
+       "roof_mask_area_m2_approx": 551.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 158.52,
        "no_data_fraction": 0.0,
@@ -5929,7 +6028,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 55689,
-       "roof_area_m2": 551.7,
+       "roof_mask_area_m2_approx": 551.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 158.52,
        "no_data_fraction": 0.0,
@@ -5981,7 +6083,10 @@
       "rationale": "no ridge line detected: the two sides of the strongest line could not both be sampled inside the roof interior, so no plane contrast test was possible. No orientation is reported; absence of a detected ridge is not evidence that the roof has none",
       "quality": {
        "roof_pixel_count": 55689,
-       "roof_area_m2": 551.7,
+       "roof_mask_area_m2_approx": 551.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 158.52,
        "no_data_fraction": 0.0,
@@ -6004,7 +6109,10 @@
        "dominant_pixel_angle_deg": 153.83,
        "n_supporting_lines": 5,
        "dominant_length_share": 1.0,
-       "longest_supporting_line_m": 16.07,
+       "longest_supporting_line_m_approx": 16.07,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": null
       }
      }
@@ -6371,7 +6479,7 @@
      "symmetric_difference_ratio": 0.0462,
      "hausdorff_m": 1.604,
      "hausdorff_full_boundary_m": 1.604,
-     "boundary_gradient_ratio": 1.1589
+     "boundary_gradient_ratio": 1.1561
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -6396,9 +6504,9 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5371594,
-    "iou": 0.9675144506361445,
-    "containment_roof_in_unit": 0.9834724902023295,
-    "containment_unit_in_roof": 0.9835055934348291,
+    "iou": 0.9675144506130536,
+    "containment_roof_in_unit": 0.9834724901820067,
+    "containment_unit_in_roof": 0.9835055934312931,
     "second_best_iou": null,
     "second_best_bw_geb_id": null,
     "ambiguous": false,
@@ -6482,7 +6590,10 @@
       "rationale": "no flat-or-pitched reading is offered from the imagery: no ridge line detected: brightness across the strongest line differs by only 8.5%, below 15.0%: consistent with a parapet, seam or panel row rather than a ridge between two differently-facing planes. No orientation is reported; absence of a detected ridge is not evidence that the roof has none. Absence of a detected ridge is not evidence of a flat roof, so no image class is asserted and no conflict with the authoritative value is claimed.",
       "quality": {
        "roof_pixel_count": 60895,
-       "roof_area_m2": 603.4,
+       "roof_mask_area_m2_approx": 603.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.06,
        "no_data_fraction": 0.0,
@@ -6505,7 +6616,10 @@
        "dominant_pixel_angle_deg": 104.03,
        "n_supporting_lines": 5,
        "dominant_length_share": 0.6805,
-       "longest_supporting_line_m": 8.14,
+       "longest_supporting_line_m_approx": 8.14,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.0852
       }
      }
@@ -6707,7 +6821,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 60895,
-       "roof_area_m2": 603.4,
+       "roof_mask_area_m2_approx": 603.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.06,
        "no_data_fraction": 0.0,
@@ -6734,7 +6851,7 @@
        "coverage_fraction": 0.5961,
        "clusters": [
         {
-         "area_m2": 359.6,
+         "area_m2_approx": 359.6,
          "rectangularity": 0.644,
          "rect_angle_deg": 12.5,
          "internal_texture": 28.3,
@@ -6742,6 +6859,9 @@
         }
        ],
        "rejected_clusters": [],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.1994,
        "regularity_evidence": {
@@ -6786,7 +6906,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 85% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 60895,
-       "roof_area_m2": 603.4,
+       "roof_mask_area_m2_approx": 603.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.06,
        "no_data_fraction": 0.0,
@@ -6857,7 +6980,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 60895,
-       "roof_area_m2": 603.4,
+       "roof_mask_area_m2_approx": 603.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.06,
        "no_data_fraction": 0.0,
@@ -6909,7 +7035,10 @@
       "rationale": "no ridge line detected: brightness across the strongest line differs by only 8.5%, below 15.0%: consistent with a parapet, seam or panel row rather than a ridge between two differently-facing planes. No orientation is reported; absence of a detected ridge is not evidence that the roof has none",
       "quality": {
        "roof_pixel_count": 60895,
-       "roof_area_m2": 603.4,
+       "roof_mask_area_m2_approx": 603.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.06,
        "no_data_fraction": 0.0,
@@ -6932,7 +7061,10 @@
        "dominant_pixel_angle_deg": 104.03,
        "n_supporting_lines": 5,
        "dominant_length_share": 0.6805,
-       "longest_supporting_line_m": 8.14,
+       "longest_supporting_line_m_approx": 8.14,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.0852
       }
      }
@@ -7464,7 +7596,7 @@
       ],
       [
        16.37616209685802,
-       48.187171610733486
+       48.18717161073346
       ],
       [
        16.37618489563465,
@@ -7543,7 +7675,7 @@
      "symmetric_difference_ratio": 0.0822,
      "hausdorff_m": 1.476,
      "hausdorff_full_boundary_m": 5.705,
-     "boundary_gradient_ratio": 1.4103
+     "boundary_gradient_ratio": 1.4094
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -7571,10 +7703,10 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5553938,
-    "iou": 0.9572696924295689,
-    "containment_roof_in_unit": 0.978219136574676,
-    "containment_unit_in_roof": 0.9781176906008441,
-    "second_best_iou": 0.0006213481114256994,
+    "iou": 0.9572696924168318,
+    "containment_roof_in_unit": 0.9782191365684291,
+    "containment_unit_in_roof": 0.9781176905937916,
+    "second_best_iou": 0.0006213481103528007,
     "second_best_bw_geb_id": 5533500,
     "ambiguous": false,
     "ambiguity_reasons": [],
@@ -7657,7 +7789,10 @@
       "rationale": "a ridge line was detected at 65.04 deg, which indicates two differently-facing roof planes. 6 Hough segments agree within 12 deg and carry 100% of the detected line length; the strongest is 14.6 m long with a 28.6% brightness difference across it, consistent with a ridge between two differently-facing planes. Grid bearing in EPSG:31256",
       "quality": {
        "roof_pixel_count": 61353,
-       "roof_area_m2": 607.8,
+       "roof_mask_area_m2_approx": 607.8,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 126.79,
        "no_data_fraction": 0.0,
@@ -7680,7 +7815,10 @@
        "dominant_pixel_angle_deg": 154.57,
        "n_supporting_lines": 6,
        "dominant_length_share": 1.0,
-       "longest_supporting_line_m": 14.61,
+       "longest_supporting_line_m_approx": 14.61,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.2856,
        "crs": "EPSG:31256"
       }
@@ -7883,7 +8021,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 61353,
-       "roof_area_m2": 607.8,
+       "roof_mask_area_m2_approx": 607.8,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 126.79,
        "no_data_fraction": 0.0,
@@ -7910,7 +8051,7 @@
        "coverage_fraction": 0.0524,
        "clusters": [
         {
-         "area_m2": 31.9,
+         "area_m2_approx": 31.9,
          "rectangularity": 0.612,
          "rect_angle_deg": 52.8,
          "internal_texture": 25.2,
@@ -7919,15 +8060,15 @@
        ],
        "rejected_clusters": [
         {
-         "area_m2": 170.2,
+         "area_m2_approx": 170.2,
          "rectangularity": 0.777,
          "rect_angle_deg": 64.7,
          "internal_texture": 13.5,
-         "periodicity": 0.0814,
+         "periodicity": 0.0813,
          "rejected_because": "interior_too_smooth"
         },
         {
-         "area_m2": 102.4,
+         "area_m2_approx": 102.4,
          "rectangularity": 0.56,
          "rect_angle_deg": 74.4,
          "internal_texture": 21.1,
@@ -7935,7 +8076,7 @@
          "rejected_because": "interior_too_smooth"
         },
         {
-         "area_m2": 19.8,
+         "area_m2_approx": 19.8,
          "rectangularity": 0.595,
          "rect_angle_deg": 60.8,
          "internal_texture": 16.6,
@@ -7943,6 +8084,9 @@
          "rejected_because": "interior_too_smooth"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.0394,
        "regularity_evidence": {
@@ -7987,7 +8131,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: no single signature dominates: bitumen_gravel 41% and metal 33% share the roof. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 61353,
-       "roof_area_m2": 607.8,
+       "roof_mask_area_m2_approx": 607.8,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 126.79,
        "no_data_fraction": 0.0,
@@ -8058,7 +8205,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 61353,
-       "roof_area_m2": 607.8,
+       "roof_mask_area_m2_approx": 607.8,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 126.79,
        "no_data_fraction": 0.0,
@@ -8110,7 +8260,10 @@
       "rationale": "6 Hough segments agree within 12 deg and carry 100% of the detected line length; the strongest is 14.6 m long with a 28.6% brightness difference across it, consistent with a ridge between two differently-facing planes. Grid bearing in EPSG:31256",
       "quality": {
        "roof_pixel_count": 61353,
-       "roof_area_m2": 607.8,
+       "roof_mask_area_m2_approx": 607.8,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 126.79,
        "no_data_fraction": 0.0,
@@ -8133,7 +8286,10 @@
        "dominant_pixel_angle_deg": 154.57,
        "n_supporting_lines": 6,
        "dominant_length_share": 1.0,
-       "longest_supporting_line_m": 14.61,
+       "longest_supporting_line_m_approx": 14.61,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.2856,
        "crs": "EPSG:31256"
       }
@@ -8499,7 +8655,7 @@
       ],
       [
        16.377555504441258,
-       48.187492596482684
+       48.18749259648271
       ],
       [
        16.377625241875645,
@@ -8507,7 +8663,7 @@
       ],
       [
        16.377648040652275,
-       48.18749885523778
+       48.187498855237756
       ],
       [
        16.37794844806194,
@@ -8523,7 +8679,7 @@
       ],
       [
        16.378018185496327,
-       48.18763565355057
+       48.18763565355059
       ],
       [
        16.377987340092655,
@@ -8531,7 +8687,7 @@
       ],
       [
        16.377952471375465,
-       48.18771612297577
+       48.1877161229758
       ],
       [
        16.37795515358448,
@@ -8554,7 +8710,7 @@
      "symmetric_difference_ratio": 0.071,
      "hausdorff_m": 1.693,
      "hausdorff_full_boundary_m": 1.693,
-     "boundary_gradient_ratio": 1.4197
+     "boundary_gradient_ratio": 1.405
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -8579,10 +8735,10 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5611476,
-    "iou": 0.9660978861515659,
-    "containment_roof_in_unit": 0.98276850634164,
-    "containment_unit_in_roof": 0.9827447940835234,
-    "second_best_iou": 0.0004098092450786142,
+    "iou": 0.9660978861188713,
+    "containment_roof_in_unit": 0.9827685063208255,
+    "containment_unit_in_roof": 0.9827447940705063,
+    "second_best_iou": 0.000409809245992135,
     "second_best_bw_geb_id": 5611473,
     "ambiguous": false,
     "ambiguity_reasons": [],
@@ -8665,7 +8821,10 @@
       "rationale": "a ridge line was detected at 65.24 deg, which indicates two differently-facing roof planes. 8 Hough segments agree within 12 deg and carry 71% of the detected line length; the strongest is 17.3 m long with a 23.1% brightness difference across it, consistent with a ridge between two differently-facing planes. Grid bearing in EPSG:31256",
       "quality": {
        "roof_pixel_count": 69316,
-       "roof_area_m2": 686.7,
+       "roof_mask_area_m2_approx": 686.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 154.14,
        "no_data_fraction": 0.0,
@@ -8688,7 +8847,10 @@
        "dominant_pixel_angle_deg": 154.14,
        "n_supporting_lines": 8,
        "dominant_length_share": 0.7064,
-       "longest_supporting_line_m": 17.32,
+       "longest_supporting_line_m_approx": 17.32,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.2308,
        "crs": "EPSG:31256"
       }
@@ -8891,7 +9053,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 69316,
-       "roof_area_m2": 686.7,
+       "roof_mask_area_m2_approx": 686.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 154.14,
        "no_data_fraction": 0.0,
@@ -8919,15 +9084,15 @@
        "clusters": [],
        "rejected_clusters": [
         {
-         "area_m2": 84.1,
+         "area_m2_approx": 84.1,
          "rectangularity": 0.376,
          "rect_angle_deg": 66.0,
          "internal_texture": 28.0,
-         "periodicity": 0.3152,
+         "periodicity": 0.3154,
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 57.4,
+         "area_m2_approx": 57.4,
          "rectangularity": 0.307,
          "rect_angle_deg": 70.7,
          "internal_texture": 32.9,
@@ -8935,7 +9100,7 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 52.1,
+         "area_m2_approx": 52.1,
          "rectangularity": 0.511,
          "rect_angle_deg": 63.4,
          "internal_texture": 30.2,
@@ -8943,6 +9108,9 @@
          "rejected_because": "not_rectangular_enough"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.0,
        "regularity_evidence": {
@@ -8987,7 +9155,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 78% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 69316,
-       "roof_area_m2": 686.7,
+       "roof_mask_area_m2_approx": 686.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 154.14,
        "no_data_fraction": 0.0,
@@ -9058,7 +9229,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.0% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 69316,
-       "roof_area_m2": 686.7,
+       "roof_mask_area_m2_approx": 686.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 154.14,
        "no_data_fraction": 0.0,
@@ -9110,7 +9284,10 @@
       "rationale": "8 Hough segments agree within 12 deg and carry 71% of the detected line length; the strongest is 17.3 m long with a 23.1% brightness difference across it, consistent with a ridge between two differently-facing planes. Grid bearing in EPSG:31256",
       "quality": {
        "roof_pixel_count": 69316,
-       "roof_area_m2": 686.7,
+       "roof_mask_area_m2_approx": 686.7,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 154.14,
        "no_data_fraction": 0.0,
@@ -9133,7 +9310,10 @@
        "dominant_pixel_angle_deg": 154.14,
        "n_supporting_lines": 8,
        "dominant_length_share": 0.7064,
-       "longest_supporting_line_m": 17.32,
+       "longest_supporting_line_m_approx": 17.32,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.2308,
        "crs": "EPSG:31256"
       }
@@ -9659,7 +9839,7 @@
       ],
       [
        16.377403959631934,
-       48.18777871021913
+       48.187778710219156
       ],
       [
        16.377366408705726,
@@ -9667,7 +9847,7 @@
       ],
       [
        16.377335563302054,
-       48.18776529867345
+       48.18776529867342
       ],
       [
        16.377318128943458,
@@ -9695,11 +9875,11 @@
       ],
       [
        16.37711159884931,
-       48.18775099302081
+       48.187750993020785
       ],
       [
        16.37713305652143,
-       48.18771165245549
+       48.18771165245546
       ],
       [
        16.377139762043967,
@@ -9711,7 +9891,7 @@
       ],
       [
        16.377178654074683,
-       48.18762939481222
+       48.1876293948122
       ],
       [
        16.377200111746802,
@@ -9743,7 +9923,7 @@
       ],
       [
        16.377560868859305,
-       48.18771165245549
+       48.18771165245546
       ],
       [
        16.37760646641256,
@@ -9766,7 +9946,7 @@
      "symmetric_difference_ratio": 0.1095,
      "hausdorff_m": 2.442,
      "hausdorff_full_boundary_m": 2.442,
-     "boundary_gradient_ratio": 1.2697
+     "boundary_gradient_ratio": 1.2678
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -9791,10 +9971,10 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5611478,
-    "iou": 0.9529034357486353,
-    "containment_roof_in_unit": 0.9758975275686472,
-    "containment_unit_in_roof": 0.9758701195014282,
-    "second_best_iou": 0.00472851425377821,
+    "iou": 0.9529034357717371,
+    "containment_roof_in_unit": 0.9758975275832185,
+    "containment_unit_in_roof": 0.9758701195110869,
+    "second_best_iou": 0.0047285142449174505,
     "second_best_bw_geb_id": 5611473,
     "ambiguous": false,
     "ambiguity_reasons": [],
@@ -9877,7 +10057,10 @@
       "rationale": "no flat-or-pitched reading is offered from the imagery: no ridge line detected: only 1 of 2 segments agree within 12 deg of the dominant orientation. No orientation is reported; absence of a detected ridge is not evidence that the roof has none. Absence of a detected ridge is not evidence of a flat roof, so no image class is asserted and no conflict with the authoritative value is claimed.",
       "quality": {
        "roof_pixel_count": 46473,
-       "roof_area_m2": 460.4,
+       "roof_mask_area_m2_approx": 460.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.04,
        "no_data_fraction": 0.0,
@@ -10100,7 +10283,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 46473,
-       "roof_area_m2": 460.4,
+       "roof_mask_area_m2_approx": 460.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.04,
        "no_data_fraction": 0.0,
@@ -10128,7 +10314,7 @@
        "clusters": [],
        "rejected_clusters": [
         {
-         "area_m2": 136.0,
+         "area_m2_approx": 136.0,
          "rectangularity": 0.525,
          "rect_angle_deg": 69.4,
          "internal_texture": 32.9,
@@ -10136,15 +10322,15 @@
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 111.2,
+         "area_m2_approx": 111.2,
          "rectangularity": 0.423,
          "rect_angle_deg": 70.3,
          "internal_texture": 29.1,
-         "periodicity": 0.5322,
+         "periodicity": 0.5325,
          "rejected_because": "not_rectangular_enough"
         },
         {
-         "area_m2": 19.1,
+         "area_m2_approx": 19.1,
          "rectangularity": 0.444,
          "rect_angle_deg": 50.0,
          "internal_texture": 40.8,
@@ -10152,6 +10338,9 @@
          "rejected_because": "not_rectangular_enough"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.0,
        "regularity_evidence": {
@@ -10196,7 +10385,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 84% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 46473,
-       "roof_area_m2": 460.4,
+       "roof_mask_area_m2_approx": 460.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.04,
        "no_data_fraction": 0.0,
@@ -10267,7 +10459,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 46473,
-       "roof_area_m2": 460.4,
+       "roof_mask_area_m2_approx": 460.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.04,
        "no_data_fraction": 0.0,
@@ -10319,7 +10514,10 @@
       "rationale": "no ridge line detected: only 1 of 2 segments agree within 12 deg of the dominant orientation. No orientation is reported; absence of a detected ridge is not evidence that the roof has none",
       "quality": {
        "roof_pixel_count": 46473,
-       "roof_area_m2": 460.4,
+       "roof_mask_area_m2_approx": 460.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 134.04,
        "no_data_fraction": 0.0,
@@ -10686,7 +10884,7 @@
      "symmetric_difference_ratio": 0.0655,
      "hausdorff_m": 1.487,
      "hausdorff_full_boundary_m": 1.487,
-     "boundary_gradient_ratio": 1.0165
+     "boundary_gradient_ratio": 1.0162
     },
     "boundary_alignment_warning": {
      "flag": false,
@@ -10711,10 +10909,10 @@
     "cardinality": "1:1",
     "cardinality_basis": "building_unit_to_roof_records",
     "bw_geb_id": 5398899,
-    "iou": 0.9665831047045434,
-    "containment_roof_in_unit": 0.983060260850196,
-    "containment_unit_in_roof": 0.9829550174507012,
-    "second_best_iou": 0.0017658254894871088,
+    "iou": 0.9665831046718117,
+    "containment_roof_in_unit": 0.983060260822571,
+    "containment_unit_in_roof": 0.9829550174444707,
+    "second_best_iou": 0.0017658254894691158,
     "second_best_bw_geb_id": 5576527,
     "ambiguous": false,
     "ambiguity_reasons": [],
@@ -10797,7 +10995,10 @@
       "rationale": "a ridge line was detected at 64.74 deg, which indicates two differently-facing roof planes. 3 Hough segments agree within 12 deg and carry 100% of the detected line length; the strongest is 10.0 m long with a 28.6% brightness difference across it, consistent with a ridge between two differently-facing planes. Grid bearing in EPSG:31256",
       "quality": {
        "roof_pixel_count": 39203,
-       "roof_area_m2": 388.4,
+       "roof_mask_area_m2_approx": 388.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 135.8,
        "no_data_fraction": 0.0,
@@ -10820,7 +11021,10 @@
        "dominant_pixel_angle_deg": 154.9,
        "n_supporting_lines": 3,
        "dominant_length_share": 1.0,
-       "longest_supporting_line_m": 10.02,
+       "longest_supporting_line_m_approx": 10.02,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.2863,
        "crs": "EPSG:31256"
       }
@@ -11023,7 +11227,10 @@
       "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 39203,
-       "roof_area_m2": 388.4,
+       "roof_mask_area_m2_approx": 388.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 135.8,
        "no_data_fraction": 0.0,
@@ -11050,7 +11257,7 @@
        "coverage_fraction": 0.0369,
        "clusters": [
         {
-         "area_m2": 14.3,
+         "area_m2_approx": 14.3,
          "rectangularity": 0.863,
          "rect_angle_deg": 64.4,
          "internal_texture": 36.3,
@@ -11059,7 +11266,7 @@
        ],
        "rejected_clusters": [
         {
-         "area_m2": 190.1,
+         "area_m2_approx": 190.1,
          "rectangularity": 0.599,
          "rect_angle_deg": 87.0,
          "internal_texture": 17.1,
@@ -11067,6 +11274,9 @@
          "rejected_because": "interior_too_smooth"
         }
        ],
+       "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "cluster_area_source_crs": "EPSG:3857",
+       "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
        "cluster_angle_spread_deg": null,
        "best_cluster_periodicity": 0.2815,
        "regularity_evidence": {
@@ -11111,7 +11321,10 @@
       "rationale": "visible surface class from RGB colour and texture inside the authoritative outline: 55% of judgeable roof pixels match the bitumen_gravel signature. This describes what the surface looks like in the 2024 orthophoto and is never a claim about construction material.",
       "quality": {
        "roof_pixel_count": 39203,
-       "roof_area_m2": 388.4,
+       "roof_mask_area_m2_approx": 388.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 135.8,
        "no_data_fraction": 0.0,
@@ -11182,7 +11395,10 @@
       "rationale": "RGB vegetation index over the authoritative roof outline: ExG exceeds 0.06 on only 0.1% of roof pixels, below the 10% threshold; nothing detected; 0.0% of the roof interior measured below the configured shadow-luminance threshold (abstain above 35%), which is what the abstention gate tests. Visibly shadowed roof can still sit above that threshold, so this is absence of evidence rather than a demonstration that the roof was easy to read, and absence of evidence is weak evidence of absence. Note that dormant March/April vegetation reads reddish-brown, so this does not rule out an extensive green roof",
       "quality": {
        "roof_pixel_count": 39203,
-       "roof_area_m2": 388.4,
+       "roof_mask_area_m2_approx": 388.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 135.8,
        "no_data_fraction": 0.0,
@@ -11234,7 +11450,10 @@
       "rationale": "3 Hough segments agree within 12 deg and carry 100% of the detected line length; the strongest is 10.0 m long with a 28.6% brightness difference across it, consistent with a ridge between two differently-facing planes. Grid bearing in EPSG:31256",
       "quality": {
        "roof_pixel_count": 39203,
-       "roof_area_m2": 388.4,
+       "roof_mask_area_m2_approx": 388.4,
+       "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+       "roof_mask_area_source_crs": "EPSG:3857",
+       "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
        "shadow_fraction": 0.0,
        "mean_luminance": 135.8,
        "no_data_fraction": 0.0,
@@ -11257,7 +11476,10 @@
        "dominant_pixel_angle_deg": 154.9,
        "n_supporting_lines": 3,
        "dominant_length_share": 1.0,
-       "longest_supporting_line_m": 10.02,
+       "longest_supporting_line_m_approx": 10.02,
+       "longest_supporting_line_measurement_frame": "local_ground_scale_cos_latitude",
+       "longest_supporting_line_source_crs": "EPSG:3857",
+       "longest_supporting_line_note": "approximate ridge-segment length from the image grid, used only to gate the ridge_min_length_m threshold in the same frame; no published attribute value is derived from it",
        "plane_brightness_contrast": 0.2863,
        "crs": "EPSG:31256"
       }

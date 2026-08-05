@@ -98,10 +98,16 @@ def observe_green_roof(crop: ImageCrop, cfg: Any) -> ImageObservation:
 
 
 def observe_vegetated_fraction(crop: ImageCrop, cfg: Any) -> ImageObservation:
-    """The measured vegetated share of the roof, reported alongside ``green_roof`` (design 5).
+    """The measured vegetated share of the roof, as a standalone observation.
 
     A continuous measurement, so it is reported whatever it is — including 0.0, which is a
     measurement rather than an absence. ``None`` only when there are no roof pixels to measure.
+
+    **Not wired into the published document.** The same figure already ships as
+    ``green_roof``'s ``image_evidence.quality.vegetated_fraction`` (see :func:`_evidence`), so
+    the pipeline does not call this and no attribute is built from it. It stays because it is
+    the accessor a future consumer would want if the fraction is ever promoted to an attribute
+    of its own, and because the tests measure the fraction through it directly.
     """
     exg_min = float(threshold(cfg, "image", "green_roof", "exg_threshold"))
     quality, coverage, _ = _evidence(crop, cfg, exg_min)

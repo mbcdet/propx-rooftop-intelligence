@@ -1,6 +1,9 @@
 # Assessment brief is local project context only - never committed.
 docs/assessment/
 
+# Internal lead-review scratch. Never committed.
+outputs/_leadreview/
+
 # Reconnaissance artefacts: large mosaics and raw tile caches.
 # The chosen study area's minimal cache is committed deliberately in Phase 2.
 outputs/recon/
@@ -12,7 +15,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-.venv/
+.venv*/
 venv/
 .env
 .DS_Store

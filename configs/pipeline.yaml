@@ -11,6 +11,9 @@ crs:
   # cos(latitude) scaling used in reconnaissance is diagnostic-only and may not produce
   # published values.
   metric: "EPSG:31256"
+  # SPECIFIED, NOT IMPLEMENTED: no code reads crs.imagery. The imagery CRS is fixed by the WMTS
+  # google3857 tile matrix in sources/wmts.py, so this key documents the frame rather than
+  # setting it. Kept because deleting it would change config_hash for no behavioural reason.
   imagery: "EPSG:3857"
 
 imagery:
@@ -30,9 +33,14 @@ join:
   ambiguity_margin: 0.70   # second_best_iou / best_iou above this is flagged ambiguous
 
 roof_type:
-  # DACHFORM is the primary source. These thresholds are the documented FALLBACK, used only
-  # where no 2025 roof record exists. Reconnaissance measured the fallback disagreeing with
-  # DACHFORM on 25.9% of records in this study area, which is why it is not primary.
+  # DACHFORM is the primary source. These thresholds were the documented FALLBACK for records
+  # with no 2025 roof record. Reconnaissance measured the fallback disagreeing with DACHFORM on
+  # 25.9% of records in this study area, which is why it is not primary.
+  #
+  # SPECIFIED, NOT IMPLEMENTED: no code reads either key. Every pinned building has a 2025 roof
+  # record, so the fallback path was never built and no published roof_type comes from a slope
+  # threshold. The 10-15 deg gap between them is therefore NOT a live abstain band. Kept rather
+  # than deleted because deleting them would change config_hash for no behavioural reason.
   fallback_flat_below_deg: 10.0
   fallback_pitched_above_deg: 15.0
   # Unusual for a whole-roof mean but not impossible (steep mansard, tower, spire). Flags for
@@ -45,13 +53,19 @@ confidence:
     derived: 0.85
     observed: 0.80
     inferred: 0.65
-  # Multiplicative penalties, each in [0.5, 1.0], at most three per attribute.
+  # Multiplicative penalties, each in [0.5, 1.0], at most three per attribute. Only the three
+  # marked LIVE are ever requested by confidence.penalty(); the other two are SPECIFIED, NOT
+  # IMPLEMENTED - no code path asks for them, so they cannot reduce any published score. Kept
+  # rather than deleted because deleting them would change config_hash for no behavioural
+  # reason, and because the values are still the specification a future implementation follows.
   penalty:
-    source_recency: 0.95        # 2023/2025 model inputs read against 2024 imagery
-    image_conflict: 0.70        # authoritative class disagrees with image evidence
-    join_ambiguous: 0.85
-    threshold_margin_min: 0.75  # applied when a value sits near a class boundary
-    shadow_heavy: 0.70
+    source_recency: 0.95        # LIVE. 2023/2025 model inputs read against 2024 imagery
+    image_conflict: 0.70        # LIVE. authoritative class disagrees with image evidence
+    join_ambiguous: 0.85        # SPECIFIED, NOT IMPLEMENTED - never requested
+    threshold_margin_min: 0.75  # SPECIFIED, NOT IMPLEMENTED - never requested; was to apply
+                                # when a value sits near a class boundary
+    shadow_heavy: 0.70          # LIVE, but see docs/phase3_visual_validation.md finding 4:
+                                # no roof in this sample is shadowed enough to fire it
   # Absence of evidence is weak evidence of absence.
   negative_detection_cap: 0.45
   # Caps for every attribute in design §5. Incomplete coverage here means an attribute

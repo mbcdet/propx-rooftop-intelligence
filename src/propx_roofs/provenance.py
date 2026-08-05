@@ -10,8 +10,8 @@ computes an attribute value, and nothing here can change one:
   look, not an edit.
 * Manual review is QA only (section 7). The only manual-review helper here is
   ``manual_review_block``, which reports a status and returns a fresh dict every call. There is
-  deliberately no setter, no merge and no "apply review" function: re-running with or without a
-  filled review file must produce byte-identical output.
+  deliberately no setter, no merge and no "apply review" function. The pipeline does not read or
+  apply a manual-review file, so manual review cannot alter any published attribute or geometry.
 
 The two review triggers are not equally exercised by the selected sample, and that is recorded
 rather than engineered around (``docs/study_area_selection.md`` sections 4 and 5):

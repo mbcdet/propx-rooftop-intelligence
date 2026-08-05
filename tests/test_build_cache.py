@@ -185,7 +185,6 @@ def test_stale_tiles_are_pruned_while_required_tiles_survive(
     bystander = tile_root / "README.txt"
     bystander.write_text("not a tile")
     outside = cfg.study_area.cache_dir / "manifest.json"
-    outside_before = outside.read_bytes()
 
     assert any("zero bytes" in p for p in build_cache.verify(cfg)), "stale tile should fail"
 
@@ -197,8 +196,7 @@ def test_stale_tiles_are_pruned_while_required_tiles_survive(
     surviving = {(int(p.parent.name), int(p.stem)) for p in tile_root.glob("*/*.jpeg")}
     assert surviving == required_ids
     assert bystander.read_text() == "not a tile"
-    assert outside.read_bytes() != outside_before or True  # manifest is rewritten, not deleted
-    assert outside.exists()
+    assert outside.exists()  # the manifest is rewritten, not deleted
     assert build_cache.verify(cfg) == []
 
 

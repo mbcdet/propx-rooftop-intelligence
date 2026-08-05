@@ -71,7 +71,9 @@ and authoritative typology present.
 ## 3. Join verification — geometry, not counts
 
 Run with `python3 tools/verify_join.py`; full output in `outputs/recon/join_verification.json`
-and `outputs/recon/<area>/join_records.json`.
+and `outputs/recon/<area>/join_records.json` (git-ignored; regenerable by re-running
+`make recon` then `python3 tools/verify_join.py`, both of which need network access — neither
+file is present in a fresh clone).
 
 Method: for each 2025 roof record, find the FMZK parts that overlap it, group them by
 `BW_GEB_ID`, take the best-matching dissolved unit, and measure IoU plus both containment
@@ -112,7 +114,7 @@ unit has no roof record. Seestadt is therefore the one area where the join is *n
 
 **[OBSERVED, from geometry] The 2025 roof outline is the same building as the `BW_GEB_ID`
 dissolve, but not the same polygon.** The vertex-identity found earlier on the 2022 layer does
-**not** carry over: only 1 of 263 interior records across all three areas reaches IoU ≥ 0.99.
+**not** carry over: only 1 of 178 interior records across all three areas reaches IoU ≥ 0.99.
 Instead both containment ratios sit at a median of ~0.98 **symmetrically** — each polygon
 contains ~98% of the other. A truncation artefact would be asymmetric. So this is a small
 mutual re-cut of the outline, of order 2% of area.
@@ -141,22 +143,25 @@ non-trivial number of parts carry no identifier at all (105 of 1616 in Sonnwendv
 Ten units, all from the 29 interior candidates with IoU ≥ 0.94 — every one fully inside the
 bbox with an untruncated matched unit, so no selected geometry is a query artefact.
 
-| id | OBJECTID | BW_GEB_ID | m² | `DACHFORM` | slope | kWp | IoU | why |
+| id | OBJECTID | BW_GEB_ID | m² (recon) | `DACHFORM` | slope | kWp | FMZK IoU | why |
 |---|---|---|---|---|---|---|---|---|
-| vie-swv-001 | 351705 | 5576530 | 2302 | Flachdach | 4.8° | 75 | 0.986 | **[OBSERVED]** dense PV grid across the whole roof ring; 238 m² courtyard void correctly excluded |
+| vie-swv-001 | 351705 | 5576530 | 2302 | Flachdach | 4.8° | 75 | 0.983 | **[OBSERVED]** dense PV grid across the whole roof ring; 238 m² courtyard void correctly excluded |
 | vie-swv-002 | 358722 | 5613428 | 6235 | Flachdach | 3.7° | 166 | 0.986 | largest unit; **[OBSERVED]** reddish substrate across three wings — green-roof candidate |
 | vie-swv-003 | 351704 | 5576529 | 1084 | Schraegdach | 7.9° | 32 | 0.986 | **[OBSERVED]** near-full PV coverage; *and* a threshold-disagreement case |
-| vie-swv-004 | 308209 | 5487628 | 3339 | Schraegdach | 7.8° | 105 | 0.981 | curved organic roof; threshold rule would call this flat |
-| vie-swv-005 | 346520 | 5554877 | 544 | Flachdach | 4.3° | 18 | 0.973 | simple low-complexity flat roof, control case; **[AUTHORITATIVE]** typology present |
-| vie-swv-006 | 242275 | 5371594 | 593 | Flachdach | 3.5° | 17 | 0.972 | **[OBSERVED]** reddish/green substrate — second green-roof candidate |
+| vie-swv-004 | 308209 | 5487628 | 3339 | Schraegdach | 7.8° | 105 | 0.985 | curved organic roof; threshold rule would call this flat |
+| vie-swv-005 | 346520 | 5554877 | 544 | Flachdach | 4.3° | 18 | 0.966 | simple low-complexity flat roof, control case; **[AUTHORITATIVE]** typology present |
+| vie-swv-006 | 242275 | 5371594 | 593 | Flachdach | 3.5° | 17 | 0.968 | **[OBSERVED]** reddish/green substrate — second green-roof candidate |
 | vie-swv-007 | 346007 | 5553938 | 597 | Schraegdach | 34.8° | 25 | 0.957 | Gründerzeit tiled pitched roof with clear ridge; **[AUTHORITATIVE]** Gründerzeit typology |
-| vie-swv-008 | 358486 | 5611476 | 677 | Schraegdach | 42.9° | 13 | 0.967 | selected on a manual reading of a possible authoritative/image discrepancy; the implemented detector does **not** reproduce it — see §5 |
+| vie-swv-008 | 358486 | 5611476 | 677 | Schraegdach | 42.9° | 13 | 0.966 | selected on a manual reading of a possible authoritative/image discrepancy; the implemented detector does **not** reproduce it — see §5 |
 | vie-swv-009 | 358487 | 5611478 | 451 | Schraegdach | 38.9° | 5 | 0.953 | articulated multi-plane roof; only 102 of 451 m² classified suitable; `BAUJAHR` 1891 |
-| vie-swv-010 | 257807 | 5398899 | 382 | Schraegdach | 12.0° | 9 | 0.972 | inside the 10–15° abstain band; bare tree overhangs the roof edge |
+| vie-swv-010 | 257807 | 5398899 | 382 | Schraegdach | 12.0° | 9 | 0.967 | between the 10° and 15° slope thresholds specified for the DACHFORM fallback — **that fallback was never implemented**, so this is not a live abstain band; bare tree overhangs the roof edge |
+
+**m² (recon)** is the reconnaissance area in the local cos(latitude) frame, carried here only to show the size spread of the sample; the published area is `roof_area_m2`, computed in EPSG:31256, and runs ~0.743% higher (see `docs/phase1_design.md` §2 and `configs/study_area.yaml`). **FMZK IoU** is the authoritative-roof-record vs `BW_GEB_ID`-dissolve overlap (`fmzk_crosscheck.iou` in the output, EPSG:31256). It is not the CV-vs-authoritative agreement IoU, which is published at `delineation.agreement_with_authoritative_geometry.iou`, and neither is an accuracy figure.
 
 Spread: `DACHFORM` 4 flat / 6 pitched · `SLOPE_MEAN` 3.5°–42.9° · area 382–6235 m² (16×) ·
 capacity 5–166 kWp · IoU 0.953–0.986 · 3 with typology, 1 with `BAUJAHR` · 2 with courtyard
-interior rings · 2 threshold-disagreement cases · 1 abstain-band case.
+interior rings · 2 threshold-disagreement cases · 1 case selected for the (unimplemented)
+slope-fallback band.
 
 Deliberately **excluded**: the Hauptbahnhof mega-unit (truncated, not an ordinary building);
 OBJECTID 275649, a shadowed triangular wedge that reads as a canopy rather than a building;

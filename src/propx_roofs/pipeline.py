@@ -1,4 +1,4 @@
-"""The deterministic, offline run: cached sources in, ``roof_attributes.json`` out.
+"""The offline, cache-backed run: cached sources in, ``roof_attributes.json`` out.
 
 This module is **wiring**. Every measurement, threshold and judgement already lives in a
 module built for it, and nothing here re-implements one. What it does own is the order of the
@@ -7,9 +7,14 @@ stages and the rules that only make sense between them:
 * **The cache is verified before any building is touched** (:func:`verify_cache`, which calls
   ``tools/build_cache.verify`` rather than repeating it). A run against a cache with a
   truncated tile in it would publish agreement numbers describing our download.
-* **Published metres come from ``geometry.to_metric(..., EPSG:31256)`` only** — reached
-  through ``geometry``, ``join`` and ``segment.agreement``, none of which can return a metric
-  value any other way. The reconnaissance cos(latitude) frame is never called here.
+* **Every published attribute value in metres comes from
+  ``geometry.to_metric(..., EPSG:31256)`` only** — reached through ``geometry``, ``join`` and
+  ``segment.agreement``, none of which can return a metric value any other way, and the
+  reconnaissance cos(latitude) frame is never called here. Some *image diagnostics* under
+  ``image_evidence.quality`` are necessarily measured on the pixel grid instead
+  (``roof_mask_area_m2_approx``, solar ``clusters[].area_m2_approx``,
+  ``longest_supporting_line_m_approx``). Each carries an ``_approx`` suffix and a
+  ``measurement_frame`` / ``source_crs`` / ``note`` triple, and none feeds a published value.
 * **The authoritative outline is always primary.** ``cv_candidate_polygon`` is written to its
   own field, and there is no branch anywhere below in which a CV polygon becomes
   ``authoritative_roof_polygon``. A segmentation failure sets that field to ``null`` and
@@ -152,7 +157,8 @@ def require_verified_cache(cfg: Config) -> None:
         raise PipelineError(
             "cache verification failed, so no building was processed:\n  "
             + "\n  ".join(problems)
-            + "\nRebuild it with `python3 tools/build_cache.py` (the only network step)."
+            + "\nRebuild it with `python3 tools/build_cache.py`, which fetches from the live "
+            "services. The pipeline itself never does."
         )
     logger.info("cache verified: %s", cfg.study_area.cache_dir)
 
@@ -295,7 +301,10 @@ def observe(crop: ImageCrop, record: RoofRecord, cfg: Config) -> dict[str, Image
         "roof_surface_class": surface.observe_surface_class(crop, cfg),
         "solar_panels": solar.observe_solar_panels(crop, cfg),
         "green_roof": vegetation.observe_green_roof(crop, cfg),
-        "vegetated_fraction": vegetation.observe_vegetated_fraction(crop, cfg),
+        # No standalone vegetated_fraction observation: the measurement is already published as
+        # green_roof's image_evidence.quality.vegetated_fraction, and calling
+        # vegetation.observe_vegetated_fraction here only ran the shared index pass a second
+        # time per building to produce a value nothing below reads.
         "ridge_orientation_deg": ridge,
         "footprint_axis_orientation_deg": axis,
     }
@@ -368,8 +377,11 @@ def _contained_point(
     """The building-info point inside the roof outline. Containment is exact for a point.
 
     Several points inside one outline would mean several addressed buildings under one roof
-    record; the lowest ``OBJECTID`` is taken and the count is reported by the caller, rather
-    than merging attributes from two buildings into one.
+    record; the lowest ``OBJECTID`` is taken rather than merging attributes from two buildings
+    into one. The count is **not** reported anywhere — no caller surfaces it, and on this sample
+    every roof outline contains at most one point, so a multi-point record has never been
+    produced. Publishing the count would need a schema field and a reviewer-facing meaning for
+    it, which is out of scope here.
     """
     roof = geometry.as_shapely(roof_geom_wgs84)
     inside = [
@@ -1004,8 +1016,13 @@ def build_building(
     info_features: list[dict[str, Any]],
     fmzk_ids: dict[int, list[int]],
     sources: dict[str, str],
+    write_overlays: bool = True,
 ) -> tuple[dict[str, Any], ImageCrop, CvDelineation]:
-    """One published building record, plus the crop and delineation the overlay needs."""
+    """One published building record, plus the crop and delineation the overlay needs.
+
+    ``write_overlays`` is threaded in only so that ``overlay`` names a file that exists. Under
+    ``--no-overlays`` no PNG is written, so the field is ``null`` rather than a dangling path.
+    """
     crs = str(cfg.threshold("crs", "metric"))
     _, metric = geometry.to_metric(record.geometry, crs)
 
@@ -1063,7 +1080,7 @@ def build_building(
             join=evidence,
             boundary_alignment_warning=delineation.get("boundary_alignment_warning"),
         ),
-        "overlay": f"overlays/{building_id}.png",
+        "overlay": f"overlays/{building_id}.png" if write_overlays else None,
     }
     return building, crop, cv
 
@@ -1133,6 +1150,20 @@ def _label(canvas: np.ndarray, lines: list[str], legend: list[tuple[str, Any]]) 
     return np.vstack([canvas, panel])
 
 
+def _green_roof_caption(green_roof: bool | None) -> str:
+    """Three states, not two. ``None`` is an abstention and must not read as a negative.
+
+    The previous caption tested truthiness, which collapsed ``None`` into "not detected" — the
+    exact conflation the abstention design exists to prevent. The JSON value and every threshold
+    are untouched; this only controls the words drawn on the overlay.
+    """
+    if green_roof is None:
+        return "unavailable / unclear (no usable RGB evidence)"
+    if green_roof:
+        return "detected (low confidence, dormant season)"
+    return "not detected (low confidence, dormant season)"
+
+
 def render_overlay(
     building: dict[str, Any], crop: ImageCrop, cv_result: CvDelineation
 ) -> np.ndarray:
@@ -1166,7 +1197,11 @@ def render_overlay(
         f"  slope {value('mean_slope_deg')} deg"
         f"  area {value('roof_area_m2')} m2 (EPSG:31256, planimetric)",
         f"{agree}  |  agreement between related estimates, not accuracy",
-        f"surface {value('roof_surface_class')}  green_roof {value('green_roof')}"
+        # The JSON value and every threshold are unchanged; only the caption is. An unqualified
+        # "green_roof False" on a dormant-season image reads as a finding, which is exactly what
+        # design section 5.2 says it is not.
+        f"surface {value('roof_surface_class')}"
+        f"  green-roof RGB evidence: {_green_roof_caption(value('green_roof'))}"
         f"  ridge {value('ridge_orientation_deg')}",
         "solar_panels: WITHHELD - detector unvalidated, no Boolean published",
         "Datenquelle: Stadt Wien - data.wien.gv.at (CC BY 4.0)",
@@ -1224,10 +1259,15 @@ def run(
 ) -> dict[str, Any]:
     """Run the whole pipeline offline and return the validated output document.
 
-    ``generated_at`` is the only non-deterministic input, and it is a parameter so that two
-    runs can be compared byte for byte. When ``output_dir`` is given, the validated document
-    and the per-building overlays are written there — **after** validation, so a failing run
-    never leaves a document behind that looks like a result.
+    ``generated_at`` is the only **intentionally variable** field in the document, and it is a
+    parameter so that it can be pinned and two runs compared byte for byte. Pinning it does not
+    make the comparison a reproducibility guarantee: source code, dependency binaries, the
+    interpreter/runtime and the numerical libraries underneath (GEOS, OpenCV, NumPy) can all
+    still affect byte-level output, and none of them is captured by the run fingerprints.
+
+    When ``output_dir`` is given, the validated document and the per-building overlays are
+    written there — **after** validation, so a failing run never leaves a document behind that
+    looks like a result.
     """
     cfg = cfg or load_config()
     require_verified_cache(cfg)
@@ -1253,6 +1293,7 @@ def run(
             info_features=info_features,
             fmzk_ids=fmzk_ids,
             sources=sources,
+            write_overlays=write_overlays,
         )
         buildings.append(building)
         if write_overlays:
@@ -1299,5 +1340,10 @@ def write_outputs(
         overlay_dir = output_dir / "overlays"
         overlay_dir.mkdir(parents=True, exist_ok=True)
         for building_id, image in overlays.items():
-            cv2.imwrite(str(overlay_dir / f"{building_id}.png"), image)
+            overlay_path = overlay_dir / f"{building_id}.png"
+            # cv2.imwrite returns False on failure rather than raising, so an unwritable path or
+            # a full disk would otherwise leave the CLI exiting 0 with overlays missing - the
+            # exact "green run, invalid output" case the exit-code contract exists to prevent.
+            if not cv2.imwrite(str(overlay_path), image):
+                raise PipelineError(f"failed to write overlay {overlay_path}")
     return path

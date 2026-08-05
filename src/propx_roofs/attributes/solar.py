@@ -158,7 +158,10 @@ def observe_solar_panels(crop: ImageCrop, cfg: Any) -> ImageObservation:
         rectangularity = float(area_px / rect_area) if rect_area > 0 else 0.0
         interior_texture = float(texture[selected].mean())
         record = {
-            "area_m2": round(area_px * pixel_m2, 1),
+            # Approximate: the pixel-grid frame, not EPSG:31256. Suffixed and labelled the way
+            # imaging.roof_mask_area_m2_approx is, so a cluster area is never read as a published
+            # metric value. See cluster_area_measurement_frame below.
+            "area_m2_approx": round(area_px * pixel_m2, 1),
             "rectangularity": round(rectangularity, 3),
             "rect_angle_deg": round(float(angle) % 90.0, 1),
             "internal_texture": round(interior_texture, 1),
@@ -183,8 +186,16 @@ def observe_solar_panels(crop: ImageCrop, cfg: Any) -> ImageObservation:
         {
             "n_clusters": len(clusters),
             "coverage_fraction": round(coverage, 4),
-            "clusters": sorted(clusters, key=lambda c: -c["area_m2"])[:5],
-            "rejected_clusters": sorted(rejected, key=lambda c: -c["area_m2"])[:5],
+            "clusters": sorted(clusters, key=lambda c: -c["area_m2_approx"])[:5],
+            "rejected_clusters": sorted(rejected, key=lambda c: -c["area_m2_approx"])[:5],
+            "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+            "cluster_area_source_crs": "EPSG:3857",
+            "cluster_area_note": (
+                "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image "
+                "pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No "
+                "published attribute value is derived from them; attributes.roof_area_m2 is the "
+                "only published area and is computed in EPSG:31256"
+            ),
             "cluster_angle_spread_deg": None if spread is None else round(spread, 1),
             "best_cluster_periodicity": round(best_periodicity, 4),
         }

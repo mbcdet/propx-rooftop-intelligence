@@ -363,7 +363,21 @@ def shadow_stats(crop: ImageCrop, cfg: Any) -> dict[str, Any]:
     n_data = int(with_data.sum())
     return {
         "roof_pixel_count": n,
-        "roof_area_m2": round(n * pixel_area_m2(crop), 1),
+        # NOT the published area. This counts raster-mask pixels and scales them by the local
+        # cos(latitude) ground approximation. It differs from attributes.roof_area_m2 (projected
+        # into EPSG:31256) for two independent reasons -- rasterising a polygon onto a pixel grid,
+        # and the approximate measurement frame -- and the two effects are not separated here, so
+        # no bound on the difference is asserted. Named and labelled explicitly because the two
+        # were previously both called "roof_area_m2" and could be mistaken for each other.
+        "roof_mask_area_m2_approx": round(n * pixel_area_m2(crop), 1),
+        "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+        "roof_mask_area_source_crs": "EPSG:3857",
+        "roof_mask_area_note": (
+            "approximate raster-mask diagnostic from the image grid, not the published "
+            "authoritative area; attributes.roof_area_m2 is the published figure and is computed "
+            "in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and "
+            "because of the approximate local ground-scale measurement frame"
+        ),
         "shadow_fraction": round(float((grey[mask] < limit).mean()), 4),
         "mean_luminance": round(float(grey[with_data].mean()), 2) if n_data else None,
         "no_data_fraction": round(float(no_data.sum() / n), 4),

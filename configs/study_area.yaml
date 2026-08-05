@@ -242,4 +242,4 @@ buildings:
     building_typology: "W4.1.-soz.u.gemeinn.Wohnb.-Baulückenbebauungen"
     baujahr: null
     visual_class: "abstain-band"
-    selection_reason: "12.0 deg - inside the 10-15 deg abstain band of the fallback rule. Bare tree overhangs the roof edge: occlusion test case."
+    selection_reason: "12.0 deg - selected at Phase 2 as sitting between the 10 and 15 deg slope thresholds specified for the DACHFORM fallback. That fallback was never implemented (see configs/pipeline.yaml roof_type), and this building has a 2025 roof record, so its published roof_type comes from DACHFORM and no abstain band applies to it. Bare tree overhangs the roof edge: occlusion test case."

@@ -3,14 +3,38 @@
     python3 -m propx_roofs.cli cache-verify   # is the committed cache fit to run?
     python3 -m propx_roofs.cli run            # the full pipeline, no network
 
-Neither subcommand can reach the network: the only fetch path in the repository is
-``tools/build_cache.py``, and nothing here imports it except through
-``pipeline.verify_cache``, which calls the verifier and never the fetcher.
+Neither subcommand can reach the network. The repository's two fetching entry points both live
+under ``tools/`` — ``build_cache.py`` (builds the committed cache) and ``recon.py`` (optional
+multi-area reconnaissance). Nothing in this package imports either, except
+``pipeline.verify_cache``, which calls ``build_cache``'s verifier and never its fetcher.
 
 Exit codes are the contract with ``make`` and with CI: **0 only when a validated document was
 written.** A schema violation, a missing pinned record or a failed cache check all exit
 non-zero and print no success line, because a green run that produced an invalid file is worse
 than a red one.
+
+Every run stamps two hashes into ``run`` — ``run.config_hash`` and
+``run.algorithm_parameters_hash``. They answer different questions and are deliberately not
+combined:
+
+``config_hash``
+    sha256 of ``configs/study_area.yaml`` + ``configs/pipeline.yaml``. Answers *were the same
+    inputs and the same tunable thresholds used?* It moves when a building is pinned or
+    unpinned, or when a YAML threshold is edited.
+
+``algorithm_parameters_hash``
+    Fingerprint of the tracked values in ``SEGMENT_PARAMS`` and ``ATTRIBUTE_PARAMS``. Answers
+    *were the same tracked in-code algorithm parameter values used?* It moves when one of those
+    constants is edited in Python — which ``config_hash`` cannot see, because no YAML changed.
+
+    It is **not** a fingerprint of the source code, the dependencies or the runtime. Editing
+    algorithm *logic*, upgrading OpenCV or NumPy, or changing Python version all leave it
+    untouched.
+
+Matching both hashes is **necessary but not sufficient** for bitwise reproduction: two runs can
+agree on both and still differ, because the code, the installed libraries or the interpreter
+differ. Neither is a version number; they detect parameter drift, they do not order it and they
+do not certify a reproduction.
 """
 
 from __future__ import annotations
@@ -60,7 +84,10 @@ def _parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--generated-at",
         default=None,
-        help="fix run.generated_at; two runs with the same value are byte-identical",
+        help=(
+            "fix run.generated_at for reproduction checks; code, dependencies and runtime may "
+            "still cause differences"
+        ),
     )
     return parser
 
@@ -118,6 +145,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     if not args.no_overlays:
         print(f"wrote {len(document['buildings'])} overlay(s) to {output_dir / 'overlays'}")
+    # Printed rather than buried in the JSON: these are what a reviewer compares between two
+    # runs, and the module docstring explains why one hash is not enough.
+    repro = document["run"]
+    print(
+        f"config_hash {repro['config_hash']} "
+        f"(inputs + YAML thresholds)  "
+        f"algorithm_parameters_hash {repro['algorithm_parameters_hash']} "
+        f"(tracked in-code algorithm parameter values); matching both is necessary but not "
+        f"sufficient for bitwise reproduction - code, dependencies and runtime are not hashed"
+    )
     return 0
 
 

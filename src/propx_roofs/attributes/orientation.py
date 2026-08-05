@@ -252,7 +252,16 @@ def observe_ridge_orientation(crop: ImageCrop, cfg: Any) -> ImageObservation:
     best = lines[supporting][order[0]]
     # Ground metres via the same conversion every metre threshold in the package uses.
     best_length_m = float(lengths[supporting][order[0]]) * ground_pixel_size_m(crop)
-    quality["longest_supporting_line_m"] = round(best_length_m, 2)
+    # Approximate: measured on the image pixel grid, not in EPSG:31256. Suffixed and labelled the
+    # way imaging.roof_mask_area_m2_approx is, so it is never read as a published metric value.
+    quality["longest_supporting_line_m_approx"] = round(best_length_m, 2)
+    quality["longest_supporting_line_measurement_frame"] = "local_ground_scale_cos_latitude"
+    quality["longest_supporting_line_source_crs"] = "EPSG:3857"
+    quality["longest_supporting_line_note"] = (
+        "approximate ridge-segment length from the image grid, used only to gate the "
+        "ridge_min_length_m threshold in the same frame; no published attribute value is derived "
+        "from it"
+    )
     if best_length_m < param(cfg, "ridge_min_length_m"):
         return absent(
             f"the longest agreeing segment is {best_length_m:.1f} m, below the "

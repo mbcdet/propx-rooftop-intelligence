@@ -217,9 +217,22 @@ so the audit trail shows what was found as well as what was done about it.
 2. **The image evidence is not independent of the authoritative label.** `ridge_plane_contrast_min: 0.15` was
    placed in the measured gap between *this sample's* `Flachdach` and `Schraegdach` classes. Any statement of
    the form "the image evidence agrees with `DACHFORM`" is circular and must not be written.
+
+   *Disposition:* **UNRESOLVED, and permanently so on this sample.** The threshold was not moved — moving it
+   would fit the instrument to the expectation. The constraint is honoured as a **writing rule**: no
+   agreement-with-`DACHFORM` claim appears in the output, the README or the design docs, and the ridge
+   observation is published as evidence beside the authoritative value rather than as a check on it.
+   Removing the circularity needs a held-out labelled sample, which does not exist.
 3. **The conflict trigger is one-directional.** `image_roof_type()` returns `"pitched"` or `None` — never
    `"flat"`. So `authoritative_image_conflict` can only fire on `Flachdach` + a detected ridge, the *opposite*
    of the case that motivated it. **No detector reading of vie-swv-008 could have fired it.**
+
+   *Disposition:* **UNRESOLVED, accepted and documented.** The detector was not changed: teaching it to
+   return `"flat"` means asserting absence from a null ridge result, which this sample cannot support (see
+   finding 4 — the shadow abstention path is never reached, so a null has no confidence attached to it).
+   The consequence is recorded as Risk 2c in `docs/phase1_design.md` §10 — the conflict flag has no
+   exemplar in the sample and is exercised only by synthetic tests. vie-swv-008's disagreement is still
+   visible in the record, carried as image evidence beside the authoritative `Schraegdach`.
 4. **The shadow abstention path is not exercised by these ten records.** It is *not* dead code — `tests/test_attributes.py` exercises both abstention branches on synthetic crops. Measured inside the roof masks from the committed tiles:
    the darkest pixel across all ten roofs is **62**, against a threshold of **55** — `shadow_fraction: 0.0` is a
    true measurement, but on this sample `shadow_fraction_abstain` (0.35), the `shadow_heavy` penalty
@@ -231,17 +244,40 @@ so the audit trail shows what was found as well as what was done about it.
    complete set of values in the document is `{0.85, 0.902, 0.90, 0.80, 0.70, 0.60, 0.45}`. Only one penalty
    (`source_recency`) is ever applied, and on most attributes the cap swallows it. **Do not rank buildings by
    confidence or compute a mean.**
+
+   *Disposition:* **UNRESOLVED by design — the finding is correct and is now stated as a caveat rather
+   than fixed.** The confidence model was not changed; per-building variation would have to come from
+   penalties that this sample never fires, and inventing that variation would be fabricating precision.
+   The set of published scores after the Phase 4A regeneration is unchanged —
+   `{0.902, 0.90, 0.85, 0.80, 0.70, 0.60, 0.45}`, plus `null` where an attribute abstains. The
+   README and `docs/design_and_reasoning.md` both state that the scores are documented heuristics, safe
+   for ordering and gating and unsafe for arithmetic; Risk 2c in `docs/phase1_design.md` §10 records that
+   four of five penalties never fire here.
 6. **Stale design text.** §8's worked examples (0.63 / 0.86 / 0.42) do not reproduce; §5's rows for
    `solar_panels` and `roof_subtype` describe superseded behaviour; §5.1's slope fallback is **read by no code**;
    §7's manual-review workflow does not exist; §9's repo structure lists files that were never created. There
    is **no README**, so every caveat the design routes "to the README" currently reaches no reader.
+
+   *Disposition:* **PARTLY CLOSED.** ~~There is no README~~ — **CLOSED:** `README.md` now exists at the
+   repository root and carries the caveats the design routed to it. `docs/phase1_design.md` §7 and §9 are
+   now both marked **ORIGINAL PROPOSAL, NOT THE BUILT REPOSITORY**, and §5.1's slope fallback keys are
+   marked "specified, not implemented" in `configs/pipeline.yaml`. **UNRESOLVED:** §8's worked examples and
+   §5's superseded rows are still stale; they are historical design text and were left rather than
+   back-edited, since rewriting a Phase 1 record to match the built system would destroy the audit trail
+   this document exists to preserve. The original observation above is preserved as written.
 7. ~~**Segmentation thresholds live outside the hashed config.**~~ **Closed in Phase 4A:** those
    constants are now fingerprinted by `algorithm_parameters_hash`, published beside `config_hash`.
    It is a parameter-value fingerprint, not a source-code hash.
-8. **Open per-building questions:** 004's inner area (podium deck or uncut courtyard — drives 3364.35 m²);
-   006's 3–4 dark voids (~10–12% of area, no interior rings); 005's bright southern strip (canopy or roof);
-   002/005 sharing
+8. **PARTLY SUPERSEDED IN PHASE 4A — open per-building questions:** 004's inner area (podium deck or uncut
+   courtyard — drives 3364.35 m²); 006's 3–4 dark voids (~10–12% of area, no interior rings); 005's bright
+   southern strip (canopy or roof); 002/005 sharing
    `boundary_gradient_ratio` 1.4043 to 4 dp.
+
+   *Disposition:* the first three remain **UNRESOLVED** — they need the DOM/DGM rasters or a second epoch,
+   neither of which is in scope. The fourth is **SUPERSEDED:** after the Phase 4A regeneration the two
+   values are 002 = 1.3851 and 005 = 1.3984, which are not equal, so the coincidence that prompted the
+   question no longer exists. The original observation is kept because it was true of the document the
+   reviewers read (`baseline_commit` c86cbf4).
 
 ### Reviewer disagreement, preserved
 

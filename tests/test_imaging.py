@@ -248,6 +248,28 @@ def test_shadow_stats_separates_missing_imagery_from_darkness() -> None:
     assert stats["mean_luminance"] == pytest.approx(200, abs=1)
 
 
+def test_shadow_stats_area_diagnostic_cannot_be_mistaken_for_the_published_area() -> None:
+    """The raster-mask area is a different measurement in a different frame, and must say so.
+
+    It was previously called ``roof_area_m2`` — the same name as the published EPSG:31256
+    attribute — so a reader comparing the two saw a discrepancy between two numbers that looked
+    like the same quantity. On the ten pinned records that discrepancy ranges from about 0.1% to
+    about 1.2%, arising from both rasterisation and the approximate measurement frame; no bound is
+    asserted here or in the output. The old key must stay gone.
+    """
+    crop = synthetic_crop(np.full((50, 50, 3), 200, np.uint8))
+    stats = imaging.shadow_stats(crop, CFG)
+    assert "roof_area_m2" not in stats
+    assert stats["roof_mask_area_m2_approx"] > 0
+    assert stats["roof_mask_area_measurement_frame"] == "local_ground_scale_cos_latitude"
+    assert stats["roof_mask_area_source_crs"] == "EPSG:3857"
+    note = stats["roof_mask_area_note"]
+    assert "not the published authoritative area" in note
+    # The note must name BOTH causes; attributing the gap only to the measurement frame would
+    # understate it, since rasterisation contributes independently.
+    assert "rasterisation" in note and "measurement frame" in note
+
+
 def test_shadow_stats_abstains_on_an_empty_mask() -> None:
     crop = synthetic_crop(np.full((50, 50, 3), 200, np.uint8), mask=np.zeros((50, 50), bool))
     stats = imaging.shadow_stats(crop, CFG)

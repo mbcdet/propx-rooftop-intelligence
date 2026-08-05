@@ -1,6 +1,6 @@
 """Match an authoritative roof record to a dissolved FMZK unit by best geometric overlap.
 
-Boundary identity was tested against real geometry and rejected: only 1 of 263 interior roof
+Boundary identity was tested against real geometry and rejected: only 1 of 178 interior roof
 records reaches IoU >= 0.99 against its ``BW_GEB_ID`` dissolve, while both containment ratios
 sit symmetrically at ~0.98 — a genuine mutual re-cut of ~2% of area, not truncation
 (design section 1.3, Amendment B1). So the join is best-IoU, and the evidence behind the

@@ -28,7 +28,7 @@ Applied 2026-08-03 after the Phase 2 reconnaissance. See `docs/study_area_select
 
 | # | Change |
 |---|---|
-| B1 | **Boundary identity abandoned as the join rule.** Measured on real geometry, only 1 of 263 interior records reaches IoU ≥ 0.99. FMZK is joined by **best geometric overlap** (§1.4) |
+| B1 | **Boundary identity abandoned as the join rule.** Measured on real geometry, only 1 of 178 interior records reaches IoU ≥ 0.99. FMZK is joined by **best geometric overlap** (§1.4) |
 | B2 | Robust join policy documented: buffered FMZK fetch, best-IoU selection, containment ratios recorded, ambiguity detection via second-best candidate, no silent averaging (§1.4) |
 | B3 | **All final metric areas and distances are computed in EPSG:31256.** The local cos(lat) scaling used in reconnaissance is diagnostic-only and may never produce `roof_area_m2` (§2) |
 | B4 | Authoritative roof type, image evidence and a conflict flag are kept **separately visible**; any confidence reduction is labelled a heuristic (§5.1, §6.2) |
@@ -144,7 +144,7 @@ footprint dissolved to building level, and **`BW_GEB_ID` is a valid building-uni
 cadastre groups parts exactly that way.
 
 **Phase 2 result: the identity does not carry over to the 2025 layer.** Measured across all three candidate
-areas (`tools/verify_join.py`), only **1 of 263** interior roof records reaches IoU ≥ 0.99 against its
+areas (`tools/verify_join.py`), only **1 of 178** interior roof records reaches IoU ≥ 0.99 against its
 `BW_GEB_ID` dissolve. Instead both containment ratios sit at a median of **~0.98 symmetrically** — each
 polygon contains ~98% of the other. Truncation would be asymmetric, so this is a genuine mutual re-cut of
 order 2% of area, consistent with the 2025 layer deriving from 2025 imagery and a 2023 surface model rather
@@ -340,7 +340,7 @@ failed. The procedure that produced the decision was:
 3. For each roof record, match the best-overlapping `BW_GEB_ID` unit and record the evidence — `iou`, both
    containment ratios, `second_best_iou`, bbox-edge contact, and the resulting cardinality — together with
    whether `DACHFORM`, `SLOPE_MEAN`, typology and `BAUJAHR` are present.
-   **Outcome (`tools/verify_join.py`, 2026-08-03):** identity was tested and rejected — 1 of 263 interior
+   **Outcome (`tools/verify_join.py`, 2026-08-03):** identity was tested and rejected — 1 of 178 interior
    records at IoU ≥ 0.99, with both containment ratios symmetric at ~0.98. The evidence policy of §1.4
    (best-IoU plus containment ratios, ambiguity detection, no silent collapsing) is what the pipeline uses.
 4. Score each area on the agreed criteria, recorded in `docs/study_area_selection.md` with the mosaics:
@@ -572,7 +572,20 @@ says so in those words.
 
 ---
 
-## 7. Manual review — QA only, and it changes nothing
+## 7. Manual review — QA only, and it changes nothing — **ORIGINAL PROPOSAL, NOT THE BUILT REPOSITORY**
+
+> **Historical record.** The CSV review loop described below was **never built**. There is no
+> `make review-template` and no `make review-report` target, and neither
+> `outputs/manual_review_template.csv` nor `outputs/manual_review.csv` exists — consistent with §9,
+> which records the same targets as dropped. What was built instead is the Phase 3 / Phase 4A
+> reviewer pass recorded in `docs/phase3_visual_validation.md` and `validation/visual_audit.json`,
+> which is likewise read-only with respect to `roof_attributes.json`. The validation artifact is
+> model-assisted QA evidence, **not human validation**; independent human review would still be
+> required before operational use.
+> The principle stated in this section — review is QA and mutates nothing — did survive: no review
+> input is read by any code path, and `run.manual_review` is fixed at
+> `{"status": "not_yet_reviewed", "reviewer": null, "n": null}`, asserted in
+> `tests/test_provenance.py` and `tests/test_pipeline.py`.
 
 The proposed human-review workflow inspects all selected buildings. Review is **validation and QA**; it
 **cannot mutate, promote, or override any deterministic pipeline output**. Re-running with or without a
@@ -678,7 +691,18 @@ Validated against a committed JSON Schema; a schema failure fails the run.
 
 ---
 
-## 9. Repository structure and execution
+## 9. Repository structure and execution — **ORIGINAL PROPOSAL, NOT THE BUILT REPOSITORY**
+
+> **Historical record.** The tree and command list below are the structure *proposed* at Phase 1,
+> preserved so the design decisions can be read against what was actually built. **Several entries
+> were never created** — including `mosaic.py`, `render.py`, `review.py`, `DATA_SOURCES.md`,
+> `Dockerfile`, `outputs/manual_review_template.csv`, and the `fetch`, `review-template`,
+> `review-report` and `docker-run` make targets. Rendering, review helpers and overlay drawing
+> ended up inside `pipeline.py` rather than in separate modules; Docker and the CSV review loop
+> were dropped as unnecessary for a one-day scope.
+>
+> **For the actual structure and the actual commands, see `README.md`.** Nothing below should be
+> read as a current deliverable.
 
 ```
 src/propx_roofs/
