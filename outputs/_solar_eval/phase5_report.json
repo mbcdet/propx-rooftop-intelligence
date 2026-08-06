@@ -1,0 +1,929 @@
+{
+ "tuned_configuration": {
+  "solar_rectangularity_min": 0.4,
+  "solar_periodicity_min": 0.15,
+  "solar_internal_texture_min": 40.0,
+  "solar_orientation_tolerance_deg": 15.0,
+  "solar_open_m": 0.3,
+  "solar_close_m": 0.5
+ },
+ "held_out": {
+  "n": 36,
+  "counts": {
+   "tp": 1,
+   "fp": 1,
+   "tn": 34,
+   "fn": 0,
+   "abstain_pos": 0,
+   "abstain_neg": 0
+  },
+  "false_positive_rate": {
+   "numerator": 1,
+   "denominator": 35,
+   "point": 0.028571,
+   "clopper_pearson_95": [
+    0.000723,
+    0.149172
+   ]
+  },
+  "degeneracy_guard_298442_detected": true,
+  "threshold_met": false,
+  "false_positives": [
+   {
+    "objectid": 295076,
+    "adresse": "04., Gu\u00dfhausstra\u00dfe 17",
+    "quality": {
+     "roof_pixel_count": 31482,
+     "roof_mask_area_m2_approx": 311.8,
+     "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+     "roof_mask_area_source_crs": "EPSG:3857",
+     "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+     "shadow_fraction": 0.0,
+     "mean_luminance": 140.46,
+     "no_data_fraction": 0.0,
+     "shadow_fraction_excluding_no_data": 0.0,
+     "shadow_luminance_threshold": 55.0,
+     "min_luminance": 81,
+     "p01_luminance": 92.0,
+     "p05_luminance": 95.0,
+     "missing_tile_count": 0,
+     "thresholds": {
+      "max_value": 145.0,
+      "max_saturation": 70.0,
+      "min_cluster_area_m2": 8.0,
+      "min_coverage_fraction": 0.03,
+      "rectangularity_min": 0.4,
+      "orientation_tolerance_deg": 15.0,
+      "periodicity_min": 0.15,
+      "internal_texture_min": 40.0,
+      "shadow_fraction_abstain": 0.35
+     },
+     "roof_pixels_with_imagery": 31482,
+     "dark_low_saturation_fraction": 0.52,
+     "n_clusters": 1,
+     "coverage_fraction": 0.0404,
+     "clusters": [
+      {
+       "area_m2_approx": 12.6,
+       "rectangularity": 0.608,
+       "rect_angle_deg": 57.4,
+       "internal_texture": 48.0,
+       "periodicity": 0.2717
+      }
+     ],
+     "rejected_clusters": [
+      {
+       "area_m2_approx": 137.7,
+       "rectangularity": 0.849,
+       "rect_angle_deg": 61.5,
+       "internal_texture": 21.0,
+       "periodicity": 0.0513,
+       "rejected_because": "interior_too_smooth"
+      }
+     ],
+     "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+     "cluster_area_source_crs": "EPSG:3857",
+     "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+     "cluster_angle_spread_deg": null,
+     "best_cluster_periodicity": 0.2717,
+     "regularity_evidence": {
+      "co_oriented_clusters": false,
+      "periodic": true
+     }
+    }
+   }
+  ]
+ },
+ "degenerate_baseline": {
+  "description": "a configuration that never fires, scored on the same 35 negatives",
+  "false_positives": 0,
+  "denominator": 35,
+  "clopper_pearson_95": [
+   0.0,
+   0.100032
+  ],
+  "positives_detected": 0
+ },
+ "out_of_sample_check": {
+  "vie-swv-001": false,
+  "vie-swv-003": false
+ },
+ "pinned_all": {
+  "vie-swv-001": false,
+  "vie-swv-002": false,
+  "vie-swv-003": false,
+  "vie-swv-004": false,
+  "vie-swv-005": false,
+  "vie-swv-006": false,
+  "vie-swv-007": false,
+  "vie-swv-008": false,
+  "vie-swv-009": true,
+  "vie-swv-010": false
+ },
+ "pinned_quality": {
+  "vie-swv-001": {
+   "roof_pixel_count": 234683,
+   "roof_mask_area_m2_approx": 2325.0,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 129.69,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 62,
+   "p01_luminance": 76.0,
+   "p05_luminance": 79.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 234683,
+   "dark_low_saturation_fraction": 0.528,
+   "n_clusters": 1,
+   "coverage_fraction": 0.0093,
+   "clusters": [
+    {
+     "area_m2_approx": 21.6,
+     "rectangularity": 0.657,
+     "rect_angle_deg": 68.9,
+     "internal_texture": 54.2,
+     "periodicity": 0.2544
+    }
+   ],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 932.8,
+     "rectangularity": 0.455,
+     "rect_angle_deg": 68.1,
+     "internal_texture": 34.1,
+     "periodicity": 0.5975,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 11.2,
+     "rectangularity": 0.696,
+     "rect_angle_deg": 68.6,
+     "internal_texture": 35.8,
+     "periodicity": 0.2374,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 8.1,
+     "rectangularity": 0.314,
+     "rect_angle_deg": 50.4,
+     "internal_texture": 53.3,
+     "periodicity": 0.3414,
+     "rejected_because": "not_rectangular_enough"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.2544,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": true
+   }
+  },
+  "vie-swv-002": {
+   "roof_pixel_count": 634724,
+   "roof_mask_area_m2_approx": 6288.1,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 144.9,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 65,
+   "p01_luminance": 76.0,
+   "p05_luminance": 80.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 634724,
+   "dark_low_saturation_fraction": 0.3604,
+   "n_clusters": 2,
+   "coverage_fraction": 0.0051,
+   "clusters": [
+    {
+     "area_m2_approx": 17.2,
+     "rectangularity": 0.438,
+     "rect_angle_deg": 68.5,
+     "internal_texture": 60.9,
+     "periodicity": 0.2924
+    },
+    {
+     "area_m2_approx": 15.2,
+     "rectangularity": 0.811,
+     "rect_angle_deg": 68.2,
+     "internal_texture": 41.6,
+     "periodicity": 0.2869
+    }
+   ],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 1121.5,
+     "rectangularity": 0.355,
+     "rect_angle_deg": 64.7,
+     "internal_texture": 12.4,
+     "periodicity": 0.1327,
+     "rejected_because": "not_rectangular_enough"
+    },
+    {
+     "area_m2_approx": 201.6,
+     "rectangularity": 0.457,
+     "rect_angle_deg": 68.7,
+     "internal_texture": 12.6,
+     "periodicity": 0.1069,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 195.2,
+     "rectangularity": 0.542,
+     "rect_angle_deg": 54.9,
+     "internal_texture": 20.7,
+     "periodicity": 0.1948,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 91.6,
+     "rectangularity": 0.371,
+     "rect_angle_deg": 19.1,
+     "internal_texture": 17.7,
+     "periodicity": 0.3091,
+     "rejected_because": "not_rectangular_enough"
+    },
+    {
+     "area_m2_approx": 64.4,
+     "rectangularity": 0.311,
+     "rect_angle_deg": 28.6,
+     "internal_texture": 29.9,
+     "periodicity": 0.1384,
+     "rejected_because": "not_rectangular_enough"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": 0.3,
+   "best_cluster_periodicity": 0.2924,
+   "regularity_evidence": {
+    "co_oriented_clusters": true,
+    "periodic": true
+   }
+  },
+  "vie-swv-003": {
+   "roof_pixel_count": 110787,
+   "roof_mask_area_m2_approx": 1097.6,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 129.25,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 66,
+   "p01_luminance": 77.0,
+   "p05_luminance": 81.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 110787,
+   "dark_low_saturation_fraction": 0.5886,
+   "n_clusters": 0,
+   "coverage_fraction": 0.0,
+   "clusters": [],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 342.5,
+     "rectangularity": 0.549,
+     "rect_angle_deg": 68.6,
+     "internal_texture": 38.3,
+     "periodicity": 0.0834,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 287.8,
+     "rectangularity": 0.573,
+     "rect_angle_deg": 70.6,
+     "internal_texture": 27.3,
+     "periodicity": 0.1331,
+     "rejected_because": "interior_too_smooth"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.0,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": false
+   }
+  },
+  "vie-swv-004": {
+   "roof_pixel_count": 340270,
+   "roof_mask_area_m2_approx": 3371.4,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 149.49,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 66,
+   "p01_luminance": 84.0,
+   "p05_luminance": 91.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 340270,
+   "dark_low_saturation_fraction": 0.3367,
+   "n_clusters": 3,
+   "coverage_fraction": 0.0084,
+   "clusters": [
+    {
+     "area_m2_approx": 10.7,
+     "rectangularity": 0.473,
+     "rect_angle_deg": 25.3,
+     "internal_texture": 41.9,
+     "periodicity": 0.1176
+    },
+    {
+     "area_m2_approx": 9.0,
+     "rectangularity": 0.663,
+     "rect_angle_deg": 72.8,
+     "internal_texture": 46.3,
+     "periodicity": 0.0101
+    },
+    {
+     "area_m2_approx": 8.5,
+     "rectangularity": 0.426,
+     "rect_angle_deg": 54.0,
+     "internal_texture": 42.5,
+     "periodicity": 0.1365
+    }
+   ],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 490.4,
+     "rectangularity": 0.443,
+     "rect_angle_deg": 21.8,
+     "internal_texture": 21.8,
+     "periodicity": 0.3141,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 197.3,
+     "rectangularity": 0.231,
+     "rect_angle_deg": 2.6,
+     "internal_texture": 25.2,
+     "periodicity": 0.3729,
+     "rejected_because": "not_rectangular_enough"
+    },
+    {
+     "area_m2_approx": 63.9,
+     "rectangularity": 0.176,
+     "rect_angle_deg": 51.3,
+     "internal_texture": 39.0,
+     "periodicity": 0.1876,
+     "rejected_because": "not_rectangular_enough"
+    },
+    {
+     "area_m2_approx": 33.7,
+     "rectangularity": 0.456,
+     "rect_angle_deg": 69.0,
+     "internal_texture": 33.5,
+     "periodicity": 0.2891,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 26.3,
+     "rectangularity": 0.286,
+     "rect_angle_deg": 29.1,
+     "internal_texture": 46.2,
+     "periodicity": 0.0647,
+     "rejected_because": "not_rectangular_enough"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": 42.5,
+   "best_cluster_periodicity": 0.1365,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": false
+   }
+  },
+  "vie-swv-005": {
+   "roof_pixel_count": 55689,
+   "roof_mask_area_m2_approx": 551.7,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 158.52,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 65,
+   "p01_luminance": 81.0,
+   "p05_luminance": 91.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 55689,
+   "dark_low_saturation_fraction": 0.2151,
+   "n_clusters": 0,
+   "coverage_fraction": 0.0,
+   "clusters": [],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 102.4,
+     "rectangularity": 0.31,
+     "rect_angle_deg": 52.5,
+     "internal_texture": 30.2,
+     "periodicity": 0.0977,
+     "rejected_because": "not_rectangular_enough"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.0,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": false
+   }
+  },
+  "vie-swv-006": {
+   "roof_pixel_count": 60895,
+   "roof_mask_area_m2_approx": 603.4,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 134.06,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 73,
+   "p01_luminance": 86.0,
+   "p05_luminance": 89.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 60895,
+   "dark_low_saturation_fraction": 0.6429,
+   "n_clusters": 0,
+   "coverage_fraction": 0.0,
+   "clusters": [],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 359.6,
+     "rectangularity": 0.644,
+     "rect_angle_deg": 12.5,
+     "internal_texture": 28.3,
+     "periodicity": 0.1994,
+     "rejected_because": "interior_too_smooth"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.0,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": false
+   }
+  },
+  "vie-swv-007": {
+   "roof_pixel_count": 61353,
+   "roof_mask_area_m2_approx": 607.8,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 126.79,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 71,
+   "p01_luminance": 84.0,
+   "p05_luminance": 88.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 61353,
+   "dark_low_saturation_fraction": 0.5859,
+   "n_clusters": 0,
+   "coverage_fraction": 0.0,
+   "clusters": [],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 170.2,
+     "rectangularity": 0.777,
+     "rect_angle_deg": 64.7,
+     "internal_texture": 13.5,
+     "periodicity": 0.0813,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 102.4,
+     "rectangularity": 0.56,
+     "rect_angle_deg": 74.4,
+     "internal_texture": 21.1,
+     "periodicity": 0.034,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 31.9,
+     "rectangularity": 0.612,
+     "rect_angle_deg": 52.8,
+     "internal_texture": 25.2,
+     "periodicity": 0.0394,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 19.8,
+     "rectangularity": 0.595,
+     "rect_angle_deg": 60.8,
+     "internal_texture": 16.6,
+     "periodicity": 0.1199,
+     "rejected_because": "interior_too_smooth"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.0,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": false
+   }
+  },
+  "vie-swv-008": {
+   "roof_pixel_count": 69316,
+   "roof_mask_area_m2_approx": 686.7,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 154.14,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 65,
+   "p01_luminance": 75.0,
+   "p05_luminance": 82.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 69316,
+   "dark_low_saturation_fraction": 0.4122,
+   "n_clusters": 0,
+   "coverage_fraction": 0.0,
+   "clusters": [],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 84.1,
+     "rectangularity": 0.376,
+     "rect_angle_deg": 66.0,
+     "internal_texture": 28.0,
+     "periodicity": 0.3154,
+     "rejected_because": "not_rectangular_enough"
+    },
+    {
+     "area_m2_approx": 57.4,
+     "rectangularity": 0.307,
+     "rect_angle_deg": 70.7,
+     "internal_texture": 32.9,
+     "periodicity": 0.171,
+     "rejected_because": "not_rectangular_enough"
+    },
+    {
+     "area_m2_approx": 52.1,
+     "rectangularity": 0.511,
+     "rect_angle_deg": 63.4,
+     "internal_texture": 30.2,
+     "periodicity": 0.1938,
+     "rejected_because": "interior_too_smooth"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.0,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": false
+   }
+  },
+  "vie-swv-009": {
+   "roof_pixel_count": 46473,
+   "roof_mask_area_m2_approx": 460.4,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 134.04,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 66,
+   "p01_luminance": 78.0,
+   "p05_luminance": 84.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 46473,
+   "dark_low_saturation_fraction": 0.5998,
+   "n_clusters": 1,
+   "coverage_fraction": 0.0415,
+   "clusters": [
+    {
+     "area_m2_approx": 19.1,
+     "rectangularity": 0.444,
+     "rect_angle_deg": 50.0,
+     "internal_texture": 40.8,
+     "periodicity": 0.536
+    }
+   ],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 136.0,
+     "rectangularity": 0.525,
+     "rect_angle_deg": 69.4,
+     "internal_texture": 32.9,
+     "periodicity": 0.268,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 111.2,
+     "rectangularity": 0.423,
+     "rect_angle_deg": 70.3,
+     "internal_texture": 29.1,
+     "periodicity": 0.5325,
+     "rejected_because": "interior_too_smooth"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.536,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": true
+   }
+  },
+  "vie-swv-010": {
+   "roof_pixel_count": 39203,
+   "roof_mask_area_m2_approx": 388.4,
+   "roof_mask_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "roof_mask_area_source_crs": "EPSG:3857",
+   "roof_mask_area_note": "approximate raster-mask diagnostic from the image grid, not the published authoritative area; attributes.roof_area_m2 is the published figure and is computed in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and because of the approximate local ground-scale measurement frame",
+   "shadow_fraction": 0.0,
+   "mean_luminance": 135.8,
+   "no_data_fraction": 0.0,
+   "shadow_fraction_excluding_no_data": 0.0,
+   "shadow_luminance_threshold": 55.0,
+   "min_luminance": 68,
+   "p01_luminance": 78.0,
+   "p05_luminance": 82.0,
+   "missing_tile_count": 0,
+   "thresholds": {
+    "max_value": 145.0,
+    "max_saturation": 70.0,
+    "min_cluster_area_m2": 8.0,
+    "min_coverage_fraction": 0.03,
+    "rectangularity_min": 0.4,
+    "orientation_tolerance_deg": 15.0,
+    "periodicity_min": 0.15,
+    "internal_texture_min": 40.0,
+    "shadow_fraction_abstain": 0.35
+   },
+   "roof_pixels_with_imagery": 39203,
+   "dark_low_saturation_fraction": 0.5709,
+   "n_clusters": 0,
+   "coverage_fraction": 0.0,
+   "clusters": [],
+   "rejected_clusters": [
+    {
+     "area_m2_approx": 190.1,
+     "rectangularity": 0.599,
+     "rect_angle_deg": 87.0,
+     "internal_texture": 17.1,
+     "periodicity": 0.2057,
+     "rejected_because": "interior_too_smooth"
+    },
+    {
+     "area_m2_approx": 14.3,
+     "rectangularity": 0.863,
+     "rect_angle_deg": 64.4,
+     "internal_texture": 36.3,
+     "periodicity": 0.2815,
+     "rejected_because": "interior_too_smooth"
+    }
+   ],
+   "cluster_area_measurement_frame": "local_ground_scale_cos_latitude",
+   "cluster_area_source_crs": "EPSG:3857",
+   "cluster_area_note": "cluster and rejected-cluster area_m2_approx are diagnostics measured on the image pixel grid in the approximate local ground-scale frame, not in EPSG:31256. No published attribute value is derived from them; attributes.roof_area_m2 is the only published area and is computed in EPSG:31256",
+   "cluster_angle_spread_deg": null,
+   "best_cluster_periodicity": 0.0,
+   "regularity_evidence": {
+    "co_oriented_clusters": false,
+    "periodic": false
+   }
+  }
+ },
+ "dropped": {
+  "219006": {
+   "drop_reason": "E1",
+   "adresse": "02., Welthandelsplatz 1",
+   "detected": false
+  },
+  "269353": {
+   "drop_reason": "E1",
+   "adresse": "02., Welthandelsplatz 1",
+   "detected": false
+  },
+  "355040": {
+   "drop_reason": "E1",
+   "adresse": "04., Gu\u00dfhausstra\u00dfe 21",
+   "detected": false
+  },
+  "355731": {
+   "drop_reason": "E1",
+   "adresse": "04., Treitlstra\u00dfe 2",
+   "detected": false
+  },
+  "355737": {
+   "drop_reason": "E1",
+   "adresse": "04., Treitlstra\u00dfe 2",
+   "detected": false
+  },
+  "372507": {
+   "drop_reason": "E1",
+   "adresse": "04., Gu\u00dfhausstra\u00dfe 18",
+   "detected": false
+  },
+  "202631": {
+   "drop_reason": "E2",
+   "adresse": "05., Spengergasse 7",
+   "detected": false
+  },
+  "258556": {
+   "drop_reason": "E2",
+   "adresse": "04., Gu\u00dfhausstra\u00dfe 25",
+   "detected": false
+  },
+  "264023": {
+   "drop_reason": "E2",
+   "adresse": "05., Spengergasse 27",
+   "detected": false
+  },
+  "248105": {
+   "drop_reason": "D1_disagreement",
+   "adresse": "04., Gu\u00dfhausstra\u00dfe 23",
+   "detected": false
+  },
+  "268929": {
+   "drop_reason": "D1_disagreement",
+   "adresse": "05., Spengergasse 25",
+   "detected": false
+  },
+  "355083": {
+   "drop_reason": "D1_disagreement",
+   "adresse": "04., Gu\u00dfhausstra\u00dfe 18",
+   "detected": false
+  },
+  "368679": {
+   "drop_reason": "D1_disagreement",
+   "adresse": "04., Gu\u00dfhausstra\u00dfe 5",
+   "detected": false
+  },
+  "213848": {
+   "drop_reason": "D2_unreviewed",
+   "adresse": "04., Paniglgasse 24",
+   "detected": false
+  },
+  "216986": {
+   "drop_reason": "D2_unreviewed",
+   "adresse": "04., Treitlstra\u00dfe 3",
+   "detected": false
+  },
+  "217211": {
+   "drop_reason": "D2_unreviewed",
+   "adresse": "04., Paniglgasse 22",
+   "detected": false
+  },
+  "217897": {
+   "drop_reason": "D2_unreviewed",
+   "adresse": "04., Paniglgasse 19",
+   "detected": false
+  },
+  "222220": {
+   "drop_reason": "D2_unreviewed",
+   "adresse": "04., Treitlstra\u00dfe 1",
+   "detected": false
+  },
+  "225670": {
+   "drop_reason": "D2_unreviewed",
+   "adresse": "04., Paniglgasse 9",
+   "detected": false
+  }
+ }
+}

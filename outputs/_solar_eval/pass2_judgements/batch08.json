@@ -1,0 +1,7 @@
+[
+{"crop":"spengergasse_342612","label":"false","confidence":"medium","reason":"Grey gravel flat roof with scattered clutter, a pale render light-well wall and a small penthouse; behind it a grey pitched metal wing, with no aligned dark rectangles on either."},
+{"crop":"spengergasse_343573","label":"false","confidence":"medium","reason":"Light grey ribbed metal roof over the street half and terracotta tile over the rear half; the ribbing runs unbroken from eaves to ridge with no row gaps."},
+{"crop":"spengergasse_345054","label":"true","confidence":"high","reason":"At 3x the north wing carries several parallel rows of dark blue-black modules on tilted frames, uniform row pitch with bright roof visible in the gaps, plus further module rows on the stepped terraces; pale glazed rooflights with visible glazing bars sit on the same complex and read quite differently."},
+{"crop":"spengergasse_349546","label":"false","confidence":"medium","reason":"L-shaped grey flat roof with a pale parapet and one vent; the strongly blue roof surface at the bottom right is on the NEIGHBOURING building, outside the outline."},
+{"crop":"spengergasse_356242","label":"false","confidence":"medium","reason":"Grey standing-seam metal roof with a terracotta rear slope, two dormers and small vents; the parallel seams are continuous bands rather than discrete rectangles."}
+]

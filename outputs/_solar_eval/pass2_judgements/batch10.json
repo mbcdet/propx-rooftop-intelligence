@@ -1,0 +1,6 @@
+[
+{"crop":"tu_karlsplatz_209689","label":"false","confidence":"medium","reason":"Pale grey flat roof wrapping a terracotta pitched wing, with three courtyard voids cut out by inner rings and a dark shadowed light well at the centre; the roof surface carries only kerbs, ducts and one white plant box."},
+{"crop":"tu_karlsplatz_211687","label":"false","confidence":"medium","reason":"TU Wien main building. Teal copper-patina roofs carrying long runs of PALE glazed rooflights over the wings, grey gravel flat roofs with white HVAC blocks, and two planted courtyards; array-like at a glance but every regular element is brighter than its roof, and the outline spans the whole quadrangle."},
+{"crop":"tu_karlsplatz_213848","label":"false","confidence":"medium","reason":"Grey flat roof around a rectangular courtyard void with terracotta pitched wings on two sides; roof clutter, ducting and pale kerbs only, and the west wing is partly shadowed."},
+{"crop":"tu_karlsplatz_216986","label":"false","confidence":"high","reason":"Pale grey gravel flat roof around a large rectangular courtyard void, with two white plant units and a small penthouse; fully sunlit and completely free of dark rectangles."}
+]

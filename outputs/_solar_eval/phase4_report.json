@@ -1,0 +1,242 @@
+{
+ "best_configuration": {
+  "solar_rectangularity_min": 0.4,
+  "solar_periodicity_min": 0.15,
+  "solar_internal_texture_min": 40.0,
+  "solar_orientation_tolerance_deg": 15.0,
+  "solar_open_m": 0.3,
+  "solar_close_m": 0.5
+ },
+ "surrogate_verification": {
+  "configurations_checked": 26,
+  "rows_each": 54,
+  "verdicts_compared": 1404,
+  "mismatches": 0,
+  "seed": 20260808
+ },
+ "best_on_tune": {
+  "counts": {
+   "tp": 1,
+   "fp": 0,
+   "tn": 53,
+   "fn": 0,
+   "abstain_pos": 0,
+   "abstain_neg": 0
+  },
+  "detects_tune_positive": true,
+  "false_positives": 0,
+  "fired_objectids": [
+   345054
+  ]
+ },
+ "sensitivity": [
+  {
+   "parameter": "solar_rectangularity_min",
+   "from": 0.4,
+   "to": 0.38,
+   "direction": "-5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_rectangularity_min",
+   "from": 0.4,
+   "to": 0.42,
+   "direction": "+5%",
+   "false_positives": 0,
+   "detects_tune_positive": false,
+   "changed": true,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_periodicity_min",
+   "from": 0.15,
+   "to": 0.1425,
+   "direction": "-5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_periodicity_min",
+   "from": 0.15,
+   "to": 0.1575,
+   "direction": "+5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_internal_texture_min",
+   "from": 40.0,
+   "to": 38.0,
+   "direction": "-5%",
+   "false_positives": 1,
+   "detects_tune_positive": true,
+   "changed": true,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_internal_texture_min",
+   "from": 40.0,
+   "to": 42.0,
+   "direction": "+5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_orientation_tolerance_deg",
+   "from": 15.0,
+   "to": 14.25,
+   "direction": "-5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_orientation_tolerance_deg",
+   "from": 15.0,
+   "to": 15.75,
+   "direction": "+5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": false
+  },
+  {
+   "parameter": "solar_open_m",
+   "from": 0.3,
+   "to": 0.285,
+   "direction": "-5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": true
+  },
+  {
+   "parameter": "solar_open_m",
+   "from": 0.3,
+   "to": 0.315,
+   "direction": "+5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": true
+  },
+  {
+   "parameter": "solar_close_m",
+   "from": 0.5,
+   "to": 0.475,
+   "direction": "-5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": true
+  },
+  {
+   "parameter": "solar_close_m",
+   "from": 0.5,
+   "to": 0.525,
+   "direction": "+5%",
+   "false_positives": 0,
+   "detects_tune_positive": true,
+   "changed": false,
+   "no_op_because_pixel_quantised": true
+  }
+ ],
+ "ground_pixel_size_m": 0.0995,
+ "robustness_census": {
+  "zero_fp_admissible": 926,
+  "robust_to_all_single_parameter_5pct_moves": 70,
+  "robust_examples": [
+   {
+    "solar_rectangularity_min": 0.6,
+    "solar_periodicity_min": 0.15,
+    "solar_internal_texture_min": 40.0,
+    "solar_orientation_tolerance_deg": 15.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.55,
+    "solar_periodicity_min": 0.15,
+    "solar_internal_texture_min": 45.0,
+    "solar_orientation_tolerance_deg": 15.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.6,
+    "solar_periodicity_min": 0.15,
+    "solar_internal_texture_min": 45.0,
+    "solar_orientation_tolerance_deg": 15.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.6,
+    "solar_periodicity_min": 0.15,
+    "solar_internal_texture_min": 40.0,
+    "solar_orientation_tolerance_deg": 10.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.6,
+    "solar_periodicity_min": 0.15,
+    "solar_internal_texture_min": 40.0,
+    "solar_orientation_tolerance_deg": 20.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.6,
+    "solar_periodicity_min": 0.2,
+    "solar_internal_texture_min": 40.0,
+    "solar_orientation_tolerance_deg": 15.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.55,
+    "solar_periodicity_min": 0.15,
+    "solar_internal_texture_min": 45.0,
+    "solar_orientation_tolerance_deg": 10.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.55,
+    "solar_periodicity_min": 0.15,
+    "solar_internal_texture_min": 45.0,
+    "solar_orientation_tolerance_deg": 20.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.55,
+    "solar_periodicity_min": 0.2,
+    "solar_internal_texture_min": 45.0,
+    "solar_orientation_tolerance_deg": 15.0,
+    "solar_open_m": 0.2,
+    "solar_close_m": 0.3
+   },
+   {
+    "solar_rectangularity_min": 0.55,
+    "solar_periodicity_min": 0.3,
+    "solar_internal_texture_min": 30.0,
+    "solar_orientation_tolerance_deg": 15.0,
+    "solar_open_m": 0.4,
+    "solar_close_m": 0.3
+   }
+  ],
+  "note": "morphology parameters are excluded from the census: +/-5% on solar_open_m or solar_close_m does not change the integer kernel radius at this GSD"
+ }
+}

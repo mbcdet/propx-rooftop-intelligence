@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_290593","label":"false","confidence":"medium","reason":"Terracotta pitched roof around a small pale grey flat courtyard roof with two rooflights; the west slope is partly shaded by the taller neighbour but carries no rectangles."},
+{"crop":"tu_karlsplatz_291881","label":"false","confidence":"medium","reason":"Grey ribbed sheet-metal roof with continuous dark seams running down the slope and a small penthouse near the ridge; the seams have no cross-breaks and so are not module edges."},
+{"crop":"tu_karlsplatz_295076","label":"false","confidence":"high","reason":"Brown-terracotta pitched roof over three wings with a pale grey metal cross-gable and two chimneys, fully sunlit; no dark rectangular field."},
+{"crop":"tu_karlsplatz_295133","label":"false","confidence":"medium","reason":"Grey-blue flat roof carrying five square PALE BLUE glazed rooflights in a line along the street edge, plus white plant boxes and a dark grated vent; the rooflights are brighter than the roof and set ~8 m apart."},
+{"crop":"tu_karlsplatz_296100","label":"unclear","confidence":"low","reason":"A specular sun glint burns out the centre of the roof in a star of white flare, and the flare covers roughly a third of the outline; whatever lies under it cannot be read."},
+{"crop":"tu_karlsplatz_296694","label":"false","confidence":"medium","reason":"Grey-green patinated metal pitched roof on a triangular corner block with visible standing seams and one vent; no discrete rectangles anywhere."}
+]

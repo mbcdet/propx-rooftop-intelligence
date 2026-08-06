@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_268882","label":"unclear","confidence":"low","reason":"More than half the outline is a long narrow light well containing a bare tree and lying in deep shadow, not roof at all; the only readable roof, a grey metal pitched strip at the south end, carries no modules. Recommend excluding as a degenerate outline."},
+{"crop":"tu_karlsplatz_273414","label":"false","confidence":"high","reason":"Pale gravel flat roof; at 4x the row of seven dark rectangles along the penthouse is a line of white air-handling units, each with two dark circular fans and a cast shadow, and the cyan pair at the west end are open cooling cells."},
+{"crop":"tu_karlsplatz_278839","label":"false","confidence":"medium","reason":"Large pale standing-seam metal pyramid roof around a grey gravel centre carrying a few plant units and vent stacks; the seams run continuously and no dark rectangles sit on either surface."},
+{"crop":"tu_karlsplatz_279073","label":"false","confidence":"medium","reason":"Grey flat roof with a regular dotted texture that is ballast paving slabs, plus a red-brown gravel section and a white penthouse; the dots are uniform grey with no dark rectangular blocks or row gaps."},
+{"crop":"tu_karlsplatz_279567","label":"false","confidence":"medium","reason":"Brown-grey flat roof with a row of about six PALE rooflights along the east edge and a rounded stair head at the south corner; the regular elements are lighter than the roof."},
+{"crop":"tu_karlsplatz_279936","label":"false","confidence":"medium","reason":"Free-standing plantroom roof packed with pale ducts, cylindrical units and walkways in an irregular layout; dense and busy but with no uniformly spaced dark rectangles."}
+]

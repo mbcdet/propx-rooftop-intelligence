@@ -1,0 +1,21 @@
+{
+ "note": "Frozen at the end of Phase 4, before the held-out split was read. Applied through the image.tuning config hook; src/ is not modified. Selection rule: preregistration.md 2.3 - among configurations detecting 345054, fewest false positives on the 53 tune negatives, ties broken toward the shipped parameters.",
+ "tuned": {
+  "solar_rectangularity_min": 0.4,
+  "solar_periodicity_min": 0.15,
+  "solar_internal_texture_min": 40.0,
+  "solar_orientation_tolerance_deg": 15.0,
+  "solar_open_m": 0.3,
+  "solar_close_m": 0.5
+ },
+ "shipped": {
+  "solar_rectangularity_min": 0.55,
+  "solar_periodicity_min": 0.15,
+  "solar_internal_texture_min": 25.0,
+  "solar_orientation_tolerance_deg": 15.0,
+  "solar_open_m": 0.3,
+  "solar_close_m": 0.5
+ },
+ "changed": ["solar_rectangularity_min", "solar_internal_texture_min"],
+ "tune_split_result": {"tp": 1, "fp": 0, "tn": 53, "fn": 0}
+}

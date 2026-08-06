@@ -1,0 +1,8 @@
+[
+{"crop":"spengergasse_283843","label":"false","confidence":"medium","reason":"Grey standing-seam metal roof, fully readable, with dark valley strips and small vents; an active building site with a tower crane, staging and bright blue sheeting abuts the outline on the east side but does not cross it."},
+{"crop":"spengergasse_284314","label":"false","confidence":"medium","reason":"Terracotta hipped roofs over two wings with a small light-well void; the north wing sits in the shadow of the taller corner tower, and nothing rectangular or dark shows on either slope."},
+{"crop":"spengergasse_288730","label":"false","confidence":"high","reason":"Terracotta pitched roof with a pale grey flat gutter strip along the street edge and three small light rooflights near the ridge; no dark rectangles anywhere."},
+{"crop":"spengergasse_294363","label":"false","confidence":"medium","reason":"Mid-grey metal roof over a narrow corner block with pale render parapets and two small plant boxes; the south-east third lies in shadow but shows no aligned dark rectangles."},
+{"crop":"spengergasse_298442","label":"true","confidence":"high","reason":"A continuous row of roughly twenty dark blue-grey modules laid flush along the terracotta south-west slope, with module-to-module division lines visible at 5x and uniform contrast against the tile; a white glazed canopy fills the courtyard corner separately."},
+{"crop":"spengergasse_302789","label":"false","confidence":"medium","reason":"Light grey ribbed metal roof over the street wing with a terracotta rear slope; the parallel rib lines run continuously with no gaps and there is no darker rectangular field."}
+]

@@ -1,0 +1,97 @@
+{
+ "pinned_check": {
+  "pinned_objectids": [
+   242275,
+   257807,
+   308209,
+   346007,
+   346520,
+   351704,
+   351705,
+   358486,
+   358487,
+   358722
+  ],
+  "pinned_found_in_pool": [],
+  "result": "PASS - no pinned building in the pool"
+ },
+ "kept_total": 109,
+ "kept_by_zone": {
+  "tu_karlsplatz": 61,
+  "wu_wien": 4,
+  "spengergasse": 44
+ },
+ "dropped": [
+  {
+   "zone": "tu_karlsplatz",
+   "objectid": 349152,
+   "adresse": "04., Treitlstraße 1",
+   "reason": "degenerate: projected area 7.1 m2 below 20 m2"
+  },
+  {
+   "zone": "tu_karlsplatz",
+   "objectid": 355732,
+   "adresse": "04., Treitlstraße 2",
+   "reason": "degenerate: projected area 15.1 m2 below 20 m2"
+  },
+  {
+   "zone": "tu_karlsplatz",
+   "objectid": 355733,
+   "adresse": "04., Treitlstraße 2",
+   "reason": "degenerate: projected area 9.2 m2 below 20 m2"
+  },
+  {
+   "zone": "tu_karlsplatz",
+   "objectid": 355735,
+   "adresse": "04., Treitlstraße 2",
+   "reason": "degenerate: projected area 15.6 m2 below 20 m2"
+  },
+  {
+   "zone": "tu_karlsplatz",
+   "objectid": 372506,
+   "adresse": "04., Gußhausstraße 25",
+   "reason": "degenerate: projected area 6.8 m2 below 20 m2"
+  },
+  {
+   "zone": "wu_wien",
+   "objectid": 208580,
+   "adresse": "02., Welthandelsplatz 1",
+   "reason": "degenerate: projected area 11.9 m2 below 20 m2"
+  },
+  {
+   "zone": "wu_wien",
+   "objectid": 227700,
+   "adresse": "02., Welthandelsplatz 1",
+   "reason": "degenerate: projected area 19.9 m2 below 20 m2"
+  },
+  {
+   "zone": "wu_wien",
+   "objectid": 240097,
+   "adresse": "02., Welthandelsplatz 1",
+   "reason": "degenerate: SLOPE_MEAN 79.9 deg above 60 deg - reads as a wall facet"
+  },
+  {
+   "zone": "spengergasse",
+   "objectid": 229387,
+   "adresse": "05., Spengergasse 13",
+   "reason": "degenerate: projected area 11.0 m2 below 20 m2"
+  },
+  {
+   "zone": "spengergasse",
+   "objectid": 379340,
+   "adresse": "05., Spengergasse 35",
+   "reason": "degenerate: SLOPE_MEAN 60.6 deg above 60 deg - reads as a wall facet"
+  },
+  {
+   "zone": "spengergasse",
+   "objectid": 378955,
+   "adresse": "05., Spengergasse 11",
+   "reason": "degenerate: projected area 19.8 m2 below 20 m2"
+  }
+ ],
+ "dropped_by_zone": {
+  "tu_karlsplatz": 5,
+  "wu_wien": 3,
+  "spengergasse": 3
+ }
+}

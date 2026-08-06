@@ -1,0 +1,8 @@
+[
+{"crop":"spengergasse_315126","label":"false","confidence":"medium","reason":"Grey metal roof with a pale fan-shaped glazed canopy over the courtyard corner; bright blue construction sheeting covers the adjoining roof to the south and touches the southern edge of the outline."},
+{"crop":"spengergasse_319476","label":"false","confidence":"medium","reason":"Narrow grey flat roof carrying scattered pale plant boxes, ducting and a rooflight, with a terracotta rear wing; the eastern third lies in deep shadow from the taller neighbour."},
+{"crop":"spengergasse_320598","label":"unclear","confidence":"low","reason":"The entire outline is covered by bright blue construction sheeting on scaffolding, with the ridge poles visible through it; the actual roof surface cannot be seen at all."},
+{"crop":"spengergasse_321759","label":"false","confidence":"medium","reason":"Grey sheet-metal roof with one small pale glazed rooflight showing internal glazing bars near the west edge; the regularly banded roofs at the bottom right are ribbed metal on neighbouring buildings outside the outline."},
+{"crop":"spengergasse_326883","label":"false","confidence":"high","reason":"Small grey pitched roof, fully sunlit, with a pale central ridge strip and two small vents; no rectangular field and no inter-row gaps."},
+{"crop":"spengergasse_333107","label":"false","confidence":"medium","reason":"Terracotta street wing with dormers plus a grey gravel courtyard-level roof; a long inner ring cuts out the light well, and the centre of the block lies in deep shadow where surface texture is not readable."}
+]

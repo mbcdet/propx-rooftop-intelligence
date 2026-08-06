@@ -1,0 +1,8 @@
+[
+{"crop":"spengergasse_303044","label":"unclear","confidence":"low","reason":"The whole outline lies in deep building shadow: hip lines and one vent are just readable, but the roof surface itself is a flat dark tone in which a flush module row and plain dark sheeting cannot be told apart."},
+{"crop":"spengergasse_306863","label":"false","confidence":"high","reason":"Terracotta hipped roof over two wings with a shared ridge, three small chimneys and one white vent; the surface is uniform tile with no dark rectangles."},
+{"crop":"spengergasse_308509","label":"false","confidence":"medium","reason":"KNOWN MIMIC. At 4x the twelve blue-grey rectangles down the terracotta slope are individual roof windows: each has a pale frame, sits flush in the tile, and they are spaced ~4 m apart in a single line rather than packed into a field. The same windows continue on the neighbouring roof outside the outline."},
+{"crop":"spengergasse_308827","label":"false","confidence":"high","reason":"Plain terracotta hipped roof with two chimneys and a small light-well step on the west side; a green glazed courtyard roof sits well outside the outline to the south."},
+{"crop":"spengergasse_310979","label":"false","confidence":"medium","reason":"Long light grey ribbed metal courtyard wing with a few vents; at 4x the large regularly banded roof to the east is standing-seam metal on a NEIGHBOURING building outside the outline, and a tower crane stands outside the north end. Part of the enclosed area is courtyard paving, not roof."},
+{"crop":"spengergasse_312787","label":"false","confidence":"medium","reason":"Small dark grey metal roof with a pale render light-well wall and one vent; the south half is in the shadow of the neighbour but no aligned rectangles are present."}
+]

@@ -1,0 +1,8 @@
+[
+{"crop":"spengergasse_196545","label":"false","confidence":"medium","reason":"Light rendered corner building with a round turret and two small courtyard voids; the darker roof quadrant enclosed at the top right is a plain dark flat roof with no row structure and no inter-row gaps."},
+{"crop":"spengergasse_198205","label":"false","confidence":"medium","reason":"Narrow strip outline over a plain grey flat roof and a small pale penthouse; regular dark banding appears on the NEIGHBOURING roof at the top right, well outside the outline, and reads as ribbed metal rather than modules."},
+{"crop":"spengergasse_200390","label":"false","confidence":"high","reason":"Terracotta pitched roof with a light grey sheet-metal flat insert along the ridge and two small chimneys; nothing dark or rectangular anywhere inside the outline."},
+{"crop":"spengergasse_202631","label":"unclear","confidence":"low","reason":"The 4463 m2 outline spans an entire Gruenderzeit block - a dozen separate structures, two inner courtyards and gardens; the readable roofs are grey gravel and green sedum with no module grid, but several wings and the whole central courtyard sit in deep building shadow."},
+{"crop":"spengergasse_204330","label":"false","confidence":"medium","reason":"Terracotta hipped roof over the street wing; the regular row of eight PALE rectangles on the courtyard wing is a rooflight run, light-toned against a grey roof, the opposite of module contrast."},
+{"crop":"spengergasse_204493","label":"false","confidence":"medium","reason":"Uniform dark grey-brown roof surface with three white circular vents and a pale central ridge lantern; no rectangular row structure and no inter-row gaps."}
+]

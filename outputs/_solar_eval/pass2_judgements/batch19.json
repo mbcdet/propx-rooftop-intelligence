@@ -1,0 +1,7 @@
+[
+{"crop":"tu_karlsplatz_372507","label":"unclear","confidence":"low","reason":"A 26 m2 diamond drawn over a dark shadowed courtyard between four pitched roofs; no roof surface is visible inside it. Recommend excluding."},
+{"crop":"tu_karlsplatz_372508","label":"false","confidence":"medium","reason":"Large institutional complex: dark grey-brown pitched roofs, an octagonal drum over the hall, a long PALE glazed rooflight monitor on the north wing and a glazed conservatory on the courtyard side; no dark module field, though a dark banded roof sits on a neighbouring block outside the outline."},
+{"crop":"tu_karlsplatz_258556","label":"unclear","confidence":"low","reason":"OUTLINE SPANS MANY STRUCTURES - 8256 m2 covering separate TU blocks on both sides of Gusshausstrasse plus courtyards, gardens, a terrace and a driveway. It also encloses a four-sided blue GLAZED atrium canopy that reads as modules at 1x but resolves at 5x into pane divisions on four slopes around a flat deck. Recommend excluding or splitting."},
+{"crop":"wu_wien_219006","label":"unclear","confidence":"low","reason":"A 24 m2 sliver drawn over asphalt paving and a kerb line in the WU campus service yard; there is no building beneath it. Recommend excluding."},
+{"crop":"wu_wien_269353","label":"unclear","confidence":"low","reason":"A 20 m2 quadrilateral over the concrete apron beside a small grey service shed, not over the shed itself; no roof surface inside the outline. Recommend excluding."}
+]

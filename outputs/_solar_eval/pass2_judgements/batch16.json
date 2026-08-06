@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_297751","label":"false","confidence":"medium","reason":"Grey-brown flat roof with a line of five small dark plant boxes just inside the west parapet and a glazed stair head at the east corner; the boxes are raised, cast shadows, and are spaced far wider than module rows."},
+{"crop":"tu_karlsplatz_301024","label":"false","confidence":"medium","reason":"Grey sheet-metal pitched roofs around a small courtyard void; the dark banded strip on the north-west wing is a glazed courtyard roof, and the rest is plain seamed metal."},
+{"crop":"tu_karlsplatz_308310","label":"false","confidence":"medium","reason":"Institutional flat roof with pale ballast; at 6x the blue-black rectangle at the centre is a PITCHED ROOFLIGHT - its north slope is dark with a visible 2 x 6 pane grid while its south slope reflects the sky bright pale blue, an asymmetry modules would not show. A row of dark plant boxes runs down the east side."},
+{"crop":"tu_karlsplatz_308598","label":"false","confidence":"medium","reason":"Dark grey flat roof crossed by four broad diagonal SHADOW bands cast by the taller block opposite; at 4x the bands are soft-edged, unevenly spaced and continue past the roof edge, so they are shadow, not panels."},
+{"crop":"tu_karlsplatz_310104","label":"false","confidence":"medium","reason":"Small pavilion roof in general shade; at 6x the two rows of dark cells are a raised pale-framed clerestory lantern subdivided into small panes, i.e. glazing, and the surrounding surface is plain grey."},
+{"crop":"tu_karlsplatz_318004","label":"false","confidence":"medium","reason":"Brown hipped villa roof with one chimney and one vent, partly overhung by bare tree branches; the surface is uniform tile with no rectangles."}
+]

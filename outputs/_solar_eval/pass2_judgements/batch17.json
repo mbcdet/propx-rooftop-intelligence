@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_323234","label":"false","confidence":"medium","reason":"Pale grey flat roof with a line of seven white rooflights along the north edge, a raised penthouse and a planted courtyard corner; the regular row is brighter than the roof, not darker."},
+{"crop":"tu_karlsplatz_328572","label":"false","confidence":"medium","reason":"Pale grey flat roof with small vents and a grey metal pitched wing at the north end; a dark regularly banded roof lies on the NEIGHBOURING building east of the outline, across the light well."},
+{"crop":"tu_karlsplatz_334121","label":"false","confidence":"medium","reason":"Grey flat roof with a pale pitched metal section at the north, a narrow rectangular void ring and construction hoarding on the plot to the south; no dark rectangular field."},
+{"crop":"tu_karlsplatz_335502","label":"false","confidence":"medium","reason":"Grey standing-seam metal roof over the main block with a terracotta rear wing and a small rectangular void; the seams are continuous lines with no cross-breaks."},
+{"crop":"tu_karlsplatz_339774","label":"false","confidence":"medium","reason":"Pale grey flat roof with ducting runs, three dark vent boxes near the north parapet and a courtyard void at the centre; the vents are irregular in size and spacing."},
+{"crop":"tu_karlsplatz_342563","label":"false","confidence":"medium","reason":"Terracotta pitched roofs around a grey flat courtyard roof with a stair head; a pale glazed roof and a dark flat roof sit on the neighbouring blocks north of the outline."}
+]

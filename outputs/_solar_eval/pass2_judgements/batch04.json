@@ -1,0 +1,7 @@
+[
+{"crop":"spengergasse_273729","label":"false","confidence":"medium","reason":"Grey standing-seam metal roof running the length of the block, with two small pale rooflights and a dark valley gutter; the seam lines are parallel ribs, not module rows with gaps."},
+{"crop":"spengergasse_275966","label":"false","confidence":"medium","reason":"School block with grey ribbed metal hipped roofs; the regular field on the south-east wing is a grid of PALE rectangular rooflights over a hall, brighter than the roof, and two dark rooftop plant boxes sit near the north corner."},
+{"crop":"spengergasse_277481","label":"false","confidence":"medium","reason":"L-shaped grey flat roof with a white ridge lantern and a small courtyard void; the north half lies in deep shadow from the taller neighbour but shows no rectangular row structure."},
+{"crop":"spengergasse_281346","label":"false","confidence":"medium","reason":"Pale grey flat roof over a corner block with a rectangular courtyard void, two pale corner domes and a cluster of irregular grey plant units at the centre; no aligned rectangles."},
+{"crop":"spengergasse_283536","label":"false","confidence":"medium","reason":"Long narrow grey gravel flat roof with scattered dark plant boxes and a light kerb line; a large blue regularly striped roof surface sits on the NEIGHBOURING building to the east, outside the outline."}
+]

@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_224398","label":"false","confidence":"medium","reason":"Grey flat roof with a bright green GLAZED courtyard canopy, a planted roof terrace and scattered ducting; strong specular sun stars burn out the pavement outside the outline but the roof itself is readable and carries no module field."},
+{"crop":"tu_karlsplatz_225670","label":"false","confidence":"medium","reason":"Grey flat roof carrying one large dark circular drum, a curved white penthouse and several vents; the dark element is round and isolated, not a rectangular row."},
+{"crop":"tu_karlsplatz_229828","label":"false","confidence":"medium","reason":"Grey gravel flat roof with a pale parapet, two vent stacks and a small penthouse; the western third lies in the shadow of the taller neighbour but shows no aligned rectangles."},
+{"crop":"tu_karlsplatz_232670","label":"false","confidence":"medium","reason":"KNOWN MIMIC. Ten dark bars in a regular row along the north-west slope read as modules at 1x; at 5x they are the rust-brown roof valleys and cast shadows BETWEEN raised pale rooflight monitors, so the dark elements are gaps, not panels."},
+{"crop":"tu_karlsplatz_233731","label":"false","confidence":"medium","reason":"Grey-brown gravel flat roof with one pale glazed rooflight at the west end and a dark hipped bay at the north corner; no repeated rectangles."},
+{"crop":"tu_karlsplatz_237090","label":"false","confidence":"medium","reason":"Grey gravel flat roof with a raised central penthouse, pale kerbs and a few vents; a green glazed courtyard roof sits on the neighbouring block outside the outline to the south-east."}
+]

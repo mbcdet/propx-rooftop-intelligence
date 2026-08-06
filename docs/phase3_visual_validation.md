@@ -107,6 +107,13 @@ This substantiates the withholding decision. **All published solar values remain
 and `solar_panels.max_value` (145) and `solar_internal_texture_min` (25.0) were set from pixel measurements on
 vie-swv-001 and vie-swv-003. **The held-out sample size for solar is 0.**
 
+> **Superseded as evidence, not as observation.** Reviewer C's warning was acted on: a separate
+> evaluation on 109 roofs across three other Vienna zones, with a pre-registered threshold and a
+> genuinely held-out split, is in [`docs/solar_evaluation.md`](solar_evaluation.md). It confirms
+> the abstention with a number — **1 false positive on 35 confirmed-negative roofs, 95% CI
+> [0.07%, 14.9%]**, against a bar of zero. The four cases below remain what they always were: four
+> visual reads, too few to conclude from. The reviewers' observations are unchanged.
+
 ---
 
 ## 4. vie-swv-007 — the boundary alignment warning

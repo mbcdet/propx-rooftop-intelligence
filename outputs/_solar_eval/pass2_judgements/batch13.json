@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_237599","label":"false","confidence":"medium","reason":"Grey gravel flat roof with three pale plant boxes along the ridge line and a white glazed strip over the south annex; no repeated dark rectangles."},
+{"crop":"tu_karlsplatz_239870","label":"false","confidence":"medium","reason":"Terracotta pitched roofs with an octagonal drum tower at the north end and a small courtyard void; the north third is in shadow, and a glazed rooflight run lies on the neighbouring roof outside the outline."},
+{"crop":"tu_karlsplatz_248105","label":"false","confidence":"low","reason":"HARDEST CALL IN THE SET. Three fields of dark rectangular panes on the courtyard-side roofs; at 6x each pane is bounded on all four sides by a continuous BRIGHT WHITE lattice and the fields sit perfectly flush and untilted, which reads as patent glazing over the inner courtyards rather than modules - but flush-mounted modules cannot be ruled out at this resolution."},
+{"crop":"tu_karlsplatz_250647","label":"false","confidence":"medium","reason":"Pale grey flat roof with a small courtyard void, a white plant unit at the south edge and pale kerbs; nothing dark or repeated."},
+{"crop":"tu_karlsplatz_263186","label":"false","confidence":"medium","reason":"Long terracotta pitched roof with regular dormers down both slopes and one pale glazed rooflight at the east end; the dormers are raised and lighter than the tile."},
+{"crop":"tu_karlsplatz_265584","label":"false","confidence":"medium","reason":"Grey flat roof over a narrow street block with pale render patches and four small dark plant boxes; the boxes vary in size and are not laid out in rows."}
+]

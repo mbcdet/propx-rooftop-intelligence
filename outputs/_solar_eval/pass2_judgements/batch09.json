@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_193669","label":"false","confidence":"medium","reason":"Blue-grey ribbed sheet-metal roof wrapping a light well, with a small glazed lantern over the stair and a pale parapet; the south-east third sits in the shadow of the taller neighbour."},
+{"crop":"tu_karlsplatz_194306","label":"false","confidence":"high","reason":"The outline contains one object only: a brilliant white ribbed rooflight over a 61 m2 annex, far brighter than the surrounding roof, the opposite of module contrast."},
+{"crop":"tu_karlsplatz_196552","label":"false","confidence":"high","reason":"Terracotta pitched roofs over two wings with a grey metal valley between them and three chimneys; fully sunlit and free of any rectangular dark field."},
+{"crop":"tu_karlsplatz_198651","label":"false","confidence":"high","reason":"Grey sheet-metal mansard with a round corner turret, five pedimented dormers and a row of small pale rooflights on the courtyard slope; no dark modules."},
+{"crop":"tu_karlsplatz_205522","label":"false","confidence":"medium","reason":"Terracotta pitched roof with a pale glazed lantern roof over the north annex showing internal glazing bars, and grey ribbed metal roofs on the neighbours outside the outline."},
+{"crop":"tu_karlsplatz_205982","label":"false","confidence":"medium","reason":"Grey gravel flat roof along a corner block with a line of small white rooflights set just inside the parapet and a grey metal pitched wing at the west end; no dark rectangle field."}
+]

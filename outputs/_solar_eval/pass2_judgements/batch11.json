@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_217211","label":"false","confidence":"medium","reason":"Dark grey pitched roof largely in the shadow of the taller neighbour; brightened 4x it resolves as a uniform hipped surface with one chimney and a small pale dormer, no rows and no gaps."},
+{"crop":"tu_karlsplatz_217897","label":"false","confidence":"medium","reason":"Grey flat roofs around three courtyard voids with pale glazed rooflights over the rear wing and a shadowed light well at the centre; no dark rectangle field on any wing."},
+{"crop":"tu_karlsplatz_219890","label":"false","confidence":"medium","reason":"Brown-grey flat roof with a broad band of PALE glazed rooflights across the centre and a line of small rooflights down the east wing; every regular element is brighter than the roof."},
+{"crop":"tu_karlsplatz_219989","label":"false","confidence":"medium","reason":"Grey flat roof carrying a domed rotunda, a pale glazed lantern and scattered plant boxes on the south side; irregular clutter, not an aligned field."},
+{"crop":"tu_karlsplatz_221765","label":"false","confidence":"medium","reason":"Pale grey roof over a corner block with a round turret, red-brown gravel flat sections and three small pale rooflights; nothing dark or rectangular in rows."},
+{"crop":"tu_karlsplatz_222220","label":"false","confidence":"medium","reason":"Olive-green sedum flat roof with three dark plant boxes and two round vents scattered along the north half; the boxes are different sizes and not aligned into rows."}
+]

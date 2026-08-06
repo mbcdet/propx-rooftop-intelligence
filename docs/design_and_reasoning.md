@@ -7,7 +7,7 @@ solar-cadastre roof layer** `ogdwien:ANLAGENLEISTUNG2025OGD` (WFS) as the author
 cross-checked against **FMZK building units** (`ogdwien:FMZKGEBOGD`, dissolved by `BW_GEB_ID`).
 
 Resolution decided the imagery. At zoom 20 the effective ground sample is 0.0995 m/px at Vienna's latitude,
-so a 1 m dormer is ten pixels across — enough for texture, ridges and panel grids. The **true**-ortho
+so a 1 m dormer is ten pixels across. The **true**-ortho
 property matters more: in a conventional orthophoto a roof is displaced from its footprint by roughly
 building height × off-nadir angle, silently invalidating every footprint-aligned measurement. Coverage is
 city-wide, licence CC BY 4.0, cost zero.
@@ -29,13 +29,12 @@ range) and `PVPOTENZIALE2025OGD` (no documented key to the 2025 layer). Neither 
 
 **Inspected, then rejected:** *OpenStreetMap* `roof:shape` — unevenly populated, unverifiable per building.
 
-**Sources considered but not queried at all**, with reasons: *Sentinel-2* — 10 m bands cannot resolve a
-20 m roof into planes; *oblique, street-level and Mapillary imagery* — not orthorectified, so measurement
-needs a photogrammetric solve I could not validate in time; *Cesium ion and 3D meshes* — derived products
-whose provenance I cannot audit, where Vienna publishes the underlying surface model directly; *thermal
-layers* — insulation inference confounds with material, aspect and time of day, with no ground truth. None
-of the four were attempted; I do not report experiments I did not run. The DOM/DGM rasters are the obvious
-next source.
+**Considered but not queried at all**, with reasons: *Sentinel-2* — 10 m bands cannot resolve a 20 m roof
+into planes; *oblique and street-level imagery* — not orthorectified, so measurement needs a
+photogrammetric solve I could not validate in time; *3D meshes* — derived products whose provenance I
+cannot audit, where Vienna publishes the underlying surface model directly; *thermal layers* — insulation
+inference confounds with material, aspect and time of day. None were attempted; I do not report
+experiments I did not run. The DOM/DGM rasters are the obvious next source.
 
 ## What the sources supported, and what they did not
 
@@ -54,8 +53,10 @@ and condition** — no validation set.
 it anti-correlated on all four checkable cases. That check is a reviewer's visual read, not ground truth,
 and no independent reference exists — `ANLAGENLEISTUNG` is modelled PV *potential*, not installed capacity.
 Publishing a boolean from a detector that inverts the only available check is worse than publishing
-nothing, so the value is `null`, availability `unavailable`, the score `null` rather than low. Raw
-diagnostics stay in the file for a future validation.
+nothing, so the value is `null`, availability `unavailable`, the score `null` rather than low, with raw
+diagnostics kept for a future validation. That judgement has since been **measured** — 109
+roofs, two independent readers, a threshold pre-registered before the detector ran, **1 false positive on
+35 confirmed negatives, 95% CI [0.07%, 14.9%]**, failing a bar of zero (`docs/solar_evaluation.md`).
 
 ## Alignment, and scaling from ten buildings to thousands
 
@@ -73,15 +74,13 @@ spatially-indexed store (PostGIS or GeoParquet) and the join becomes one spatial
 requests. Tiles fetch by tile id, so neighbours share them.
 
 **Compute.** Buildings are independent, so this is embarrassingly parallel — but partition by *tile id*, not
-building id, so workers share tile reads. The pipeline is already a pure function of (cache, config), so
-that is safe.
+building id, so workers share tile reads. The pipeline is already a pure function of (cache, config).
 
-**Review.** Inspecting ten buildings by hand becomes triage, not inspection. The ambiguity, review and
-low-confidence flags emitted here are the queue, and publishing abstentions rather than guesses makes them
-sortable.
+**Review.** Inspecting ten buildings by hand becomes triage. The ambiguity, review and low-confidence flags
+emitted here are the queue, and publishing abstentions rather than guesses makes them sortable.
 
-The honest limitation: nothing here is calibrated. At thousands I would need a labelled sample, and
-building one is the first work I would do.
+The honest limitation: nothing here is calibrated. At thousands I would need a labelled sample — the solar
+evaluation above is what building one, and scoring against it, actually costs.
 
 ## How confidence is represented and would be used
 
@@ -93,7 +92,6 @@ with its availability, method and evidence.
 
 These are **documented heuristics, not calibrated probabilities**. A 0.9 does not mean nine times in ten; it
 means "authoritative source, no penalty fired". That makes them safe for *ordering* and *gating* and unsafe
-for arithmetic: use them to route records to review, filter a portfolio query above a threshold, or decide
-which of two disagreeing sources to surface — never to multiply into an expected value or report as
-accuracy. Anything stronger needs the labelled sample above; the schema is shaped so that replacing
-heuristic scores with calibrated ones changes no consumer's code.
+for arithmetic: use them to route records to review or filter a portfolio query above a threshold — never
+to multiply into an expected value or report as accuracy. The schema is shaped so that replacing heuristic
+scores with calibrated ones changes no consumer's code.

@@ -1,0 +1,6 @@
+[
+{"crop":"spengergasse_251589","label":"false","confidence":"high","reason":"Terracotta pitched roof around a pale grey sheet-metal flat centre, with a line of small light rooflights along the north-west wing; no dark rectangle field anywhere."},
+{"crop":"spengergasse_264023","label":"false","confidence":"medium","reason":"SPENGERGASSE 27. At 2x the long street wing is grey standing-seam metal with dormers, dark hipped bays and a few small rooflights; no module grid. The outline also swallows two fan-shaped glazed canopies, a link block and open garden, so it spans several structures."},
+{"crop":"spengergasse_264179","label":"false","confidence":"high","reason":"Plain terracotta hipped roof with a grey metal ridge strip and two chimneys; the only dark areas are the shadowed courtyards outside the outline."},
+{"crop":"spengergasse_268929","label":"false","confidence":"medium","reason":"KNOWN MIMIC. At 5x the fourteen blue-grey rectangles on the sedum roof are raised lantern rooflights: each has a bright white kerb frame, two internal glazing bars splitting it into three bays, and a shadow cast off its upstand; they sit ~5 m apart, not packed into rows. White HVAC units alongside. The main hall roof is grey ribbed metal."}
+]

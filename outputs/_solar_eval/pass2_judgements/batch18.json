@@ -1,0 +1,8 @@
+[
+{"crop":"tu_karlsplatz_346607","label":"false","confidence":"high","reason":"Karlskirche: green copper-patina dome with radial ribs, flanking hipped copper roofs and two lantern towers; no flat surface carries any rectangular field."},
+{"crop":"tu_karlsplatz_355040","label":"unclear","confidence":"low","reason":"A 33 m2 quadrilateral drawn over a dark inner light well between four pitched roofs; no roof surface is visible beneath it at all, so nothing can be labelled. Recommend excluding."},
+{"crop":"tu_karlsplatz_355731","label":"unclear","confidence":"low","reason":"A 49 m2 diamond drawn over open lawn and a footpath in the Resselpark - there is no building beneath the outline. Recommend excluding."},
+{"crop":"tu_karlsplatz_355737","label":"unclear","confidence":"low","reason":"A second 49 m2 diamond over the same open parkland a few metres from OBJECTID 355731, again with no building beneath it. Recommend excluding."},
+{"crop":"tu_karlsplatz_355083","label":"false","confidence":"medium","reason":"HARD CALL. The street-front slope carries a long band of narrow dark strips separated by pale bars; at 5x the bars run unbroken from eaves to ridge with no cross-breaks between rows, which reads as ribbed patent glazing over the mansard rather than a module field. Dark flat rooflights and plant boxes sit behind it."},
+{"crop":"tu_karlsplatz_368679","label":"false","confidence":"medium","reason":"Narrow 151 m2 strip roof in the shade of the block, grey-blue with two small rooflights; a specular sun star flares across the street outside the outline but does not reach the roof."}
+]

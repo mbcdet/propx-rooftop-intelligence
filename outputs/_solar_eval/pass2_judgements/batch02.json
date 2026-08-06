@@ -1,0 +1,8 @@
+[
+{"crop":"spengergasse_205860","label":"false","confidence":"high","reason":"Terracotta hipped roof with a row of small pale dormer lights along the street slope and a light grey sheet-metal valley at the centre; every regular element is lighter than the roof, not darker."},
+{"crop":"spengergasse_206264","label":"false","confidence":"medium","reason":"Terracotta street wing with dormers plus grey side wings; the large dark rectangle at the centre is an inner courtyard in deep shadow, traced as a hole by the inner ring, not a roof surface."},
+{"crop":"spengergasse_225391","label":"false","confidence":"medium","reason":"Brown-grey pitched roof with two chimneys and a pale rear extension; bright blue construction sheeting covers a neighbouring roof at the bottom right, outside the outline."},
+{"crop":"spengergasse_235197","label":"false","confidence":"high","reason":"Plain terracotta pitched roof with one chimney inside the outline; a dark blue regularly striped panel field sits on the NEIGHBOURING roof to the south, clearly outside the outline."},
+{"crop":"spengergasse_247643","label":"unclear","confidence":"low","reason":"Light ribbed metal roof carrying about ten dark rectangles in two loose rows along the ribs; flush-mounted modules and dark-glazed rooflights cannot be separated at ~10 cm/px here."},
+{"crop":"spengergasse_248716","label":"false","confidence":"medium","reason":"Grey flat-and-pitched roof with pale render patches and small vents; a tower crane and yellow scaffolding stand immediately north-west outside the outline, and the neighbours to the south-east are grey ribbed metal."}
+]
