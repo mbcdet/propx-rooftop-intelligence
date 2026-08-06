@@ -1,4 +1,4 @@
-"""Phase 3b: turn two independent readings into one consensus reference standard.
+"""Phase 3b: turn two readings into one consensus reference standard.
 
 Reads the repaired Phase 3 ``labels.csv``, applies the consensus rule below, writes
 ``reference_label`` / ``drop_reason`` back into ``labels.csv`` and recomputes ``splits.json``.
@@ -35,9 +35,11 @@ TUNE_SHARE = 0.6
 
 CONSENSUS_COMMENT = (
     "# PHASE 3b, consensus reference: reference_label is the final label and is the only column "
-    "any score is computed from. It is a consensus of two independent readings — the assistant's "
-    "full-resolution pass-2 reading and Mohammad's review — and neither reader is authoritative "
-    "over the other. drop_reason says why a row carries no reference_label: E1/E2 are the Phase 3 "
+    "any score is computed from. It combines the assistant's full-resolution pass-2 reading and "
+    "Mohammad's review. Mohammad saw the assistant's proposal, so the readings are anchored rather "
+    "than independent and agreement is inflated by an unknown amount; neither reader is "
+    "authoritative over the other. drop_reason says why a row carries no reference_label: E1/E2 "
+    "are the Phase 3 "
     "exclusions (applied first); D1_disagreement is a direct contradiction, one reader true and "
     "the other false, dropped rather than adjudicated; D2_unreviewed is a row Mohammad never saw. "
     "Where the assistant recorded 'unclear' and Mohammad committed, the human label is used: an "

@@ -2,96 +2,69 @@
 
 ## Why these sources, and the trade-offs
 
-I chose the City of Vienna's **2024 true orthophoto** (WMTS `lb2024`, 15 cm GSD) for imagery and the **2025
-solar-cadastre roof layer** `ogdwien:ANLAGENLEISTUNG2025OGD` (WFS) as the authoritative roof geometry,
-cross-checked against **FMZK building units** (`ogdwien:FMZKGEBOGD`, dissolved by `BW_GEB_ID`).
+I used the City of Vienna's **2024 true orthophoto** (WMTS `lb2024`, 15 cm GSD) for imagery and
+the **2025 solar-cadastre roof layer** `ogdwien:ANLAGENLEISTUNG2025OGD` (WFS) for authoritative
+roof geometry, cross-checked against FMZK building units (`ogdwien:FMZKGEBOGD`, dissolved by
+`BW_GEB_ID`). At zoom 20 the imagery samples about 0.0995 m/px at Vienna's latitude. More
+important, true-ortho processing reduces the roof displacement that would otherwise invalidate
+footprint-aligned measurements.
 
-Resolution decided the imagery. At zoom 20 the effective ground sample is 0.0995 m/px at Vienna's latitude,
-so a 1 m dormer is ten pixels across. The **true**-ortho
-property matters more: in a conventional orthophoto a roof is displaced from its footprint by roughly
-building height × off-nadir angle, silently invalidating every footprint-aligned measurement. Coverage is
-city-wide, licence CC BY 4.0, cost zero.
+The trade-off is season: the March/April flights have long shadows and dormant vegetation, so
+green-roof evidence is weak. The 2025 roof outlines derive from a 7.5 cm laser-scan surface model;
+an RGB segmenter built in one day is not a credible replacement. The authoritative polygon is
+therefore canonical and segmentation is evidence about it, never a replacement. No code path can
+promote a CV polygon to published geometry.
 
-The main trade-off is **season**: the flights (19/20 and 29 March, 12 April 2024) predate leaf-out, so
-shadows are long and vegetation dormant, and green-roof evidence is published as a low-confidence RGB
-observation rather than a finding.
-
-I did **not** use single-source CV for geometry. The 2025 outlines derive from a 7.5 cm laser-scan surface
-model; no RGB segmentation I can build in a day will beat that. So the authoritative polygon is canonical
-and segmentation is *evidence about* it, never a replacement — enforced structurally: no code path promotes
-a CV polygon to the published outline.
-
-**Sources actually queried** (live responses in `docs/phase1_design.md` §1.1): WMTS capabilities
-for `lb2024`, and six WFS layers, of which **four are used** — the 2025 solar layer, FMZK, building
-typology, building info. Two were queried and dropped: the 2022 solar layer (older geometry, no yield
-range) and `PVPOTENZIALE2025OGD` (no documented key to the 2025 layer). Neither is in the cache,
-`run.sources` or the output.
-
-**Inspected, then rejected:** *OpenStreetMap* `roof:shape` — unevenly populated, unverifiable per building.
-
-**Considered but not queried at all**, with reasons: *Sentinel-2* — 10 m bands cannot resolve a 20 m roof
-into planes; *oblique and street-level imagery* — not orthorectified, so measurement needs a
-photogrammetric solve I could not validate in time; *3D meshes* — derived products whose provenance I
-cannot audit, where Vienna publishes the underlying surface model directly; *thermal layers* — insulation
-inference confounds with material, aspect and time of day. None were attempted; I do not report
-experiments I did not run. The DOM/DGM rasters are the obvious next source.
+Four WFS layers are used: the 2025 roof layer, FMZK, building typology and building information.
+The 2022 solar layer was queried and rejected as older; `PVPOTENZIALE2025OGD` was rejected because
+it has no documented key to the roof layer. OpenStreetMap `roof:shape` was inspected but was too
+uneven to verify per building. Sentinel-2 is too coarse; oblique imagery needs an unvalidated
+photogrammetric solve; thermal imagery confounds material, aspect and acquisition time. DOM/DGM
+rasters are the most useful next source.
 
 ## What the sources supported, and what they did not
 
-Authoritative, from the 2025 layer: **outline, roof type (`DACHFORM`), mean slope, PV suitability sub-areas
-and capacity**. Derived in EPSG:31256: **area**, perimeter, boundary diagnostics.
+The 2025 layer supports the outline, binary roof form (`DACHFORM`), mean slope, PV-suitability
+areas, capacity and potential annual yield. EPSG:31256 supports planimetric area and boundary
+measurements. The image supports cautious observations of visible surface class, ridge orientation
+and RGB vegetation evidence.
 
-Observed from imagery: **roof surface class, ridge orientation, green-roof RGB evidence** — each carried
-with segmentation agreement, shadow fraction and a seed-independent boundary-gradient ratio.
-
-Not extracted, deliberately: **material** — separable by eye, but with no labelled Vienna sample to
-validate a classifier I publish a coarse surface class instead; **hipped/complex subtypes** — the
-authoritative field is binary and a *mean* slope cannot distinguish a hip from a gable; **superstructures
-and condition** — no validation set.
-
-**Solar is the one attribute I withheld.** The detector runs, but a spot check **against the imagery** found
-it anti-correlated on all four checkable cases. That check is a reviewer's visual read, not ground truth,
-and no independent reference exists — `ANLAGENLEISTUNG` is modelled PV *potential*, not installed capacity.
-Publishing a boolean from a detector that inverts the only available check is worse than publishing
-nothing, so the value is `null`, availability `unavailable`, the score `null` rather than low, with raw
-diagnostics kept for a future validation. That judgement has since been **measured** — 109
-roofs, two independent readers, a threshold pre-registered before the detector ran, **1 false positive on
-35 confirmed negatives, 95% CI [0.07%, 14.9%]**, failing a bar of zero (`docs/solar_evaluation.md`).
+I did not claim material, hipped/gable subtype, superstructures or condition because the available
+sources do not validate them. Solar-panel presence is also withheld. A four-case visual check first
+found the detector anti-correlated with the imagery. A later evaluation drew a 109-roof pool: a
+model-assisted first pass covered all 109, I reviewed 103, six unreviewed rows were dropped, and the scoreable
+reference is 90 rows — 85 strict two-reader agreements and 5 human-resolved model abstentions.
+I saw the proposed labels, so the readings were anchored rather than
+independent. On 35 held-out reference-negative roofs — 33
+strict agreements and 2 human-resolved assistant abstentions — the detector produced 1 false
+positive, Clopper–Pearson 95% [0.07%, 14.9%], failing the pre-registered bar of zero. The reference
+uses the same imagery and contains only two positives, so it supports neither recall nor general
+accuracy. Solar remains `null` / `unavailable` / unscored, with raw diagnostics retained.
 
 ## Alignment, and scaling from ten buildings to thousands
 
-Geolocation is not an image-registration problem here: the imagery is a true ortho in a known tile grid, so
-the authoritative polygon is reprojected into the pixel frame, rasterised, and used as the segmentation
-seed. A roof is never matched to the wrong building by appearance. The real matching problem is
-authoritative-to-authoritative — the 2025 outline and the FMZK dissolve are one building but not the
-same polygon (both containment ratios sit symmetrically near 0.98), solved by best-IoU overlap on a 150 m
-buffered fetch, with the second-best candidate recorded so ambiguity stays visible.
+The orthophoto has a known tile grid, so the authoritative polygon is reprojected into pixels and
+rasterised as the GrabCut seed. Consequently CV-to-authoritative IoU is agreement, not accuracy.
+The authoritative-to-authoritative join is less direct: the 2025 outline and FMZK dissolve use
+different cadastral cuts. A 150 m buffered fetch, best-IoU match and recorded second-best overlap
+keep ambiguity and 1:n cardinality visible.
 
-Scaling changes the problem in three ways.
-
-**Fetching.** Per-building WFS calls do not scale. Bulk-download both vector layers once into a
-spatially-indexed store (PostGIS or GeoParquet) and the join becomes one spatial query, not ten thousand
-requests. Tiles fetch by tile id, so neighbours share them.
-
-**Compute.** Buildings are independent, so this is embarrassingly parallel — but partition by *tile id*, not
-building id, so workers share tile reads. The pipeline is already a pure function of (cache, config).
-
-**Review.** Inspecting ten buildings by hand becomes triage. The ambiguity, review and low-confidence flags
-emitted here are the queue, and publishing abstentions rather than guesses makes them sortable.
-
-The honest limitation: nothing here is calibrated. At thousands I would need a labelled sample — the solar
-evaluation above is what building one, and scoring against it, actually costs.
+At portfolio scale I would bulk-load vector layers into PostGIS or GeoParquet and perform one
+spatial join rather than per-building WFS calls. Imagery work should be partitioned by tile id so
+neighbouring roofs share downloads and reads; buildings remain independently processable inside
+each partition. Manual inspection becomes exception triage driven by ambiguity, review and
+low-confidence flags. A labelled monitoring set would be required before treating any image
+detector or confidence score as calibrated.
 
 ## How confidence is represented and would be used
 
-A score is `base(provenance) × Π(penalties)`. Provenance sets the ceiling —
-authoritative 0.95, image-derived 0.80 under a lower per-attribute cap (0.75 solar, 0.70 ridge, 0.65 green
-roof, 0.60 surface class; 0.85 is the *derived*/geometry cap) — and penalties reduce it for shadow, low
-agreement, boundary ambiguity or conflict. The highest observed score published is 0.70. Each score ships
-with its availability, method and evidence.
+Confidence is `base(provenance) × Π(penalties)`, capped per attribute. Authoritative provenance has
+the highest ceiling; image-derived attributes have lower caps. Penalties expose specific evidence
+such as source recency, image conflict, shadow or weak typology overlap. Every score travels with
+availability, method, sources, rationale and limitations; abstentions have no score.
 
-These are **documented heuristics, not calibrated probabilities**. A 0.9 does not mean nine times in ten; it
-means "authoritative source, no penalty fired". That makes them safe for *ordering* and *gating* and unsafe
-for arithmetic: use them to route records to review or filter a portfolio query above a threshold — never
-to multiply into an expected value or report as accuracy. The schema is shaped so that replacing heuristic
-scores with calibrated ones changes no consumer's code.
+These values are documented heuristics, not probabilities. A score of 0.9 means authoritative
+source with little recorded penalty, not “correct nine times in ten”. They are suitable for
+ordering a review queue or applying a conservative gate, but not for expected-value arithmetic or
+accuracy reporting. The schema allows calibrated probabilities to replace them later without
+changing the consumer-facing record shape.

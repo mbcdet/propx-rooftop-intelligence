@@ -84,7 +84,7 @@ Assessments are the reviewers'; published values are quoted from `outputs/roof_a
 
 > **This is a tiny visual spot check, not a performance estimate.** The published `solar_panels.value` is
 > `null` on all ten buildings, so there is nothing to score. The table below compares reviewer reads against
-> the **withheld, unvalidated** `image_evidence.quality.withheld_detector_verdict`, which the record itself
+> the **withheld** `image_evidence.quality.withheld_detector_verdict`, which the record itself
 > labels "NOT a Boolean observation". **n=4 checkable cases. No rate, no percentage, no accuracy claim.**
 
 | | reviewer reads **visible** | reviewer reads **not visible** |
@@ -110,8 +110,9 @@ vie-swv-001 and vie-swv-003. **The held-out sample size for solar is 0.**
 > **Superseded as evidence, not as observation.** Reviewer C's warning was acted on: a separate
 > evaluation on 109 roofs across three other Vienna zones, with a pre-registered threshold and a
 > genuinely held-out split, is in [`docs/solar_evaluation.md`](solar_evaluation.md). It confirms
-> the abstention with a number — **1 false positive on 35 confirmed-negative roofs, 95% CI
-> [0.07%, 14.9%]**, against a bar of zero. The four cases below remain what they always were: four
+> the abstention with a number — **1 false positive on 35 reference-negative roofs: 33 strict
+> two-reader agreements and 2 human-resolved assistant abstentions, 95% CI [0.07%, 14.9%]**,
+> against a bar of zero. The four cases below remain what they always were: four
 > visual reads, too few to conclude from. The reviewers' observations are unchanged.
 
 ---
@@ -208,19 +209,21 @@ so the audit trail shows what was found as well as what was done about it.
    on **vie-swv-001 and vie-swv-003**, and `attributes/__init__.py` says `solar_internal_texture_min`
    was *"measured over the ten selected buildings"*. The published sentence overstated it during drafting.
 
-   *Corrected claim now published* — in the output rationale, the schema description and the
-   docstring, consistently:
+   *Phase 4A correction at the time* — the output rationale, schema description and docstring then
+   stated consistently:
 
    - **two brightness/texture gates** (`image.solar_panels.max_value` and
      `solar_internal_texture_min`) **were calibrated from measured pixels on vie-swv-001 and
      vie-swv-003** inside the selected sample;
-   - **there is no held-out labelled solar case** — the buildings that anchor the calibration are the
-     same ones any check would use, so the held-out count is zero;
+   - **there was no held-out solar case at that phase** — the buildings anchoring calibration were
+     the same ones used by the check;
    - **the detector verdict remains withheld**: `value` is `null`, `availability` is `unavailable`,
-     `confidence.score` is `null`, and the raw candidate diagnostics are retained as unvalidated
-     evidence.
+     `confidence.score` is `null`, and the raw candidate diagnostics are retained.
 
-   No threshold was moved to close this finding; only the claim about the thresholds changed.
+   No threshold was moved to close this finding; only the claim about the thresholds changed. A
+   later non-ground-truth reference evaluation is now complete (`docs/solar_evaluation.md`), failed
+   its pre-registered false-positive bar, and supersedes the earlier "pending validation" wording;
+   it still supports neither recall nor general accuracy.
 2. **The image evidence is not independent of the authoritative label.** `ridge_plane_contrast_min: 0.15` was
    placed in the measured gap between *this sample's* `Flachdach` and `Schraegdach` classes. Any statement of
    the form "the image evidence agrees with `DACHFORM`" is circular and must not be written.
@@ -247,19 +250,16 @@ so the audit trail shows what was found as well as what was done about it.
    publish `judgeable_fraction: 1.0`. **Phase 4A** publishes `min_luminance`, `p01_luminance` and
    `p05_luminance` beside `shadow_fraction` so the 0.0 is self-evidencing, and removed the
    "adequate image quality" wording that rested on a gate this sample cannot fail.
-5. **Confidence carries no per-building information.** All ten buildings share one score per attribute; the
-   complete set of values in the document is `{0.85, 0.902, 0.90, 0.80, 0.70, 0.60, 0.45}`. Only one penalty
-   (`source_recency`) is ever applied, and on most attributes the cap swallows it. **Do not rank buildings by
-   confidence or compute a mean.**
+5. **Confidence originally carried almost no per-building information.** At this checkpoint all ten
+   buildings shared one score per attribute, and only `source_recency` fired. **Do not compute a mean or
+   read any score as a probability.**
 
-   *Disposition:* **UNRESOLVED by design — the finding is correct and is now stated as a caveat rather
-   than fixed.** The confidence model was not changed; per-building variation would have to come from
-   penalties that this sample never fires, and inventing that variation would be fabricating precision.
-   The set of published scores after the Phase 4A regeneration is unchanged —
-   `{0.902, 0.90, 0.85, 0.80, 0.70, 0.60, 0.45}`, plus `null` where an attribute abstains. The
-   README and `docs/design_and_reasoning.md` both state that the scores are documented heuristics, safe
-   for ordering and gating and unsafe for arithmetic; Risk 2c in `docs/phase1_design.md` §10 records that
-   four of five penalties never fire here.
+   *Disposition:* **PARTLY CLOSED by the final audit.** Typology enrichment now applies the measured
+   best-overlap fraction as a transparent heuristic factor, clipped at the configured 0.50 floor. The three
+   available typology scores therefore changed from 0.902 to 0.600 (`vie-swv-005`) and 0.451
+   (`vie-swv-007`, `vie-swv-010`). Other attributes still share scores where their recorded evidence is the
+   same; no variation was invented. The README and `docs/design_and_reasoning.md` continue to state that
+   these are heuristic reliability indicators suitable for review ordering, not calibrated probabilities.
 6. **Stale design text.** §8's worked examples (0.63 / 0.86 / 0.42) do not reproduce; §5's rows for
    `solar_panels` and `roof_subtype` describe superseded behaviour; §5.1's slope fallback is **read by no code**;
    §7's manual-review workflow does not exist; §9's repo structure lists files that were never created. There

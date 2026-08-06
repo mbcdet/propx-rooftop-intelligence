@@ -53,14 +53,18 @@ confidence:
     derived: 0.85
     observed: 0.80
     inferred: 0.65
-  # Multiplicative penalties, each in [0.5, 1.0], at most three per attribute. Only the three
-  # marked LIVE are ever requested by confidence.penalty(); the other two are SPECIFIED, NOT
+  # Multiplicative penalties, each in [0.5, 1.0], at most three per attribute. Four entries are
+  # marked LIVE; the other two are SPECIFIED, NOT
   # IMPLEMENTED - no code path asks for them, so they cannot reduce any published score. Kept
   # rather than deleted because deleting them would change config_hash for no behavioural
   # reason, and because the values are still the specification a future implementation follows.
   penalty:
     source_recency: 0.95        # LIVE. 2023/2025 model inputs read against 2024 imagery
     image_conflict: 0.70        # LIVE. authoritative class disagrees with image evidence
+    # LIVE floor for typology enrichment. The effective factor is the measured fraction of the
+    # authoritative roof covered by the best-overlapping typology polygon, clipped to this floor
+    # and 1.0. This is a transparent heuristic reliability reduction, not a calibrated curve.
+    typology_overlap_floor: 0.50
     join_ambiguous: 0.85        # SPECIFIED, NOT IMPLEMENTED - never requested
     threshold_margin_min: 0.75  # SPECIFIED, NOT IMPLEMENTED - never requested; was to apply
                                 # when a value sits near a class boundary

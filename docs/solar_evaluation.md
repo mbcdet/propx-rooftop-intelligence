@@ -63,6 +63,12 @@ projected area, two with `SLOPE_MEAN` above 60° (these read as wall facets, not
 roof kept has ≥ 90% imagery coverage. None of the ten pinned assessment buildings is in the pool,
 which was checked explicitly.
 
+**This geometry pre-filter is the least auditable step in the evaluation chain.** The two
+`SLOPE_MEAN > 60°` crops were not retained, so the wall-facet reading cannot now be checked, and
+the main pipeline treats the same threshold as a review trigger rather than proof that a record is
+not a roof. The exclusions are disclosed as a limitation; they are not evidence about detector
+performance and the evaluation was not re-run to change them.
+
 **This sample is not representative of Vienna and no statement about how common rooftop PV is in
 Vienna may be derived from it.** It is deliberately enriched for institutional and campus
 buildings because those carry more arrays than the ordinary stock, and it covers three zones out
@@ -76,11 +82,19 @@ mislabelled and this cannot be detected from these sources.
 
 ## 4. The reference standard: two readings, and contradictions are dropped
 
-Every one of the 109 roofs was read twice, independently:
+The pool contained 109 roofs. **They were not all read twice**, and the exact coverage matters:
 
-* **the assistant**, opening each crop at native resolution and zooming 2–6× wherever a mimic had
-  to be adjudicated, recording a label, a confidence and a written reason for every roof;
-* **Mohammad**, reviewing an 88-row queue plus 18 rows beyond it, from contact sheets.
+* **the assistant read all 109**, opening each crop at native resolution and zooming 2–6× wherever
+  a mimic had to be adjudicated, recording a label, a confidence and a written reason for every
+  roof;
+* **Mohammad reviewed 103** — an 88-row queue plus 18 rows beyond it, minus three queue rows left
+  blank. The remaining **6 rows carry one reading only** and are dropped as `D2_unreviewed`; they
+  are never scored and are never counted as negatives.
+* He saw the assistant's proposed labels, so the second reading was **anchored by the first rather
+  than independent**. Agreement is inflated by that anchoring by an unknown amount.
+
+So the scoreable reference is **90 rows: 85 strict two-reader agreements and 5 rows where the
+assistant abstained and Mohammad alone resolved it**. Only those 85 carry two committed readings.
 
 Neither reader is authoritative over the other. Where they contradict, the row is **dropped, not
 adjudicated** — there is no third reading available to break a tie, and preferring one reader
@@ -172,14 +186,14 @@ of this sample. It fixes:
 
 | Item | Value |
 |---|---|
-| Primary metric | false-positive rate on held-out confirmed negatives, with a Clopper–Pearson 95% interval, never quoted without it |
-| Denominator | **35** held-out confirmed negatives |
+| Primary metric | false-positive rate on held-out reference negatives, with a Clopper–Pearson 95% interval, never quoted without it |
+| Denominator | **35** held-out reference negatives: 33 strict two-reader agreements and 2 human-resolved assistant abstentions (`247643`, `296100`) |
 | Disqualification threshold | **≥ 1 false positive disqualifies** |
 | Degeneracy guard | the tuned configuration must detect `345054`; the held-out result is interpretable only if it also detects `298442` |
 | Tuning objective | among configurations that detect the tune positive, minimise false positives on the 53 tune negatives — **never minimise the false-positive count alone** |
 | Recall / precision | **not computed at all** |
 | Split | seed `20260808`, stratified, 60% tune / 40% held-out |
-| Held-out split | scored **once** |
+| Held-out split | treated as a **one-time process step**; guarded against accidental access but not provable or enforceable by the repository |
 
 The split gave 54 tune rows (1 positive, 53 negatives) and 36 held-out rows (1 positive, 35
 negatives).
@@ -227,8 +241,9 @@ configuration hook that `attributes.param()` already prefers over `ATTRIBUTE_PAR
 | `solar_close_m` | 0.5 | 0.3 – 1.0, 4 values |
 
 **64,512 configurations** were evaluated on the 54 tune rows. The held-out split was not read,
-scored or inspected during this phase; the scoring harness refuses to load it without an
-explicit flag.
+scored or inspected during this phase. The scoring harness requires an explicit flag for every
+path that includes held-out rows, including `scoreable`; this prevents accidental access but
+cannot prove that a human invoked the command only once.
 
 The search prunes with a fast re-implementation of the detector's decision stage, so the four
 filter parameters can be swept in arithmetic over components extracted once per morphology
@@ -242,7 +257,7 @@ others were re-run through the real `observe_solar_panels`, and **all 1,404 verd
 | **Never fires** (degenerate) | 0 of 53 | no | no | no |
 | **Shipped `ATTRIBUTE_PARAMS`** | **8 of 53** | **no** | no | no |
 
-The shipped detector fails the degeneracy guard on its own: it fires on eight confirmed-negative
+The shipped detector fails the degeneracy guard on its own: it fires on eight reference-negative
 roofs *and* misses the tune positive. This re-measurement also reproduces
 `docs/phase3_visual_validation.md` §3 exactly — `false` on eight of the ten pinned buildings and
 `true` on `vie-swv-006` and `vie-swv-010` — which is a check on the harness, not on the detector.
@@ -295,7 +310,7 @@ Two further findings from the same check:
   pre-registration exists to prevent. The existence of the robust set is reported here, and it is
   the natural starting point for anyone who picks this up.
 
-## 8. The held-out result, scored once
+## 8. The held-out result, treated as the one-time score
 
 | | Reference `true` | Reference `false` |
 |---|---|---|
@@ -395,7 +410,8 @@ The threshold is not met, so the pre-registered failure branch applies:
    diagnostics — `withheld_detector_verdict`, candidate clusters, coverage fractions — retained
    in the output for a future validation. **Nothing about the published output changes.**
 3. **The abstention is now a measured finding rather than a judgement**: measured on 35
-   confirmed-negative roofs drawn from a two-reader consensus reference, 1 false positive,
+   reference-negative roofs — 33 strict two-reader agreements and 2 human-resolved assistant
+   abstentions — with 1 false positive,
    Clopper–Pearson 95% [0.07%, 14.9%], failing a threshold fixed in advance, with the failure
    traced to a specific mechanism in §8.
 
@@ -439,24 +455,54 @@ Stated plainly, and required to accompany any quotation of the numbers above.
 
 ---
 
-## Reproducing this
+## Auditing the recorded evaluation
 
-All evidence is under `outputs/_solar_eval/`. Crops, contact sheets, review sheets and
-`data/eval_cache/` are deliberately not committed — they are large, and the labels and results
-are the evidence.
+**This evaluation cannot be re-run end to end from a clean clone, and is not submitted as if it
+could be.** The imagery it was measured on — `data/eval_cache/` for the three evaluation zones,
+plus the crops, contact sheets and review sheets — is deliberately not committed: roughly 130 MB
+of JPEG tiles and PNGs, fetched from the live City of Vienna services for this evaluation alone.
+No committed tool rebuilds that cache. What is committed is the evidence: the labels, the frozen
+rules, the scripts and every result file.
 
-| Step | Command |
+This limitation applies **only to this supplementary evaluation**. The main rooftop pipeline runs
+offline from the committed cache with no missing artefact; `make verify-repro` then checks
+byte-for-byte reproduction in the **currently installed environment**, not reproducibility in
+general.
+
+**What a reviewer can audit from the committed evidence alone**, with no imagery and no network:
+
+| Artefact | What can be checked against it |
 |---|---|
-| Build the consensus reference and the split | `python3 outputs/_solar_eval/build_reference.py` |
-| Search the six parameters on the tune split | `python3 outputs/_solar_eval/search.py` |
-| Verify the surrogate, sensitivity, robustness | `python3 outputs/_solar_eval/phase4_verify.py` |
-| Score the held-out split | `python3 outputs/_solar_eval/phase5_score.py` |
+| `labels.csv` | every assistant reading, the 103 recorded human readings (with six blanks visible), the consensus rule's outcome per row, the exclusions |
+| `splits.json` | the split membership and seed, and that no row appears in both splits |
+| `preregistration.md` | the rules, the recorded file hashes, and that the reported metric is the one that was fixed |
+| `PHASE3_REPORT.md` | how the reference was built and repaired |
+| `phase4_search.json`, `phase4_report.json` | the search space, the winner, the sensitivity and robustness census |
+| `phase5_report.json` | the held-out result and every diagnostic behind it |
+| `build_reference.py` | that the consensus rule as executed matches the rule as described |
 
-`score.py` refuses to load the held-out split without `--score-the-held-out-split-once`.
+The Clopper–Pearson intervals, the confusion matrix, the disagreement rate and the consensus rule
+can all be recomputed from `labels.csv` and `splits.json` by hand. That is the intended audit path.
+
+**Scripts preserved as an executable record.** These document exactly what was run. Only
+`build_reference.py` runs from the committed evidence alone; the other three read the evaluation
+imagery and therefore require the original local `data/eval_cache/`:
+
+| Script | Runs from a clean clone? |
+|---|---|
+| `build_reference.py` — consensus rule and split | **yes**, reads only `labels.csv` |
+| `search.py` — the six-parameter search | no, needs `data/eval_cache/` |
+| `phase4_verify.py` — surrogate check, sensitivity, robustness | no, needs `data/eval_cache/` |
+| `phase5_score.py` — the held-out scoring | no, needs `data/eval_cache/` |
+
+`score.py` requires `--score-the-held-out-split-once` on every path that touches held-out rows,
+including `--split scoreable`. The flag prevents accidental access. It **cannot prove or enforce**
+that the command was invoked only once: "scored once" is process discipline, recorded here as a
+claim about how the work was done, not as something this repository can demonstrate.
 
 | Artefact | What it holds |
 |---|---|
-| `labels.csv` | 109 rows, both readings, `reference_label`, `drop_reason`, the exclusions |
+| `labels.csv` | 109 rows: assistant reading on all, human reading on 103, `reference_label`, `drop_reason`, the exclusions |
 | `splits.json` | seed `20260808`, split membership, the disagreement rate |
 | `preregistration.md` | the frozen rules |
 | `PHASE3_REPORT.md` | the reference-standard construction and its repair history |

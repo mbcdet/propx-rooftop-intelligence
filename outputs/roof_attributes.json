@@ -1,8 +1,8 @@
 {
  "run": {
-  "generated_at": "2026-08-06T00:20:53.740789+02:00",
+  "generated_at": "2026-08-06T17:15:14.966610+02:00",
   "pipeline_version": "0.1.0",
-  "config_hash": "e8305ca21106c6db",
+  "config_hash": "423e6b6f79ae0d5d",
   "algorithm_parameters_hash": "cd96abe1b9118c3f",
   "study_area": {
    "name": "sonnwendviertel",
@@ -659,16 +659,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -676,7 +676,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 234683,
        "roof_mask_area_m2_approx": 2325.0,
@@ -750,8 +750,8 @@
         "co_oriented_clusters": true,
         "periodic": true
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -1991,16 +1991,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -2008,7 +2008,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 634724,
        "roof_mask_area_m2_approx": 6288.1,
@@ -2120,8 +2120,8 @@
         "co_oriented_clusters": true,
         "periodic": true
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -2924,16 +2924,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -2941,7 +2941,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 110787,
        "roof_mask_area_m2_approx": 1097.6,
@@ -3000,8 +3000,8 @@
         "co_oriented_clusters": false,
         "periodic": false
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -4849,16 +4849,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -4866,7 +4866,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 340270,
        "roof_mask_area_m2_approx": 3371.4,
@@ -4957,8 +4957,8 @@
         "co_oriented_clusters": false,
         "periodic": false
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -5848,16 +5848,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -5865,7 +5865,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 55689,
        "roof_mask_area_m2_approx": 551.7,
@@ -5916,8 +5916,8 @@
         "co_oriented_clusters": false,
         "periodic": false
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -6180,7 +6180,7 @@
      "value": "W6.1.-Sonderwohnbauten-Hotel und Pension",
      "availability": "authoritative",
      "confidence": {
-      "score": 0.902,
+      "score": 0.6,
       "method": "authoritative_typology_best_overlap",
       "sources": [
        "ogdwien:GEBAEUDETYPOGD"
@@ -6191,7 +6191,8 @@
        "the typology cadastre is cut differently from the roof record, so the match is a best geometric overlap and its share is published"
       ],
       "factors": {
-       "source_recency": 0.95
+       "source_recency": 0.95,
+       "typology_overlap": 0.6649
       },
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
      },
@@ -6801,16 +6802,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -6818,7 +6819,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 60895,
        "roof_mask_area_m2_approx": 603.4,
@@ -6868,8 +6869,8 @@
         "co_oriented_clusters": false,
         "periodic": true
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": true,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -8001,16 +8002,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -8018,7 +8019,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 61353,
        "roof_mask_area_m2_approx": 607.8,
@@ -8093,8 +8094,8 @@
         "co_oriented_clusters": false,
         "periodic": false
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -8358,7 +8359,7 @@
      "value": "W3.3.-Mieth.s.d.Gründerzeit-Doppeltrakter mit Verbindungstr.",
      "availability": "authoritative",
      "confidence": {
-      "score": 0.902,
+      "score": 0.451,
       "method": "authoritative_typology_best_overlap",
       "sources": [
        "ogdwien:GEBAEUDETYPOGD"
@@ -8369,7 +8370,8 @@
        "the typology cadastre is cut differently from the roof record, so the match is a best geometric overlap and its share is published"
       ],
       "factors": {
-       "source_recency": 0.95
+       "source_recency": 0.95,
+       "typology_overlap": 0.5
       },
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
      },
@@ -9033,16 +9035,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -9050,7 +9052,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 69316,
        "roof_mask_area_m2_approx": 686.7,
@@ -9117,8 +9119,8 @@
         "co_oriented_clusters": false,
         "periodic": false
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -10263,16 +10265,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -10280,7 +10282,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 46473,
        "roof_mask_area_m2_approx": 460.4,
@@ -10347,8 +10349,8 @@
         "co_oriented_clusters": false,
         "periodic": false
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": false,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -11207,16 +11209,16 @@
      "availability": "unavailable",
      "confidence": {
       "score": null,
-      "method": "detector_withheld_pending_validation",
+      "method": "detector_withheld_after_failed_evaluation",
       "sources": [
        "Orthofoto 2024 Wien (lb2024)"
       ],
-      "rationale": "the RGB detector is retained as a candidate generator only; a spot check against the imagery found it anti-correlated on all four checkable cases, so no Boolean is published and no score is assigned",
+      "rationale": "the RGB detector is retained as a candidate generator only; it produced 1 false positive on 35 held-out reference-negative roofs and failed the pre-registered bar of zero, so no Boolean is published and no score is assigned",
       "limitations": [
-       "no labelled ground truth exists for this attribute, so no accuracy claim of any kind can be made",
-       "two brightness/texture gates (image.solar_panels.max_value and solar_internal_texture_min) were calibrated from measured pixels on vie-swv-001 and vie-swv-003 within the selected sample, so there is no held-out labelled case for this attribute",
+       "the evaluation reference consists of readings of the same imagery, not independent ground truth, so it supports no general accuracy claim",
+       "the reference sample contains only two positives in total, so it supports no recall estimate",
        "no gate was moved after the spot check to change any building's verdict",
-       "candidate diagnostics are published for future validation, not as a finding"
+       "candidate diagnostics are published for independent future validation, not as a finding"
       ],
       "factors": {},
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
@@ -11224,7 +11226,7 @@
      "image_evidence": {
       "indicates": null,
       "method": "rgb_dark_low_saturation_rectangular_cluster_regularity",
-      "rationale": "candidate generation only; the detector's verdict is withheld pending labelled validation, so this evidence indicates nothing about panel presence or absence",
+      "rationale": "candidate generation only; the detector's verdict is withheld after it failed a completed non-ground-truth reference evaluation, so this evidence indicates nothing about panel presence or absence",
       "quality": {
        "roof_pixel_count": 39203,
        "roof_mask_area_m2_approx": 388.4,
@@ -11283,8 +11285,8 @@
         "co_oriented_clusters": false,
         "periodic": true
        },
-       "status": "unvalidated_candidate_evidence",
-       "interpretation": "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, and not evidence that panels are present or absent.",
+       "status": "candidate_evidence_withheld_after_failed_evaluation",
+       "interpretation": "Raw candidate diagnostics from a detector that failed a completed evaluation against a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence that panels are present or absent.",
        "withheld_detector_verdict": true,
        "detector_limitations": [
         "15 cm GSD with JPEG compression; the city's own 7.5 cm pipeline reports detecting only about 70% of existing installations (design 1.6), so recall here is lower still",
@@ -11548,7 +11550,7 @@
      "value": "W4.1.-soz.u.gemeinn.Wohnb.-Baulückenbebauungen",
      "availability": "authoritative",
      "confidence": {
-      "score": 0.902,
+      "score": 0.451,
       "method": "authoritative_typology_best_overlap",
       "sources": [
        "ogdwien:GEBAEUDETYPOGD"
@@ -11559,7 +11561,8 @@
        "the typology cadastre is cut differently from the roof record, so the match is a best geometric overlap and its share is published"
       ],
       "factors": {
-       "source_recency": 0.95
+       "source_recency": 0.95,
+       "typology_overlap": 0.5
       },
       "note": "Documented heuristic reliability indicator, not a calibrated probability."
      },

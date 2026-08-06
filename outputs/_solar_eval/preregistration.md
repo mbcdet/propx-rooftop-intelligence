@@ -28,11 +28,12 @@ Inputs fixed by this document:
 
 ## 0. The reference standard is a two-reader consensus
 
-Two independent readings exist for every row: the assistant's full-resolution pass-2 reading
-of each crop, and Mohammad's review. **Neither reader is authoritative over the other.** Where
-they contradict each other the row is dropped, not adjudicated — there is no third reading that
-could break the tie, and inventing one by preferring a reader would put a label into the
-denominator that no evidence supports.
+Two readings exist for every row: the assistant's full-resolution pass-2 reading of each crop,
+and Mohammad's review. Mohammad saw the assistant's proposal, so the readings are anchored rather
+than independent and agreement is inflated by an unknown amount. **Neither reader is authoritative
+over the other.** Where they contradict each other the row is dropped, not adjudicated — there is
+no third reading that could break the tie, and inventing one by preferring a reader would put a
+label into the denominator that no evidence supports.
 
 The rule, applied in this order by `build_reference.py`; the first line a row meets decides it:
 
@@ -87,7 +88,7 @@ The 5 rule-3 rows are weaker still — they carry one committed reader rather th
 
 ## 1. Primary metric
 
-**False-positive rate on confirmed-negative roofs.**
+**False-positive rate on reference-negative roofs.**
 
 - **Denominator** — held-out rows with `reference_label == false`.
   From `splits.json` (seed `20260808`, stratified, 60/40): **n = 35**.
@@ -103,8 +104,10 @@ The 5 rule-3 rows are weaker still — they carry one committed reader rather th
 The denominator is 35 both before and after the consensus rule, for the reason given in §0.
 
 Nothing else is the primary metric. The tune split may be looked at freely while tuning; the
-held-out 36 rows are scored **once**. If they are scored a second time after any parameter
-change, the result of the second scoring is not a held-out result and must be labelled as such.
+held-out 36 rows are treated as a **one-time process step**. The command guard prevents accidental
+access through either `held_out` or `scoreable`, but the repository cannot prove that a human has
+invoked it only once. If the rows are scored again after any parameter change, that result is not
+a held-out result and must be labelled as such.
 
 Rows with an empty `reference_label` are not in either split and are not scored. An empty cell
 is not a negative, and a dropped contradiction is not a negative either.
@@ -119,7 +122,8 @@ current abstention wearing a rosette. §2.2 – §2.4 close that hole, and they 
 ### 2.1 The false-positive threshold
 
 > **The detector is disqualified unless it produces zero false positives on the 35 held-out
-> confirmed negatives.** One false positive disqualifies.
+> reference negatives: 33 strict two-reader agreements and 2 human-resolved assistant
+> abstentions (`247643`, `296100`).** One false positive disqualifies.
 
 This is chosen now, before any output is seen, and here is the arithmetic behind it.
 
@@ -355,7 +359,7 @@ There are now **three** ways to reach it, and the write-up must name which one o
 | # | Trigger | Written up as |
 |---|---|---|
 | F1 | No configuration in the Phase 4 space detects `345054` (§2.3) | *The detector cannot be made to work on this data by parameter choice.* The strongest result available: a design finding, not a threshold miss. Phase 5 is not run — there is no candidate to score |
-| F2 | The tuned configuration detects `345054` but fires on ≥ 1 held-out confirmed negative | *The approach discriminates but not well enough at 15 cm.* A precision finding; the §4 mimic breakdown says whether it is a fixable class defect |
+| F2 | The tuned configuration detects `345054` but fires on ≥ 1 held-out reference-negative roof | *The approach discriminates but not well enough at 15 cm.* A precision finding; the §4 mimic breakdown says whether it is a fixable class defect |
 | F3 | 0 false positives on 35, but the configuration failed the guard on `298442` | **Uninterpretable, not a pass** (§2.2). Reported as a degenerate or near-degenerate result and never as a clean 0/35 |
 
 In all three cases:
@@ -365,7 +369,8 @@ In all three cases:
 2. The solar attribute continues to emit `null` / `unavailable` / `null`.
 3. **The measured numbers become the published reason for the abstention.** The abstention is not
    documented as "not attempted" or "out of scope". It is documented as: measured on 35
-   confirmed-negative roofs, k false positives, Clopper–Pearson 95% interval [lo, hi], the guard
+   reference-negative roofs (with the 33 strict-consensus / 2 human-resolved breakdown), k false
+   positives, Clopper–Pearson 95% interval [lo, hi], the guard
    result on both named positives, and the mimic breakdown from §4 naming what it fired on.
 
 An abstention backed by a measurement is a stronger artefact than a shipped attribute backed by
@@ -375,7 +380,7 @@ none, and it is the intended outcome of this evaluation if the number does not c
 
 Success requires **both** conditions, and either one alone is not success:
 
-1. Zero false positives on the 35 held-out confirmed negatives (§2.1), **and**
+1. Zero false positives on the 35 held-out reference negatives (§2.1), **and**
 2. the degeneracy guard passed — `345054` **and** `298442` both detected (§2.2).
 
 Even then, nothing is published automatically. Changing `ATTRIBUTE_PARAMS` moves
@@ -418,11 +423,12 @@ Stated in the same terms wherever any number from this evaluation is quoted:
 | Item | Value |
 |---|---|
 | `labels.csv` sha256 at freeze | `5e897da80114f1bc1deae9311dd667dc17733e68bdff8e8b2aa1268306a0b350` |
+| `labels.csv` current sha256 after wording-only anchored-reader correction | `39c4cf23abc6964dbf2ee7a5f4cb408d96f2efa16659d19a2b9ecfc9c003f8a3` — comment changed; all CSV data rows remain byte-identical to the frozen version |
 | `splits.json` sha256 at freeze | `3d67c841a7dc1c4694f9492d6f1f1c07b4bb4c97266aa67f337bf3aead38ff9f` |
 | Reference standard | two-reader consensus; contradictions dropped, not adjudicated |
 | Scoreable rows | 90 of 109 (2 positive, 88 negative) |
 | Inter-reader disagreement | 4 of 90 rows where both committed = 4.4% |
-| Primary metric | FPR on held-out confirmed negatives, Clopper–Pearson 95% |
+| Primary metric | FPR on held-out reference negatives, Clopper–Pearson 95% |
 | Denominator | 35 |
 | Disqualification threshold | ≥ 1 false positive |
 | Degeneracy guard | must detect `345054`; held-out result interpretable only if `298442` also detected. A never-fires configuration is never a pass |
@@ -433,6 +439,6 @@ Stated in the same terms wherever any number from this evaluation is quoted:
 | Split seed | 20260808 (supersedes 20260807) |
 | Control seed | 20260806 |
 | Control result | 15/15 agreement; disagreement rate 95% CI 0.0% – 21.8% |
-| Held-out scored | once |
+| Held-out scored | one-time process discipline; guarded against accidental access, not provable or enforceable by the repository |
 | Failure branch | revert `ATTRIBUTE_PARAMS` byte-identical, publish the numbers as the reason |
 | Success branch | no publication without an explicit separate decision |

@@ -21,6 +21,7 @@ Why this is a fetch rather than a copy from ``outputs/recon/``:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import sys
 from datetime import datetime, timezone
@@ -211,19 +212,27 @@ def verify(cfg: config.Config) -> list[str]:
     else:
         manifest = json.loads(manifest_path.read_text())
         requested = manifest.get("requests", {})
-        expected_buffer = float(cfg.threshold("join", "fmzk_buffer_m"))
-        if float(requested.get("fmzk_buffer_m", -1)) != expected_buffer:
-            problems.append(
-                f"manifest records fmzk_buffer_m={requested.get('fmzk_buffer_m')} but config "
-                f"requires {expected_buffer}; the published provenance would be false"
-            )
-        expected_bbox = [round(v, 9) for v in units.buffered_fetch_bbox(area.bbox_wgs84, cfg)]
-        actual_bbox = [round(float(v), 9) for v in requested.get("fmzk_requested_bbox_wgs84", [])]
-        if actual_bbox != expected_bbox:
-            problems.append(
-                f"manifest fmzk bbox {actual_bbox} does not match the configured buffered "
-                f"bbox {expected_bbox}"
-            )
+        expected_requests = {
+            "study_bbox_wgs84": [round(v, 9) for v in area.bbox_wgs84],
+            "fmzk_requested_bbox_wgs84": [
+                round(v, 9) for v in units.buffered_fetch_bbox(area.bbox_wgs84, cfg)
+            ],
+            "fmzk_buffer_m": float(cfg.threshold("join", "fmzk_buffer_m")),
+            "imagery_layer": str(cfg.threshold("imagery", "layer")),
+            "imagery_zoom": area.imagery_zoom,
+            "crop_margin_m": float(cfg.threshold("imagery", "crop_margin_m")),
+            "crs_metric": area.crs_metric,
+        }
+        for field, expected in expected_requests.items():
+            actual = requested.get(field)
+            if field.endswith("bbox_wgs84") and isinstance(actual, list):
+                with contextlib.suppress(TypeError, ValueError):
+                    actual = [round(float(value), 9) for value in actual]
+            if actual != expected:
+                problems.append(
+                    f"manifest {field}={actual!r} does not match the live config value "
+                    f"{expected!r}"
+                )
 
     for filename in (*BBOX_LAYERS, FMZK_FILE):
         path = dst / filename
@@ -238,18 +247,46 @@ def verify(cfg: config.Config) -> list[str]:
         if not features:
             problems.append(f"{filename} contains no features")
 
+    roof_features: list[dict[str, Any]] = []
     roofs_path = dst / "roof_records_2025.geojson"
     if roofs_path.exists():
         try:
+            roof_features = json.loads(roofs_path.read_text()).get("features", [])
             present = {
                 f["properties"]["OBJECTID"]
-                for f in json.loads(roofs_path.read_text()).get("features", [])
+                for f in roof_features
             }
             missing = {b.objectid for b in area.buildings} - present
             if missing:
                 problems.append(f"pinned buildings absent from the cache: {sorted(missing)}")
         except (json.JSONDecodeError, KeyError, TypeError) as error:
             problems.append(f"roof_records_2025.geojson unusable: {error}")
+
+    layer = str(cfg.threshold("imagery", "layer"))
+    zoom = area.imagery_zoom
+    margin_m = float(cfg.threshold("imagery", "crop_margin_m"))
+    pinned = {b.objectid for b in area.buildings}
+    selected = [
+        feature
+        for feature in roof_features
+        if feature.get("properties", {}).get("OBJECTID") in pinned
+    ]
+    required_tiles = _needed_tiles(selected, zoom, margin_m, area.crs_metric)
+    tile_root = dst / "tiles" / layer / str(zoom)
+    missing_tiles = [
+        tile_root / str(row) / f"{col}.jpeg"
+        for row, col in sorted(required_tiles)
+        if not (tile_root / str(row) / f"{col}.jpeg").exists()
+    ]
+    for tile in missing_tiles:
+        problems.append(f"missing required tile {tile.relative_to(dst)}")
+
+    manifest_tile_count = manifest.get("counts", {}).get("tiles")
+    if manifest and manifest_tile_count != len(required_tiles):
+        problems.append(
+            f"manifest tiles={manifest_tile_count!r} does not match the {len(required_tiles)} "
+            "tiles required by the live config and pinned roofs"
+        )
 
     tiles = sorted(dst.glob("tiles/*/*/*/*.jpeg"))
     if not tiles:

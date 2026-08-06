@@ -437,8 +437,8 @@ def _absent(
     )
 
 
-def _unvalidated_candidate(obs: ImageObservation, source: str) -> Attribute:
-    """Publish a detector's raw candidate evidence **without** publishing a verdict.
+def _withheld_solar_candidate(obs: ImageObservation, source: str) -> Attribute:
+    """Publish an evaluated detector's raw candidate evidence without publishing a verdict.
 
     The RGB solar detector was spot-checked against the imagery on the ten selected buildings
     and is **anti-correlated** with what a human sees: the two roofs that unambiguously carry
@@ -450,25 +450,24 @@ def _unvalidated_candidate(obs: ImageObservation, source: str) -> Attribute:
     honest repair is *not* to move the gates until this particular sample agrees — that would
     be fitting the instrument to ten eyeballed guesses and calling the result a detection.
 
-    Two gates *were* calibrated from measured pixels inside this sample before the spot check:
-    ``image.solar_panels.max_value`` from vie-swv-001 and vie-swv-003, and
-    ``solar_internal_texture_min`` across the ten. So the held-out labelled case count for this
-    attribute is zero, which is a second and independent reason to withhold the verdict:
-    nothing here has been validated against anything the calibration did not help choose.
-    Design section 6.1 already prefers abstention over an unsupported confident prediction, so
-    the detector is demoted to what it has actually been shown to be: a **candidate generator**.
+    A later evaluation used 35 held-out reference-negative roofs from a non-ground-truth
+    reference made by two readings of the same imagery. The detector produced one false positive
+    and failed its pre-registered zero-false-positive bar. The sample has only two positives in
+    total, so it supports neither recall nor a general accuracy claim. This completed evaluation
+    strengthens the abstention but does not turn the image readings into ground truth.
 
     So ``value`` is ``None`` with no score, and every raw diagnostic the detector produced is
-    kept under ``image_evidence.quality`` — clearly labelled unvalidated — because those
-    numbers are exactly what a later labelled validation would need. Nothing is deleted and no
-    threshold moves. This stands until labelled ground truth exists.
+    kept under ``image_evidence.quality`` — clearly labelled as withheld candidate evidence —
+    because those numbers are exactly what an independent validation would need. Nothing is
+    deleted and no threshold moves.
     """
     raw = obs.as_dict()
     quality = dict(raw.get("quality") or {})
-    quality["status"] = "unvalidated_candidate_evidence"
+    quality["status"] = "candidate_evidence_withheld_after_failed_evaluation"
     quality["interpretation"] = (
-        "Raw candidate diagnostics from an unvalidated detector. NOT a Boolean observation, "
-        "and not evidence that panels are present or absent."
+        "Raw candidate diagnostics from a detector that failed a completed evaluation against "
+        "a non-ground-truth image-reading reference. NOT a Boolean observation and not evidence "
+        "that panels are present or absent."
     )
     quality["withheld_detector_verdict"] = obs.value
     quality["detector_limitations"] = list(raw.get("limitations") or ())
@@ -477,8 +476,9 @@ def _unvalidated_candidate(obs: ImageObservation, source: str) -> Attribute:
         "indicates": None,
         "method": raw["method"],
         "rationale": (
-            "candidate generation only; the detector's verdict is withheld pending labelled "
-            "validation, so this evidence indicates nothing about panel presence or absence"
+            "candidate generation only; the detector's verdict is withheld after it failed a "
+            "completed non-ground-truth reference evaluation, so this evidence indicates "
+            "nothing about panel presence or absence"
         ),
         "quality": quality,
     }
@@ -486,23 +486,22 @@ def _unvalidated_candidate(obs: ImageObservation, source: str) -> Attribute:
         value=None,
         availability=Availability.UNAVAILABLE,
         confidence=Confidence(
-            method="detector_withheld_pending_validation",
+            method="detector_withheld_after_failed_evaluation",
             rationale=(
-                "the RGB detector is retained as a candidate generator only; a spot check "
-                "against the imagery found it anti-correlated on all four checkable cases, so "
-                "no Boolean is published and no score is assigned"
+                "the RGB detector is retained as a candidate generator only; it produced 1 "
+                "false positive on 35 held-out reference-negative roofs and failed the "
+                "pre-registered bar of zero, so no Boolean is published and no score is assigned"
             ),
             sources=(source,),
             score=None,
             limitations=(
-                "no labelled ground truth exists for this attribute, so no accuracy claim of "
-                "any kind can be made",
-                "two brightness/texture gates (image.solar_panels.max_value and "
-                "solar_internal_texture_min) were calibrated from measured pixels on "
-                "vie-swv-001 and vie-swv-003 within the selected sample, so there is no "
-                "held-out labelled case for this attribute",
+                "the evaluation reference consists of readings of the same imagery, not "
+                "independent ground truth, so it supports no general accuracy claim",
+                "the reference sample contains only two positives in total, so it supports no "
+                "recall estimate",
                 "no gate was moved after the spot check to change any building's verdict",
-                "candidate diagnostics are published for future validation, not as a finding",
+                "candidate diagnostics are published for independent future validation, not as "
+                "a finding",
             ),
         ),
         image_evidence=evidence,
@@ -554,6 +553,18 @@ def _image_factors(obs: ImageObservation, cfg: Config) -> dict[str, float]:
     if obs.value is None or fraction is None or float(fraction) <= limit:
         return {}
     return {"shadow_heavy": confidence.penalty("shadow_heavy", cfg=cfg)}
+
+
+def _typology_overlap_factor(overlap_share: float, cfg: Config) -> float:
+    """Transparent overlap reliability factor, not a calibrated probability.
+
+    Best-overlap enrichment remains useful below complete containment, but treating a polygon
+    covering 45% of a roof like one covering 100% made the published confidence contradict its
+    own evidence. The measured share therefore travels directly into the score, clipped only to
+    the confidence model's configured lower bound and to 1.0.
+    """
+    floor = confidence.penalty("typology_overlap_floor", cfg=cfg)
+    return round(max(floor, min(1.0, float(overlap_share))), 4)
 
 
 def build_roof_type(
@@ -859,9 +870,12 @@ def build_attributes(
         )
     )
 
-    # solar_panels is handled separately: its detector is withheld pending validation, so it
+    # solar_panels is handled separately: its detector failed the completed reference evaluation,
+    # so it
     # must not travel the from_image_observation path that turns an observation into a verdict.
-    out["solar_panels"] = _unvalidated_candidate(observations["solar_panels"], imagery_source)
+    out["solar_panels"] = _withheld_solar_candidate(
+        observations["solar_panels"], imagery_source
+    )
 
     for name, cap_key, availability, unit in (
         ("roof_surface_class", "roof_surface_class", Availability.INFERRED, None),
@@ -923,6 +937,9 @@ def build_attributes(
                     "the typology cadastre is cut differently from the roof record, so the "
                     "match is a best geometric overlap and its share is published",
                 ),
+                extra_factors={
+                    "typology_overlap": _typology_overlap_factor(typology_share, cfg)
+                },
                 cfg=cfg,
             )
             if raw is not None and not placeholder
@@ -1203,7 +1220,7 @@ def render_overlay(
         f"surface {value('roof_surface_class')}"
         f"  green-roof RGB evidence: {_green_roof_caption(value('green_roof'))}"
         f"  ridge {value('ridge_orientation_deg')}",
-        "solar_panels: WITHHELD - detector unvalidated, no Boolean published",
+        "solar_panels: WITHHELD - detector failed its reference evaluation, no Boolean published",
         "Datenquelle: Stadt Wien - data.wien.gv.at (CC BY 4.0)",
     ]
     if building["review_flags"]:

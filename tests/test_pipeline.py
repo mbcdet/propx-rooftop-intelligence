@@ -344,6 +344,20 @@ def test_the_sparse_authoritative_context_is_reported_as_it_is(buildings):
     assert buildings["vie-swv-009"]["attributes"]["year_built"]["value"] == 1891
 
 
+def test_typology_confidence_reflects_the_published_overlap(buildings):
+    """A weak best-overlap match must not keep full authoritative confidence."""
+    expected = {
+        "vie-swv-005": (0.6649, 0.6649, 0.600),
+        "vie-swv-007": (0.4910, 0.5000, 0.451),
+        "vie-swv-010": (0.4479, 0.5000, 0.451),
+    }
+    for building_id, (overlap, factor, score) in expected.items():
+        attribute = buildings[building_id]["attributes"]["building_typology"]
+        assert attribute["source_detail"]["overlap_fraction_of_roof"] == overlap
+        assert attribute["confidence"]["factors"]["typology_overlap"] == factor
+        assert attribute["confidence"]["score"] == score
+
+
 def test_a_present_record_with_a_null_field_is_still_not_in_source(buildings):
     """vie-swv-008 has a GEBAEUDEINFOOGD point, but that point carries no BAUJAHR."""
     attribute = buildings["vie-swv-008"]["attributes"]["year_built"]
@@ -375,11 +389,11 @@ def test_an_abstaining_image_observation_publishes_no_score(buildings):
 def test_no_solar_candidate_positive_or_negative_becomes_a_published_boolean(cfg, buildings):
     """The detector is withheld, so neither verdict may reach the published value.
 
-    The spot check found it anti-correlated on all four checkable cases. This test asserts the
-    demotion holds for *both* directions: a roof where the detector said True and one where it
-    said False must publish identically — null, unavailable, unscored — with only the raw
-    diagnostics differing. If someone later re-enables the Boolean without labelled ground
-    truth, this fails.
+    A completed non-ground-truth reference evaluation failed its pre-registered false-positive
+    bar. This test asserts the demotion holds for *both* directions: a roof where the detector
+    said True and one where it said False must publish identically — null, unavailable, unscored
+    — with only the raw diagnostics differing. If someone later re-enables the Boolean without
+    independent ground truth, this fails.
     """
     verdicts = set()
     for building_id, building in buildings.items():
@@ -392,7 +406,7 @@ def test_no_solar_candidate_positive_or_negative_becomes_a_published_boolean(cfg
         evidence = solar["image_evidence"]
         assert evidence["indicates"] is None
         quality = evidence["quality"]
-        assert quality["status"] == "unvalidated_candidate_evidence"
+        assert quality["status"] == "candidate_evidence_withheld_after_failed_evaluation"
         # The detector still ran and its raw output is preserved for future validation.
         assert "withheld_detector_verdict" in quality
         verdicts.add(quality["withheld_detector_verdict"])

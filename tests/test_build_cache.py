@@ -14,8 +14,10 @@ care:
 
 from __future__ import annotations
 
+import copy
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -156,6 +158,66 @@ def test_verification_rejects_a_truncated_tile_that_a_header_check_would_pass(
     assert tile.stat().st_size > 0
     assert build_cache._tile_problem(tile) is not None
     assert any("does not decode" in p or "expected" in p for p in build_cache.verify(cfg))
+
+
+def test_verification_rejects_a_missing_required_tile(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """Every tile implied by the pinned roofs and live config must be present."""
+    build_cache.fetch(cfg)
+    assert build_cache.verify(cfg) == []
+
+    tile = sorted(cfg.study_area.cache_dir.glob("tiles/*/*/*/*.jpeg"))[0]
+    relative = str(tile.relative_to(cfg.study_area.cache_dir))
+    tile.unlink()
+
+    problems = build_cache.verify(cfg)
+    assert any("missing required tile" in problem and relative in problem for problem in problems)
+
+
+@pytest.mark.parametrize(
+    ("field", "wrong"),
+    [
+        ("study_bbox_wgs84", [16.0, 48.0, 16.1, 48.1]),
+        ("fmzk_requested_bbox_wgs84", [16.0, 48.0, 16.1, 48.1]),
+        ("fmzk_buffer_m", 200.0),
+        ("imagery_layer", "wrong-layer"),
+        ("imagery_zoom", 19),
+        ("crop_margin_m", 99.0),
+        ("crs_metric", "EPSG:3857"),
+    ],
+)
+def test_verification_rejects_manifest_values_from_a_different_config(
+    cfg: config.Config,
+    fetch_calls: dict[str, list],
+    field: str,
+    wrong: object,
+) -> None:
+    """Each request field that determines cache contents is verified by name."""
+    build_cache.fetch(cfg)
+    path = cfg.study_area.cache_dir / "manifest.json"
+    manifest = json.loads(path.read_text())
+    manifest["requests"][field] = wrong
+    path.write_text(json.dumps(manifest))
+
+    assert any(field in problem for problem in build_cache.verify(cfg))
+
+
+def test_unrelated_config_edit_does_not_invalidate_the_cache(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """Output-only settings do not change which source records or tiles were cached."""
+    build_cache.fetch(cfg)
+
+    thresholds = copy.deepcopy(cfg.thresholds)
+    thresholds["confidence"]["penalty"]["source_recency"] = 0.91
+    edited_cfg = replace(
+        cfg,
+        thresholds=thresholds,
+        config_hash="changed-because-an-output-only-confidence-penalty-changed",
+    )
+
+    assert build_cache.verify(edited_cfg) == []
 
 
 def test_stale_tiles_are_pruned_while_required_tiles_survive(

@@ -5,10 +5,10 @@ block that ``attributes.param()`` already prefers over ``ATTRIBUTE_PARAMS``, so 
 without a single byte of ``src/`` changing and ``algorithm_parameters_hash`` cannot move by
 accident. The published pipeline is not invoked and ``outputs/`` is never written.
 
-**Held-out protection.** ``--split held_out`` refuses to run without
-``--score-the-held-out-split-once``. The pre-registration allows those rows to be scored exactly
-once; an accidental peek during tuning would void the evaluation, so the guard is a flag rather
-than a comment.
+**Held-out protection.** Any split that includes held-out rows refuses to run without
+``--score-the-held-out-split-once``. The flag prevents accidental access; it cannot prove that a
+human has invoked the command only once, so the one-time rule remains process discipline recorded
+in the pre-registration rather than a repository-enforced guarantee.
 
 Two row sources:
 
@@ -164,10 +164,12 @@ def main() -> None:
     ap.add_argument("--json", default=None, help="write full per-row results here")
     args = ap.parse_args()
 
-    if args.split == "held_out" and not args.score_the_held_out_split_once:
+    touches_held_out = args.split in {"held_out", "scoreable"}
+    if touches_held_out and not args.score_the_held_out_split_once:
         raise SystemExit(
-            "the held-out split is scored ONCE, after tuning is frozen (preregistration §1).\n"
-            "Pass --score-the-held-out-split-once if that is what this is."
+            "this split includes held-out rows, which may be scored only after tuning is frozen "
+            "(preregistration §1).\nPass --score-the-held-out-split-once to confirm deliberate "
+            "access; the repository cannot enforce that a human invokes it only once."
         )
 
     overrides = json.loads(args.params) if args.params else None

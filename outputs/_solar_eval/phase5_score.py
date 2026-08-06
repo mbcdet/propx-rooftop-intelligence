@@ -73,7 +73,7 @@ def main() -> None:
             "clopper_pearson_95": [round(low, 6), round(high, 6)],
         },
         "degeneracy_guard_298442_detected": guard,
-        "threshold_met": counts["fp"] == 0,
+        "threshold_met": counts["fp"] == 0 and guard,
         "false_positives": [{"objectid": r["objectid"], "adresse": r["adresse"],
                              "quality": r["quality"]}
                             for r in rows if r["detected"] and r["reference_label"] == "false"],
@@ -114,7 +114,12 @@ def main() -> None:
     print(f"FPR = {fp['numerator']}/{fp['denominator']} = {fp['point']:.3%}   "
           f"Clopper-Pearson 95% [{low:.3%}, {high:.3%}]")
     print(f"degeneracy guard, 298442 detected: {guard}")
-    print(f"threshold met (0 false positives): {report['held_out']['threshold_met']}")
+    # Both conditions, because either alone is not success (preregistration section 2.2): a
+    # never-fires configuration scores zero false positives and detects nothing.
+    print(
+        "threshold and held-out degeneracy guard met: "
+        f"{report['held_out']['threshold_met']}"
+    )
     print("out-of-sample check: " + ", ".join(
         f"{b}={report['out_of_sample_check'][b]}" for b in OUT_OF_SAMPLE))
     print("pinned: " + ", ".join(f"{k[-3:]}={v}" for k, v in report["pinned_all"].items()))
