@@ -1,5 +1,8 @@
 # Evaluating the rooftop solar detector — a measured abstention
 
+> **Document status: CURRENT.** The evaluation and its outcome (the withheld `solar_panels`
+> verdict) still govern the published output.
+
 **Outcome: the detector is disqualified against a pre-registered threshold. The published
 `solar_panels` value stays `null` / `unavailable` / `null`, and `ATTRIBUTE_PARAMS` is unchanged.**
 

@@ -1,0 +1,81 @@
+# CI for the offline rooftop pipeline (RTI-022).
+#
+# Reproducibility levels, and which one CI checks:
+#   * BYTE reproducibility (identical artefacts) is claimed ONLY for the pinned environment in
+#     requirements.lock - CPython 3.11 on macOS arm64, the machine class that produced the
+#     committed outputs/. `make verify-repro` checks it there.
+#   * SEMANTIC reproducibility (same published values, availability, flags, geometry) is the
+#     claim for every supported environment. CI runs on ubuntu-latest, where OpenCV/NumPy wheel
+#     builds differ from macOS arm64, so overlay PNGs and low-order diagnostic digits may
+#     legitimately differ byte-wise; CI therefore runs the SEMANTIC check against the committed
+#     outputs and does not byte-compare them.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # 3.11 is the locked, supported interpreter (requirements.lock was resolved on it;
+          # pyproject pins requires-python = ">=3.11,<3.13").
+          python-version: "3.11"
+          cache: pip
+
+      # The lock is the reference resolution, and it now pins the build toolchain
+      # (pip/setuptools/wheel) too — no unbounded `pip install --upgrade pip` here. Those three
+      # ship pure-python wheels, so the pins resolved on macOS arm64 install identically on
+      # ubuntu. The editable install then builds with --no-build-isolation, i.e. with exactly
+      # the locked setuptools rather than an isolated env resolving unpinned build deps. The
+      # dev extra's setuptools/wheel floors are already satisfied by the lock's exact pins.
+      - name: Install locked dependencies
+        run: |
+          python -m pip install -r requirements.lock
+          python -m pip install --no-build-isolation -e '.[dev]'
+
+      - name: Ruff
+        run: python -m ruff check src tools tests
+
+      - name: Tests
+        run: python -m pytest -q
+
+      # --no-build-isolation: the locked toolchain installed above satisfies [build-system]
+      # (setuptools pinned well above the >=68 floor), so the wheel is built by the pinned
+      # backend — no isolated env, no unpinned build deps.
+      - name: Build wheel
+        run: |
+          python -m pip wheel --no-deps --no-build-isolation -w dist .
+          ls -l dist
+
+      # The RTI-002 claim, re-proven on CI: a non-editable install of the built wheel, executed
+      # from a directory that is not the checkout, finding the committed cache only through
+      # PROPX_ROOFS_DATA_ROOT.
+      - name: Installed CLI runs outside the checkout
+        run: |
+          python -m venv /tmp/wheel-venv
+          /tmp/wheel-venv/bin/pip install --disable-pip-version-check dist/*.whl -r requirements.lock
+          mkdir -p /tmp/outside
+          cd /tmp/outside
+          PROPX_ROOFS_DATA_ROOT="$GITHUB_WORKSPACE" /tmp/wheel-venv/bin/propx-roofs cache-verify
+
+      # A real run into a temp dir, then the semantic comparison against the committed outputs.
+      # run.generated_at/git/runtime/dependencies are excluded by the tool; every published
+      # value, availability, review flag and geometry coordinate must agree to 1e-9.
+      # If cross-platform CV drift ever surfaces here, the sanctioned knob is
+      # --diagnostics-tolerance, which loosens ONLY image_evidence.quality diagnostics and
+      # delineation metrics - never published attribute values. Do not paper over a published-
+      # value difference; that is a real regression.
+      - name: Semantic reproducibility against committed outputs
+        run: |
+          out=$(mktemp -d)
+          PYTHONPATH=src python -m propx_roofs.cli run --output-dir "$out"
+          PYTHONPATH=src python -m propx_roofs.semantic_compare \
+            outputs/roof_attributes.json "$out/roof_attributes.json"

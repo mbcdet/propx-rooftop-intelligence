@@ -1,0 +1,51 @@
+# requirements.lock — the pinned byte-reproducibility reference environment.
+#
+# Resolved with pip on CPython 3.11.3 (see .python-version), macOS arm64 (Apple Silicon). This
+# is the environment that produced (and re-verifies, via `make verify-repro`) the committed
+# outputs/. Byte-identical artefacts are claimed ONLY under these exact versions on this
+# platform; any other environment is expected to reproduce the outputs SEMANTICALLY
+# (`make verify-repro-semantic`), not byte-for-byte.
+#
+# The lock captures EVERYTHING needed to build and run: the runtime/dev dependencies below AND
+# the build toolchain (pip/setuptools/wheel) in the section at the bottom. `pip freeze` omits
+# pip/setuptools/wheel, so regenerating takes two commands, not one.
+#
+# Regenerate after a deliberate dependency change with:
+#   .venv/bin/python -m pip freeze --exclude-editable > requirements.lock
+#   .venv/bin/python -m pip freeze --all | grep -E '^(pip|setuptools|wheel)==' >> requirements.lock
+#   (then restore this header and the build-toolchain section comment)
+# Install with:
+#   make install-locked        # pip install -r requirements.lock, then -e . without build isolation
+attrs==26.1.0
+certifi==2026.7.22
+charset-normalizer==3.4.9
+idna==3.18
+iniconfig==2.3.0
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+numpy==2.4.6
+opencv-python-headless==5.0.0.93
+packaging==26.3
+pillow==12.3.0
+pluggy==1.6.0
+Pygments==2.20.0
+pyproj==3.7.2
+pytest==9.1.1
+PyYAML==6.0.3
+referencing==0.37.0
+requests==2.34.2
+rpds-py==2026.6.3
+ruff==0.16.1
+shapely==2.1.2
+typing_extensions==4.16.0
+urllib3==2.7.0
+# --- locked BUILD toolchain -------------------------------------------------------------------
+# pip/setuptools/wheel, pinned so the lock actually captures everything needed to build as well
+# as to run: the project is built with --no-build-isolation against exactly these versions
+# (pyproject's [build-system] keeps only the portable >=68 floor; THIS is the exact resolution).
+# `pip freeze` omits these three — keep them in sync with the `pip freeze --all | grep` command
+# in the header above. All three ship pure-python wheels, so the same pins hold cross-platform
+# (CI on ubuntu uses this same lock).
+pip==26.2.1
+setuptools==83.0.0
+wheel==0.47.0

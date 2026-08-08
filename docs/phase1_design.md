@@ -1,5 +1,12 @@
 # Phase 1 — Design and Reasoning (revision 3, approved, + Amendments A and B)
 
+> **Document status: HISTORICAL.** The approved design baseline, kept verbatim as work history.
+> Implementation has since evolved past it in reviewed ways — e.g. `roof_surface_class` became
+> `visual_surface_appearance` with abstention, green-roof output is now three-state
+> (`detected`/`not_detected`/null), shadow detection is adaptive, and the ridge detector is
+> quality-gated. Where this document and the code disagree, the code, its tests and
+> `docs/design_and_reasoning.md` are current.
+
 **Status:** revision 3 approved. **Amendment A** applied 2026-08-03 — roof-record source moved to the
 verified current 2025 layer. **Amendment B** applied 2026-08-03 after Phase 2 reconnaissance completed —
 join rule, CRS separation, conflict handling and green-roof honesty aligned to the measured evidence.

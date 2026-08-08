@@ -86,7 +86,7 @@
       }
     },
     "attribute": {
-      "description": "One published attribute. value may be any JSON type including null; a null value is only legal with availability unavailable or not_in_source, which types.Attribute enforces at construction.",
+      "description": "One published attribute. value may be any JSON type including null, but the pairing is constrained (RTI-014): a determined availability (authoritative/derived/observed/inferred) requires a non-null value AND a numeric confidence score, and an absent availability (unavailable/not_in_source) requires a null value AND a null score — so a hand-edited document cannot ship a value with no availability to back it, or an abstention wearing a score. requires_review/review_reasons are machine-readable per-attribute review routing (RTI-004): present only together, and only when the published value's own evidence is marginal. A review flag is an invitation to look, never an edit.",
       "type": "object",
       "required": ["value", "availability", "confidence"],
       "additionalProperties": false,
@@ -106,20 +106,113 @@
         "image_evidence": { "$ref": "#/$defs/image_evidence" },
         "conflict": {
           "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/conflict" }]
+        },
+        "requires_review": {
+          "description": "Emitted only when true: the value is published unchanged but its own evidence is marginal and a human should look.",
+          "const": true
+        },
+        "review_reasons": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
         }
-      }
+      },
+      "dependentRequired": {
+        "requires_review": ["review_reasons"],
+        "review_reasons": ["requires_review"]
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "availability": {
+                "enum": ["authoritative", "derived", "observed", "inferred"]
+              }
+            },
+            "required": ["availability"]
+          },
+          "then": {
+            "properties": {
+              "value": { "not": { "type": "null" } },
+              "confidence": {
+                "type": "object",
+                "required": ["score"],
+                "properties": { "score": { "type": "number" } }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "availability": { "enum": ["unavailable", "not_in_source"] }
+            },
+            "required": ["availability"]
+          },
+          "then": {
+            "properties": {
+              "value": { "type": "null" },
+              "confidence": {
+                "type": "object",
+                "properties": { "score": { "type": "null" } }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "position": {
+      "description": "One coordinate pair, lon/lat order. Exactly two numbers: every geometry in this contract is 2D, so a third element would be data the pipeline never produced.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    },
+    "linear_ring": {
+      "description": "A closed ring needs at least 4 positions (triangle + closing repeat). An emptier ring is not a degenerate geometry, it is a bug.",
+      "type": "array",
+      "minItems": 4,
+      "items": { "$ref": "#/$defs/position" }
+    },
+    "polygon_rings": {
+      "description": "Exterior ring first, then interior rings. minItems 1: a Polygon with no rings — coordinates [] — is invalid (RTI-014).",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/linear_ring" }
     },
     "polygon": {
+      "description": "GeoJSON Polygon/MultiPolygon with the nesting depth pinned per type (RTI-014), so a MultiPolygon's coordinates pasted into a Polygon — or an empty coordinates array — fails validation instead of shipping. crs is required wherever a geometry appears: coordinates without a stated frame are numbers, not a location.",
       "type": "object",
-      "required": ["type", "coordinates"],
+      "required": ["type", "coordinates", "crs"],
       "additionalProperties": false,
       "properties": {
         "type": { "enum": ["Polygon", "MultiPolygon"] },
-        "coordinates": { "type": "array" },
-        "crs": { "type": "string" },
+        "coordinates": { "type": "array", "minItems": 1 },
+        "crs": { "type": "string", "minLength": 1 },
         "bbox": { "type": "array", "items": { "type": "number" } },
         "polygon_source": { "type": "string", "minLength": 1 }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "Polygon" } }, "required": ["type"] },
+          "then": { "properties": { "coordinates": { "$ref": "#/$defs/polygon_rings" } } }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "MultiPolygon" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#/$defs/polygon_rings" }
+              }
+            }
+          }
+        }
+      ]
     },
     "authoritative_polygon": {
       "description": "The primary outline. polygon_source is required because a reader must be able to tell the 2025 roof record from the FMZK fallback dissolve (design section 3.2).",
@@ -277,11 +370,19 @@
       "properties": {
         "status": { "const": "requires_visual_review" },
         "trigger": {
+          "description": "Closed: a trigger nobody documented is a bug, not a new category. low_judgeability / weak_cv_agreement / withheld_attributes are evidence-driven triggers fed by measured per-building quantities (RTI-004); visual_audit_questionable routes the transcribed model-assisted visual audit of an earlier baseline into the same review stream — a report, never an edit.",
           "enum": [
             "authoritative_image_conflict",
             "slope_mean_above_review_threshold",
             "ambiguous_join",
-            "boundary_alignment_warning"
+            "boundary_alignment_warning",
+            "ambiguous_enrichment",
+            "multiple_point_candidates",
+            "processing_error",
+            "low_judgeability",
+            "weak_cv_agreement",
+            "withheld_attributes",
+            "visual_audit_questionable"
           ]
         },
         "reason": { "type": "string", "minLength": 1 },
@@ -297,7 +398,27 @@
         "roof_area_m2": { "$ref": "#/$defs/attribute" },
         "roof_type": { "$ref": "#/$defs/attribute" },
         "roof_subtype": { "$ref": "#/$defs/attribute" },
-        "roof_surface_class": { "$ref": "#/$defs/attribute" },
+        "visual_surface_appearance": {
+          "description": "Renamed from roof_surface_class (RTI-017): the value is a visible surface APPEARANCE, never a material or construction class. null is an abstention - too little of the roof judgeable, or a dominance margin weaker than the classifier resolves.",
+          "allOf": [
+            { "$ref": "#/$defs/attribute" },
+            {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "enum": [
+                    "tiled_like",
+                    "gravel_or_bitumen_like",
+                    "bright_smooth_like",
+                    "vegetated_like",
+                    "mixed",
+                    null
+                  ]
+                }
+              }
+            }
+          ]
+        },
         "ridge_orientation_deg": { "$ref": "#/$defs/attribute" },
         "footprint_axis_orientation_deg": { "$ref": "#/$defs/attribute" },
         "mean_slope_deg": { "$ref": "#/$defs/attribute" },
@@ -321,7 +442,18 @@
             }
           ]
         },
-        "green_roof": { "$ref": "#/$defs/attribute" },
+        "green_roof": {
+          "description": "Three-state value domain (RTI-009): detected / not_detected / null. not_detected is a statement about this imagery over a sufficiently judgeable roof; null is an abstention and never a negative. Booleans are forbidden so absence of evidence cannot be published as evidence of absence.",
+          "allOf": [
+            { "$ref": "#/$defs/attribute" },
+            {
+              "type": "object",
+              "properties": {
+                "value": { "enum": ["detected", "not_detected", null] }
+              }
+            }
+          ]
+        },
         "construction_epoch": { "$ref": "#/$defs/attribute" },
         "building_typology": { "$ref": "#/$defs/attribute" },
         "year_built": { "$ref": "#/$defs/attribute" },
@@ -364,7 +496,90 @@
         "attributes": { "$ref": "#/$defs/attributes" },
         "review_flags": { "type": "array", "items": { "$ref": "#/$defs/review_flag" } },
         "address": { "type": ["string", "null"] },
-        "overlay": { "type": ["string", "null"] }
+        "overlay": { "type": ["string", "null"] },
+        "manual_review": { "$ref": "#/$defs/building_manual_review" }
+      }
+    },
+    "audit_basis": {
+      "description": "Which artifact the visual audit actually examined. audited_document_sha256 + baseline_commit identify the EARLIER baseline the reviewers saw; reaudit_of_artifact_sha256 stays null until a human review of a final artifact records that artifact's sha256 here (propx-roofs record-review), together with reaudit_overlays (per-overlay sha256s of the reviewed files), reaudit_reviewer and reaudit_date. Consumers must treat any document whose own sha256 differs from both as carrying baseline-only audit evidence; the strict release gate additionally requires the reaudit_* fields to match the current artifacts byte for byte.",
+      "type": "object",
+      "required": [
+        "source_file",
+        "audited_document_sha256",
+        "baseline_commit",
+        "reaudit_of_artifact_sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_file": { "type": "string", "minLength": 1 },
+        "source_file_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "audited_document": { "type": "string", "minLength": 1 },
+        "audited_document_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "baseline_commit": { "type": "string", "minLength": 1 },
+        "audit_generated_at": { "type": "string", "minLength": 1 },
+        "reaudit_of_artifact_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reaudit_overlays": {
+          "description": "Overlay path -> sha256 of the file the human review examined; written by record-review, present only once a review of a final artifact is recorded.",
+          "type": "object",
+          "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        },
+        "reaudit_reviewer": { "type": "string", "minLength": 1 },
+        "reaudit_date": { "type": "string", "minLength": 1 },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "building_manual_review": {
+      "description": "Per-building report block attaching the transcribed MODEL-ASSISTED visual audit (validation/audit_annotations.json). QA report only, of an earlier baseline identified in audit_basis: it is not human ground truth, it asserts nothing about this document's values, and no value, geometry or confidence can be derived from it — the pipeline has no code path from this block to published content (design section 7). Embedded annotations are the slim form (aspect/status/code/summary); the verbatim note stays in the annotations file that detail_ref points at, so the artifact does not duplicate the full audit paragraphs per building.",
+      "type": "object",
+      "required": ["status", "annotations", "detail_ref", "audit_basis"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "const": "visual_qa_annotated" },
+        "annotations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["aspect", "status", "code", "summary"],
+            "additionalProperties": false,
+            "properties": {
+              "aspect": {
+                "enum": [
+                  "authoritative_outline",
+                  "cv_candidate",
+                  "roof_type",
+                  "ridge",
+                  "surface",
+                  "image_quality"
+                ]
+              },
+              "status": {
+                "description": "Closed audit vocabulary. questionable/conflicts additionally produce a visual_audit_questionable review flag; the published value stands unchanged in every case.",
+                "enum": ["supports", "questionable", "conflicts", "not_judgeable"]
+              },
+              "code": {
+                "description": "Stable machine key, always exactly aspect.status.",
+                "type": "string",
+                "pattern": "^[a-z_]+\\.[a-z_]+$"
+              },
+              "summary": {
+                "description": "Concise faithful distillation of the audit's verbatim note, which remains in validation/audit_annotations.json under this building's id (see detail_ref). Never an upgraded or softened assessment.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            }
+          }
+        },
+        "detail_ref": {
+          "description": "Pointer to this building's full annotation entries, verbatim notes included.",
+          "type": "string",
+          "pattern": "^validation/audit_annotations\\.json#.+$"
+        },
+        "audit_basis": { "$ref": "#/$defs/audit_basis" }
       }
     },
     "source": {
@@ -374,8 +589,17 @@
       "properties": {
         "name": { "type": "string", "minLength": 1 },
         "url": { "type": "string", "minLength": 1 },
-        "licence": { "const": "CC BY 4.0" },
-        "attribution": { "const": "Datenquelle: Stadt Wien - data.wien.gv.at" },
+        "licence": {
+          "description": "Per-source licence, read from the source's own entry in configs/study_area.yaml (RTI-019). Every current source is 'CC BY 4.0' (Stadt Wien) and that stays the recorded value, but the schema requires a non-empty string rather than that constant so a future differently-licensed source is a config edit, not a contract change.",
+          "type": "string",
+          "minLength": 1
+        },
+        "attribution": {
+          "description": "Per-source attribution string, read from the source's own config entry; non-empty because unattributed data cannot be published under an attribution licence.",
+          "type": "string",
+          "minLength": 1
+        },
+        "terms_url": { "type": "string", "minLength": 1 },
         "accessed": { "type": "string", "minLength": 1 },
         "layer": { "type": "string" },
         "role": { "type": "string" },
@@ -391,8 +615,13 @@
       "required": [
         "generated_at",
         "pipeline_version",
+        "schema_version",
         "config_hash",
         "algorithm_parameters_hash",
+        "git",
+        "runtime",
+        "dependencies",
+        "cache",
         "study_area",
         "sources",
         "confidence_note",
@@ -403,11 +632,77 @@
       "properties": {
         "generated_at": { "type": "string", "minLength": 1 },
         "pipeline_version": { "type": "string", "minLength": 1 },
+        "schema_version": {
+          "description": "Version of this output contract. The const below is the single source of truth: propx_roofs.provenance.schema_version() reads it from the packaged schema, so a document stamped with any other value is invalid by construction. Bump it here when the contract changes shape. 1.1.0: run provenance members (git/runtime/dependencies/cache), tri-state green_roof, visual_surface_appearance rename, evidence-driven review triggers, per-attribute requires_review routing, manual_review audit blocks, and the RTI-014 validity constraints. 1.2.0: slim embedded audit annotations (aspect/status/code/summary + detail_ref instead of duplicated verbatim notes) and the optional reaudit_* human-review record in audit_basis.",
+          "const": "1.2.0"
+        },
         "config_hash": { "type": "string", "minLength": 1 },
         "algorithm_parameters_hash": {
           "description": "Fingerprint of the in-code algorithm parameter VALUES in propx_roofs.segment.SEGMENT_PARAMS and propx_roofs.attributes.ATTRIBUTE_PARAMS, which config_hash does not cover: sha256 of a canonical JSON payload, truncated to 16 hex characters. It is NOT a source-code hash and NOT a hash of the whole algorithm - a code change that leaves every parameter value equal leaves this field unchanged, so two runs agreeing here can still differ in output. Where configs/pipeline.yaml overrides a default, the override is covered by config_hash and this field still reports the in-code default; only the two hashes together determine the effective parameters.",
           "type": "string",
           "pattern": "^[0-9a-f]{16}$"
+        },
+        "git": {
+          "description": "The commit the pipeline code ran as, captured via git at run time. commit/dirty are null - with a note saying why - when git or a checkout is unavailable (e.g. an installed wheel); a null is honest, a fabricated SHA is not. dirty=true means the working tree had uncommitted changes, so the commit alone does not identify the code.",
+          "type": "object",
+          "required": ["commit", "dirty"],
+          "additionalProperties": false,
+          "properties": {
+            "commit": {
+              "type": ["string", "null"],
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "dirty": { "type": ["boolean", "null"] },
+            "note": { "type": "string", "minLength": 1 }
+          }
+        },
+        "runtime": {
+          "description": "Interpreter and platform of the run. Byte-identical reproduction is only claimed for the pinned runtime recorded here; other runtimes are expected to reproduce semantically, not byte-for-byte.",
+          "type": "object",
+          "required": ["python", "platform"],
+          "additionalProperties": false,
+          "properties": {
+            "python": { "type": "string", "minLength": 1 },
+            "implementation": { "type": "string", "minLength": 1 },
+            "platform": { "type": "string", "minLength": 1 }
+          }
+        },
+        "dependencies": {
+          "description": "Installed versions (importlib.metadata) of the dependencies that decide numeric output. null when a distribution cannot be resolved in the running environment - recorded, never guessed.",
+          "type": "object",
+          "required": [
+            "numpy",
+            "opencv-python-headless",
+            "shapely",
+            "pyproj",
+            "pillow",
+            "jsonschema",
+            "PyYAML"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "numpy": { "type": ["string", "null"] },
+            "opencv-python-headless": { "type": ["string", "null"] },
+            "shapely": { "type": ["string", "null"] },
+            "pyproj": { "type": ["string", "null"] },
+            "pillow": { "type": ["string", "null"] },
+            "jsonschema": { "type": ["string", "null"] },
+            "PyYAML": { "type": ["string", "null"] }
+          }
+        },
+        "cache": {
+          "description": "The input cache this run read (RTI-011). manifest_sha256 is the sha256 of data/cache/<area>/manifest.json, which itself hashes every raw input file, so this one value pins the run's entire input state. verified reports the outcome of actually running the cache verifier against that cache - a measurement, not an assertion. A missing manifest is an honest null with a note.",
+          "type": "object",
+          "required": ["manifest_sha256", "verified"],
+          "additionalProperties": false,
+          "properties": {
+            "manifest_sha256": {
+              "type": ["string", "null"],
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "verified": { "type": "boolean" },
+            "note": { "type": "string", "minLength": 1 }
+          }
         },
         "study_area": {
           "type": "object",
@@ -441,14 +736,18 @@
           "const": "The 8–10 buildings form a purposive sample selected for attribute diversity, source availability, and visual interpretability. They are not statistically representative of Vienna's building stock."
         },
         "manual_review": {
-          "description": "QA only. Review cannot mutate, promote or override any pipeline output (design section 7); this block reports whether anyone has looked.",
+          "description": "QA only. Review cannot mutate, promote or override any pipeline output (design section 7); this block reports whether anyone has looked. visual_qa_of_baseline_attached means the transcribed MODEL-ASSISTED visual audit of the EARLIER baseline named in audit_basis travels with this document as per-building report blocks — deliberately not 'reviewed', because that word would claim a human sign-off of these bytes that never happened.",
           "type": "object",
           "required": ["status", "reviewer", "n"],
           "additionalProperties": false,
           "properties": {
-            "status": { "enum": ["not_yet_reviewed", "reviewed"] },
+            "status": {
+              "enum": ["not_yet_reviewed", "reviewed", "visual_qa_of_baseline_attached"]
+            },
             "reviewer": { "type": ["string", "null"] },
-            "n": { "type": ["integer", "null"], "minimum": 0 }
+            "n": { "type": ["integer", "null"], "minimum": 0 },
+            "audit_basis": { "$ref": "#/$defs/audit_basis" },
+            "note": { "type": "string", "minLength": 1 }
           }
         }
       }

@@ -1,12 +1,20 @@
 [build-system]
+# The portable FLOOR, not the pin: any PEP 517 frontend must bring at least setuptools 68 (the
+# first line with solid PEP 621 support, so [project] below is readable — older versions build
+# an empty UNKNOWN-0.0.0 wheel with exit 0). The EXACT toolchain (pip/setuptools/wheel) is
+# pinned in requirements.lock; locked installs and CI build with --no-build-isolation against
+# those pins, while this floor keeps an isolated build from an arbitrary environment honest.
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "propx-rooftop-intelligence"
-version = "0.1.0"
+version = "0.2.0"
 description = "Rooftop detection and attribute extraction from open Vienna imagery and geodata"
-requires-python = ">=3.10"
+# 3.11 is the locked, supported interpreter: requirements.lock was resolved on Python 3.11 and
+# the byte-reproducibility claim is made only for that environment. The ceiling keeps an
+# untested 3.13+ from silently becoming "supported".
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "requests>=2.31",
     "shapely>=2.0",
@@ -19,19 +27,29 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# setuptools and wheel are here for tests/test_packaging.py, which installs the project with
-# --no-build-isolation: the build then runs in THIS environment rather than fetching its own
-# build requirements, so the whole toolchain declared by [build-system] has to be present
-# locally. The setuptools floor is kept in step with `requires` above deliberately.
+# setuptools and wheel are here so the UNLOCKED path (`make install` / plain `pip install -e
+# '.[dev]'`) also yields an environment that can build the project locally: every build in this
+# repo — tests/test_packaging.py, `make install-locked`, scripts/finalize.sh, CI — runs with
+# --no-build-isolation after a preflight, using THIS environment's backend instead of an
+# isolated one fetching unpinned build deps over the network. These are floors only, kept in
+# step with [build-system] above; the exact versions are pinned in requirements.lock.
 dev = ["pytest>=7.4", "ruff>=0.4", "setuptools>=68", "wheel>=0.42"]
+
+# A console entry point, so an installed wheel is runnable as a command rather than only as
+# `python -m propx_roofs.cli` from a checkout.
+[project.scripts]
+propx-roofs = "propx_roofs.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 # The JSON Schema is validated at runtime, so it must survive installation. Without this an
-# installed wheel imports fine and then fails at the point of writing output.
+# installed wheel imports fine and then fails at the point of writing output. The two YAML
+# configs are packaged too, as the last-resort default configuration for an installed package
+# running outside any checkout; the repo-root configs/ stays canonical and a test asserts the
+# packaged copies are byte-identical.
 [tool.setuptools.package-data]
-propx_roofs = ["schema/*.json"]
+propx_roofs = ["schema/*.json", "configs/*.yaml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -39,6 +57,9 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+# Deliberately py310 although requires-python pins 3.11: bumping the lint target rewrites
+# stylistic expectations (UP017/UP038/...) across the whole codebase, which is churn without a
+# behavioural gain. Raise it in a dedicated change if wanted.
 target-version = "py310"
 
 [tool.ruff.lint]

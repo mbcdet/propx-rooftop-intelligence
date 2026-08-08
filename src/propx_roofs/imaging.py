@@ -330,20 +330,64 @@ def no_data_mask(crop: ImageCrop) -> np.ndarray:
     return mask
 
 
+def shadow_threshold_luminance(crop: ImageCrop, cfg: Any) -> tuple[float, float | None]:
+    """Effective shadow luminance threshold for this crop: ``(threshold, lit_reference)``.
+
+    The absolute threshold alone (``image.shadow_luminance_threshold``) was measured inactive on
+    this imagery — cast shadow in a sun-lit orthophoto sits at luminance ~75–95, far above 55 —
+    so the live test is *relative*: a pixel is shadow when it is darker than
+    ``shadow_relative_ratio`` times the roof's own lit reference (the
+    ``shadow_reference_percentile`` of roof pixels that have imagery). The ratio comes from
+    illumination physics, not from any building: a sky-only (shadowed) surface receives
+    ~15–25% of the irradiance a sun-plus-sky surface receives at March sun elevations, which
+    gamma-encodes to pixel ratios of ~0.42–0.53. See ``configs/pipeline.yaml`` for the full
+    rationale, including why self-shaded pitched planes (encoded ratios 0.55–0.63) stay lit.
+
+    The result is clipped to ``[shadow_luminance_threshold, shadow_luminance_ceiling]``: below
+    the floor nothing is judgeable regardless of context, and above the ceiling a pixel carries
+    enough absolute signal to judge regardless of how bright its neighbours are. The lit
+    reference is ``None`` when no roof pixel has imagery; the floor is returned then.
+    """
+    floor = float(threshold(cfg, "image", "shadow_luminance_threshold"))
+    ratio = float(threshold(cfg, "image", "shadow_relative_ratio"))
+    percentile = float(threshold(cfg, "image", "shadow_reference_percentile"))
+    ceiling = float(threshold(cfg, "image", "shadow_luminance_ceiling"))
+    mask = np.asarray(crop.roof_mask, dtype=bool)
+    with_data = mask & ~no_data_mask(crop)
+    if not with_data.any():
+        return floor, None
+    reference = float(np.percentile(luminance(crop)[with_data], percentile))
+    return min(ceiling, max(floor, ratio * reference)), reference
+
+
+def shadow_mask(crop: ImageCrop, cfg: Any) -> np.ndarray:
+    """Roof pixels too dark to judge colour or texture on, by the adaptive threshold.
+
+    Only pixels that *have* imagery are marked: a cache gap is absence of observation, not
+    observation of darkness, and travels separately via :func:`no_data_mask`. Callers deciding
+    judgeability must exclude both.
+    """
+    limit, _ = shadow_threshold_luminance(crop, cfg)
+    mask = np.asarray(crop.roof_mask, dtype=bool)
+    return mask & ~no_data_mask(crop) & (luminance(crop) < limit)
+
+
 def shadow_stats(crop: ImageCrop, cfg: Any) -> dict[str, Any]:
     """Luminance quality of the roof interior — the gate every abstention decision reads.
 
-    ``shadow_fraction`` is the share of **all** roof-mask pixels darker than
-    ``image.shadow_luminance_threshold``, so a cache gap counts as dark and pushes the
-    observation towards abstention. That is the conservative direction and it is deliberate.
-    ``no_data_fraction`` and ``shadow_fraction_excluding_no_data`` separate the two causes, so a
-    reader can tell a shadowed courtyard from a missing tile.
+    ``shadow_fraction`` is the share of **all** roof-mask pixels that are either below the
+    adaptive shadow threshold (see :func:`shadow_threshold_luminance`) or covered by no cached
+    imagery, so a cache gap counts as dark and pushes the observation towards abstention. That
+    is the conservative direction and it is deliberate. ``no_data_fraction`` and
+    ``shadow_fraction_excluding_no_data`` separate the two causes, so a reader can tell a
+    shadowed courtyard from a missing tile.
 
     ``mean_luminance`` is measured over roof pixels that *have* imagery: averaging in fabricated
     zeros would report a number that describes our cache rather than the roof. Every fraction is
     ``None`` when there are no roof pixels at all — "cannot judge", not "no shadow".
     """
-    limit = float(threshold(cfg, "image", "shadow_luminance_threshold"))
+    limit, lit_reference = shadow_threshold_luminance(crop, cfg)
+    floor = float(threshold(cfg, "image", "shadow_luminance_threshold"))
     mask = np.asarray(crop.roof_mask, dtype=bool)
     grey = luminance(crop)
     n = int(mask.sum())
@@ -354,13 +398,16 @@ def shadow_stats(crop: ImageCrop, cfg: Any) -> dict[str, Any]:
             "mean_luminance": None,
             "no_data_fraction": None,
             "shadow_fraction_excluding_no_data": None,
-            "shadow_luminance_threshold": limit,
+            "shadow_luminance_threshold": floor,
+            "shadow_luminance_threshold_effective": limit,
+            "shadow_lit_reference_luminance": lit_reference,
             "missing_tile_count": len(crop.missing_tiles),
             "note": "no roof pixels inside the crop; luminance quality is undefined",
         }
     no_data = no_data_mask(crop) & mask
     with_data = mask & ~no_data
     n_data = int(with_data.sum())
+    shadowed = with_data & (grey < limit)
     return {
         "roof_pixel_count": n,
         # NOT the published area. This counts raster-mask pixels and scales them by the local
@@ -378,13 +425,20 @@ def shadow_stats(crop: ImageCrop, cfg: Any) -> dict[str, Any]:
             "in EPSG:31256. The two may differ because of rasterisation onto the pixel grid and "
             "because of the approximate local ground-scale measurement frame"
         ),
-        "shadow_fraction": round(float((grey[mask] < limit).mean()), 4),
+        # Shadow-or-no-data over the whole outline: the conservative gate figure.
+        "shadow_fraction": round(float((int(shadowed.sum()) + int(no_data.sum())) / n), 4),
         "mean_luminance": round(float(grey[with_data].mean()), 2) if n_data else None,
         "no_data_fraction": round(float(no_data.sum() / n), 4),
         "shadow_fraction_excluding_no_data": (
-            round(float((grey[with_data] < limit).mean()), 4) if n_data else None
+            round(float(shadowed.sum() / n_data), 4) if n_data else None
         ),
-        "shadow_luminance_threshold": limit,
+        "shadow_luminance_threshold": floor,
+        # The adaptive threshold actually applied, and the lit reference it came from, so a
+        # published shadow_fraction is reproducible from the record itself.
+        "shadow_luminance_threshold_effective": round(limit, 1),
+        "shadow_lit_reference_luminance": (
+            None if lit_reference is None else round(lit_reference, 1)
+        ),
         # Measured luminance, published so shadow_fraction is self-evidencing. A reader can
         # see how far the darkest roof pixels actually sit from the configured threshold
         # instead of taking a 0.0 on trust: visibly shadowed roof can still be well above it.

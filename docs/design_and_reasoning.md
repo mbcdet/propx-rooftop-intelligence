@@ -1,5 +1,8 @@
 # Design and Reasoning
 
+> **Document status: CURRENT.** This is the maintained design summary; the phase documents under
+> `docs/` are historical records and defer to this one where they disagree.
+
 ## Why these sources, and the trade-offs
 
 I used the City of Vienna's **2024 true orthophoto** (WMTS `lb2024`, 15 cm GSD) for imagery and

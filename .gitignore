@@ -56,3 +56,6 @@ dist/
 venv/
 .env
 .DS_Store
+
+# Local agent session settings. Machine-specific, not part of the deliverable.
+.claude/

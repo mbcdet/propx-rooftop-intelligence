@@ -1,0 +1,18 @@
+{
+ "config_hash": "c8a4c2236bb0caa3",
+ "files": {
+  "overlays/vie-swv-001.png": "b76337baa769d8c7311d60b8d237a3cf6750ae1fab426002e9d63b9477fddef8",
+  "overlays/vie-swv-002.png": "c5953b46f8cadde687916f8fe942b4670bacd5c6132dc2dc3b94d0d1031779f3",
+  "overlays/vie-swv-003.png": "ae52587796f7df2d5fbf77b8b82fd730b7744273af67a940cdfe87c3a615cd5c",
+  "overlays/vie-swv-004.png": "4f82a77d31239e351fd19f853235d03e817fe0924064876ef9088ae6a5db9d9a",
+  "overlays/vie-swv-005.png": "7ad6b193eb8a70b00916ee666b3ebb44e660b726b61fd582b741f8f88a40119c",
+  "overlays/vie-swv-006.png": "824884adb56db8dfe5056574c01d7491f24bdba28b508ed2c6175527be0291a0",
+  "overlays/vie-swv-007.png": "8356f48a0e6be931e4320226e09420e52dcc890258a9388e7b737afd3cbbc965",
+  "overlays/vie-swv-008.png": "ef6866d91b5240b70ef36aaa679d72cb91408bff9c43ac3b52ac7afeeb89d477",
+  "overlays/vie-swv-009.png": "3ccc380ad1588cb1a2636a6f26e3a2050188cdd3725bcb245b643c58cadaa54c",
+  "overlays/vie-swv-010.png": "30dc3fdcc8f10b45f8a83f559aa375581cb319ec3e8ffe9b9a0d6f39fb4c1264",
+  "roof_attributes.json": "6293c3e70dfb34e41e67cae297e202943f845fc096bfc915fd0d763534b7dba1"
+ },
+ "generated_at": "2026-08-08T17:14:19.566891+02:00",
+ "note": "sha256 fingerprints of this run's artifacts, written in the same atomic swap that published them. The manifest does not hash itself."
+}

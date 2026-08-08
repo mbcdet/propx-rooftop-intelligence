@@ -1,5 +1,15 @@
 """Footprint-seeded segmentation and its agreement with the authoritative outline.
 
+**Cadastre-seeded refinement and QC, not independent detection.** The segmenter is initialised
+from the authoritative outline (see :mod:`propx_roofs.segment.grabcut`), so the candidate
+polygon is a constrained refinement of that seed — it is free to move only within the trimap
+band around the outline and inherits everything else from it. Consequently every agreement
+metric in :mod:`propx_roofs.segment.agreement` compares two statistically **dependent**
+estimates: high IoU means the imagery did not contradict the cadastre near its boundary, and
+must never be read as independent confirmation of the cadastre or as segmentation accuracy.
+The published records say this in their ``note`` field; this docstring is the code-side
+statement of the same design decision.
+
 Design section 4 is unambiguous about the division of labour: **authoritative geodata provides
 delineation; CV provides consistency evidence and an alignment diagnostic.** So this package can
 produce a candidate polygon and a set of agreement numbers, and it has no code path that returns

@@ -169,7 +169,7 @@ def test_configured_caps_resolve_and_an_unknown_attribute_still_fails_loudly(
     """
     assert confidence.positive_cap("roof_area_m2", cfg=cfg) == 0.85
     assert confidence.positive_cap("mean_slope_deg", cfg=cfg) == 0.90
-    assert confidence.positive_cap("roof_surface_class", cfg=cfg) == 0.60
+    assert confidence.positive_cap("visual_surface_appearance", cfg=cfg) == 0.60
 
     with pytest.raises(KeyError, match=r"missing threshold confidence\.positive_cap\.no_such_attr"):
         confidence.positive_cap("no_such_attr", cfg=cfg)
@@ -287,6 +287,61 @@ def test_a_false_image_observation_lands_on_the_negative_cap(cfg: config.Config)
     assert attribute.confidence.score < confidence.positive_cap("solar_panels", cfg=cfg)
 
 
+def test_a_not_detected_string_observation_lands_on_the_negative_cap(
+    cfg: config.Config,
+) -> None:
+    """RTI-009: detection observations carry three-state strings, and "not_detected" is the
+    negative-detection path — same cap, same absence-of-evidence clause as Boolean False."""
+    observation = ImageObservation(
+        name="green_roof",
+        value="not_detected",
+        method="rgb_vegetation_index_exg",
+        rationale="ExG below threshold over a judgeable roof",
+        quality={"shadow_fraction": 0.02},
+    )
+    attribute = confidence.from_image_observation(observation, "green_roof", cfg=cfg)
+    assert attribute.value == "not_detected"
+    assert attribute.confidence.score == confidence.negative_detection_cap(cfg=cfg)
+    assert "absence of evidence" in attribute.confidence.rationale
+
+    detected = confidence.from_image_observation(
+        ImageObservation(
+            name="green_roof",
+            value="detected",
+            method="rgb_vegetation_index_exg",
+            rationale="ExG above threshold on a third of the roof",
+            quality={"shadow_fraction": 0.02},
+        ),
+        "green_roof",
+        cfg=cfg,
+    )
+    # "detected" is a positive detection and must not be dragged onto the negative cap.
+    assert detected.confidence.score == confidence.positive_cap("green_roof", cfg=cfg)
+
+
+def test_negative_value_recognition_is_type_aware(cfg: config.Config) -> None:
+    """0.0 == False in Python: a measured zero (azimuth, fraction) must not score negative."""
+    assert confidence.is_negative_observation_value(False) is True
+    assert confidence.is_negative_observation_value("not_detected") is True
+    assert confidence.is_negative_observation_value(0.0) is False
+    assert confidence.is_negative_observation_value(0) is False
+    assert confidence.is_negative_observation_value("detected") is False
+    assert confidence.is_negative_observation_value(None) is False
+
+    zero_azimuth = confidence.from_image_observation(
+        ImageObservation(
+            name="ridge_orientation_deg",
+            value=0.0,
+            method="hough",
+            rationale="a ridge bearing exactly north",
+        ),
+        "ridge_orientation",
+        cfg=cfg,
+    )
+    assert zero_azimuth.value == 0.0
+    assert zero_azimuth.confidence.score == confidence.positive_cap("ridge_orientation", cfg=cfg)
+
+
 def test_a_true_image_observation_lands_on_the_positive_cap(cfg: config.Config) -> None:
     attribute = confidence.from_image_observation(
         _observation(True, shadow_fraction=0.05),
@@ -340,3 +395,61 @@ def test_a_confidence_without_a_score_still_carries_the_note() -> None:
     conf = Confidence(method="rgb_cluster_detection", rationale="roof interior too dark to judge")
     assert conf.score is None
     assert conf.as_dict()["note"].endswith("not a calibrated probability.")
+
+
+# --- evidence-sensitive factors (RTI-008) ----------------------------------------------------
+
+
+def test_evidence_factor_maps_the_gate_to_the_strongest_discount(cfg: config.Config) -> None:
+    """At the publishability gate (lo) the factor is 0.5 - the strongest discount the section 6
+    rules allow - because evidence that only just cleared the gate is the weakest evidence
+    permitted to publish at all."""
+    anchors = cfg.threshold("confidence", "evidence_factor", "judgeable_fraction")
+    assert confidence.evidence_factor("judgeable_fraction", anchors["lo"], cfg=cfg) == 0.5
+
+
+def test_evidence_factor_maps_the_ideal_measurement_to_no_discount(cfg: config.Config) -> None:
+    anchors = cfg.threshold("confidence", "evidence_factor", "judgeable_fraction")
+    assert confidence.evidence_factor("judgeable_fraction", anchors["hi"], cfg=cfg) == 1.0
+
+
+def test_evidence_factor_is_linear_between_the_anchors(cfg: config.Config) -> None:
+    anchors = cfg.threshold("confidence", "evidence_factor", "surface_margin")
+    lo, hi = float(anchors["lo"]), float(anchors["hi"])
+    midpoint = (lo + hi) / 2.0
+    assert confidence.evidence_factor("surface_margin", midpoint, cfg=cfg) == pytest.approx(
+        0.75, abs=1e-4
+    )
+
+
+def test_evidence_factor_clips_outside_the_anchors(cfg: config.Config) -> None:
+    """Measurements beyond the anchors clip: the factor can never leave [0.5, 1.0], so it can
+    never violate the section 6 factor range however extreme the measurement."""
+    assert confidence.evidence_factor("ridge_gate_margin", -5.0, cfg=cfg) == 0.5
+    assert confidence.evidence_factor("ridge_gate_margin", 99.0, cfg=cfg) == 1.0
+
+
+def test_evidence_factor_output_is_always_a_legal_penalty_factor(cfg: config.Config) -> None:
+    for name in (
+        "judgeable_fraction",
+        "surface_margin",
+        "surface_pair_share",
+        "vegetation_judgeable_fraction",
+        "vegetation_index_margin",
+        "ridge_gate_margin",
+    ):
+        for measured in (-1.0, 0.0, 0.3, 0.65, 0.8, 1.0, 2.0):
+            factor = confidence.evidence_factor(name, measured, cfg=cfg)
+            confidence.validate_factors({name: factor})  # raises if outside [0.5, 1.0]
+
+
+def test_evidence_factor_refuses_unknown_names(cfg: config.Config) -> None:
+    """A factor nobody configured anchors for is a loud failure, not an invented mapping."""
+    with pytest.raises(KeyError):
+        confidence.evidence_factor("no_such_quantity", 0.5, cfg=cfg)
+
+
+def test_evidence_factor_refuses_degenerate_anchors(cfg: config.Config) -> None:
+    broken = _cfg_with_confidence(cfg, evidence_factor={"broken": {"lo": 0.5, "hi": 0.5}})
+    with pytest.raises(ValueError, match="lo < hi"):
+        confidence.evidence_factor("broken", 0.5, cfg=broken)

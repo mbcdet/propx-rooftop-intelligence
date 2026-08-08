@@ -69,6 +69,112 @@ def test_segmentation_recovers_a_bright_rectangle() -> None:
     assert 3 <= meta["n_vertices"] <= 20, "simplification should leave a compact polygon"
 
 
+def two_part_roof(size: int = 400) -> tuple[np.ndarray, np.ndarray]:
+    """Two bright textured rectangles on a dark background: a MultiPolygon building."""
+    rng = np.random.default_rng(7)
+    rgb = np.full((size, size, 3), 40, np.uint8)
+    mask = np.zeros((size, size), bool)
+    for x0, x1 in ((60, 170), (230, 340)):
+        rgb[100:300, x0:x1] = 200
+        mask[100:300, x0:x1] = True
+    rgb = np.clip(rgb.astype(np.int16) + rng.integers(-6, 7, rgb.shape), 0, 255).astype(np.uint8)
+    return rgb, mask
+
+
+def test_a_two_component_roof_keeps_both_components() -> None:
+    """RTI-010: 'largest component only' silently discarded every other part of a MultiPolygon
+    roof while the whole-roof area gate could still pass. Both parts must survive, the polygon
+    must be a MultiPolygon, and the per-part recall must be published."""
+    rgb, mask = two_part_roof()
+    crop = synthetic_crop(rgb, mask)
+    result, meta = grabcut.segment(crop, CFG)
+    assert meta["failure_reason"] is None
+    assert result is not None
+    assert meta["n_input_components"] == 2
+    assert meta["n_output_components"] == 2
+    assert meta["multipolygon_input"] is True
+    assert meta["polygon"]["type"] == "MultiPolygon"
+    assert len(meta["polygon"]["coordinates"]) == 2
+    assert len(meta["input_component_recall"]) == 2
+    for recall in meta["input_component_recall"]:
+        assert recall > 0.8, f"a component was substantially lost: {meta['input_component_recall']}"
+    assert "component_count_warning" not in meta
+    # Both parts really are in the pixel mask, not only in the metadata.
+    left = result[:, :200].sum()
+    right = result[:, 200:].sum()
+    assert left > 0 and right > 0
+
+    # And the agreement stage accepts the MultiPolygon candidate without special-casing.
+    comparison = agreement.compare(meta["polygon"], _two_part_polygon(crop), crop, CFG)
+    assert comparison.failure_reason is None
+    assert comparison.iou > 0.8
+
+
+def _two_part_polygon(crop) -> dict:
+    """GeoJSON MultiPolygon matching ``two_part_roof``'s outline."""
+    from propx_roofs.imaging import rings_to_polygon_wgs84
+
+    parts = []
+    for x0, x1 in ((60, 170), (230, 340)):
+        ring = np.array([[x0, 100], [x1, 100], [x1, 300], [x0, 300]], dtype=np.int32)
+        polygon = rings_to_polygon_wgs84(crop, ring)
+        assert polygon is not None
+        parts.append(polygon["coordinates"])
+    return {"type": "MultiPolygon", "coordinates": parts}
+
+
+def test_components_touching_no_input_part_are_removed_as_noise() -> None:
+    """Unit test for the retention rule: a foreground blob far from every input component is
+    noise and must be dropped; components near any input part are all kept."""
+    foreground = np.zeros((200, 200), np.uint8)
+    foreground[20:60, 20:60] = 255  # overlaps the seed
+    foreground[100:140, 20:60] = 255  # near (touches the dilated seed)
+    foreground[150:190, 150:190] = 255  # far from everything: noise
+    near = np.zeros((200, 200), bool)
+    near[20:105, 20:60] = True  # dilated authoritative outline
+    kept, n_kept, n_dropped = grabcut._components_near_seed(foreground, near)
+    assert n_kept == 2
+    assert n_dropped == 1
+    assert kept is not None
+    assert kept[30, 30] and kept[120, 30]
+    assert not kept[170, 170], "the far blob must be removed as noise"
+
+    nothing, none_kept, all_dropped = grabcut._components_near_seed(
+        foreground, np.zeros((200, 200), bool)
+    )
+    assert nothing is None and none_kept == 0 and all_dropped == 3
+
+
+def test_concurrent_segmentation_matches_sequential_results() -> None:
+    """RTI-023: cv2.setRNGSeed is process-global, so the seed-then-segment pair runs under a
+    module lock. Two threads segmenting different crops concurrently must produce exactly the
+    masks the same crops produce sequentially."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    rgb_a, mask_a = bright_roof()
+    rgb_b, mask_b = two_part_roof()
+    crop_a, crop_b = synthetic_crop(rgb_a, mask_a), synthetic_crop(rgb_b, mask_b)
+
+    sequential_a, meta_a = grabcut.segment(crop_a, CFG)
+    sequential_b, meta_b = grabcut.segment(crop_b, CFG)
+    assert sequential_a is not None and sequential_b is not None
+
+    for _ in range(3):  # a few rounds to give interleaving a chance to happen
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            future_a = pool.submit(grabcut.segment, crop_a, CFG)
+            future_b = pool.submit(grabcut.segment, crop_b, CFG)
+            concurrent_a, concurrent_meta_a = future_a.result()
+            concurrent_b, concurrent_meta_b = future_b.result()
+        assert hashlib.sha256(concurrent_a.tobytes()).hexdigest() == (
+            hashlib.sha256(sequential_a.tobytes()).hexdigest()
+        )
+        assert hashlib.sha256(concurrent_b.tobytes()).hexdigest() == (
+            hashlib.sha256(sequential_b.tobytes()).hexdigest()
+        )
+        assert concurrent_meta_a["polygon"] == meta_a["polygon"]
+        assert concurrent_meta_b["polygon"] == meta_b["polygon"]
+
+
 def test_degenerate_mask_returns_a_failure_reason_not_an_exception() -> None:
     """A sliver thinner than the erosion band has no sure foreground. That is reportable."""
     rgb = np.full((200, 200, 3), 120, np.uint8)

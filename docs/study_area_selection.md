@@ -1,5 +1,12 @@
 # Study-Area Selection — Phase 2 Decision
 
+> **Document status: HISTORICAL.** This is the Phase 2 decision record, kept verbatim as work
+> history. Where it describes detector behaviour it describes the **Phase 2B detector, which has
+> since been replaced** by the gated ridge detector (shadow exclusion, medial-axis crest test,
+> shadow-flank and axis-alignment gates). Statements here about individual buildings' ridges are
+> superseded by `docs/phase3_visual_validation.md` and by the current pipeline output. Inline
+> **[SUPERSEDED]** notes mark the known contradictions.
+
 **Status: COMPLETE.** Study area selected and 10 building units pinned in
 `configs/study_area.yaml`, after inspecting real z20 imagery.
 
@@ -192,6 +199,12 @@ what drove the selection.
 that reading**. It reports a ridge at ≈65.2° with plane-brightness contrast 0.23, which is
 evidence *for* the authoritative `Schraegdach`. The automatic conflict flag therefore **does
 not fire** on this building.
+
+> **[SUPERSEDED]** The Phase 3 visual audit assessed that ≈65.2° line as *questionable* — most
+> likely the boundary between the bright deck and the façade band inside the outline, not a
+> ridge between two roof planes — and the current gated detector **withholds** it (the
+> medial-axis crest gate rejects it as boundary-parallel structure). The paragraph above is the
+> Phase 2B state, retained as history; it is no longer evidence for the authoritative class.
 
 The disagreement between a human reading and the algorithm is the interesting part and is kept
 on the record rather than resolved by decree. What must not happen is retuning the detector or

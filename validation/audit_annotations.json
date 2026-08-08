@@ -1,0 +1,567 @@
+{
+ "title": "Machine-readable per-building transcription of validation/visual_audit.json",
+ "review_type": "model_assisted_visual_qa",
+ "disclaimer": "Faithful mechanical transcription of the assessments in validation/visual_audit.json: model-assisted readings of single-epoch 15 cm RGB orthophoto imagery. These annotations are NOT labelled ground truth, NOT an accuracy measurement and NOT human validation; independent human review would be required before operational use. No assessment was invented, upgraded or softened in transcription (the mapping applied is recorded under assessment_mapping), every note is carried verbatim, and no published value, geometry or confidence may be changed on the basis of this file - the pipeline attaches it as report blocks and review flags only.",
+ "audit_basis": {
+  "source_file": "validation/visual_audit.json",
+  "source_file_sha256": "3557be0bf9269554961b4c2d11718aeb7eadda2743298805f31d9e60dd313fe0",
+  "audited_document": "outputs/roof_attributes.json",
+  "audited_document_sha256": "ce9e792405da36e013af3c5cfbc4d1fab48f1e2a4ffa0dc499ea43db736e34b1",
+  "baseline_commit": "c86cbf4",
+  "audit_generated_at": "2026-08-04T13:01:59+00:00",
+  "reaudit_of_artifact_sha256": "6293c3e70dfb34e41e67cae297e202943f845fc096bfc915fd0d763534b7dba1",
+  "note": "The audit examined the EARLIER baseline artifact identified by audited_document_sha256 at baseline_commit - not the artifact of any run this file is attached to, whose bytes differ by design (the pipeline has been corrected since). A future human re-audit of a final artifact would record that artifact's sha256 in reaudit_of_artifact_sha256; until then release tooling must report the audit binding as baseline-only.",
+  "reaudit_overlays": {
+   "overlays/vie-swv-001.png": "b76337baa769d8c7311d60b8d237a3cf6750ae1fab426002e9d63b9477fddef8",
+   "overlays/vie-swv-002.png": "c5953b46f8cadde687916f8fe942b4670bacd5c6132dc2dc3b94d0d1031779f3",
+   "overlays/vie-swv-003.png": "ae52587796f7df2d5fbf77b8b82fd730b7744273af67a940cdfe87c3a615cd5c",
+   "overlays/vie-swv-004.png": "4f82a77d31239e351fd19f853235d03e817fe0924064876ef9088ae6a5db9d9a",
+   "overlays/vie-swv-005.png": "7ad6b193eb8a70b00916ee666b3ebb44e660b726b61fd582b741f8f88a40119c",
+   "overlays/vie-swv-006.png": "824884adb56db8dfe5056574c01d7491f24bdba28b508ed2c6175527be0291a0",
+   "overlays/vie-swv-007.png": "8356f48a0e6be931e4320226e09420e52dcc890258a9388e7b737afd3cbbc965",
+   "overlays/vie-swv-008.png": "ef6866d91b5240b70ef36aaa679d72cb91408bff9c43ac3b52ac7afeeb89d477",
+   "overlays/vie-swv-009.png": "3ccc380ad1588cb1a2636a6f26e3a2050188cdd3725bcb245b643c58cadaa54c",
+   "overlays/vie-swv-010.png": "30dc3fdcc8f10b45f8a83f559aa375581cb319ec3e8ffe9b9a0d6f39fb4c1264"
+  },
+  "reaudit_reviewer": "Mohammad Bius",
+  "reaudit_date": "2026-08-08"
+ },
+ "status_vocabulary": {
+  "supports": "the audit's reading is consistent with the published output",
+  "questionable": "the audit doubts this aspect; a human should look",
+  "conflicts": "the audit's reading disagrees with the published output; the published value stands unchanged",
+  "not_judgeable": "the audit could not judge this aspect from the imagery"
+ },
+ "assessment_mapping": {
+  "authoritative_outline.assessment": {
+   "visually_aligned": "supports",
+   "questionable": "questionable"
+  },
+  "cv_candidate.assessment": {
+   "visually_aligned": "supports",
+   "questionable": "questionable"
+  },
+  "roof_type.verdict": {
+   "supports": "supports",
+   "abstain": "not_judgeable",
+   "conflicts": "conflicts"
+  },
+  "ridge.assessment": {
+   "visually_plausible": "supports",
+   "questionable": "questionable",
+   "not_judgeable": "not_judgeable"
+  },
+  "surface_class.assessment": {
+   "plausible": "supports",
+   "questionable": "questionable"
+  },
+  "image_quality.assessment": {
+   "good": "supports",
+   "questionable": "questionable"
+  }
+ },
+ "summary_policy": "Each annotation additionally carries code (aspect.status, a stable machine key) and summary (a concise <=140-character distillation of the verbatim note, written for embedding in the output document). The summary is a faithful condensation, never an upgraded or softened assessment; the note in this file remains the verbatim evidence trail and the authority.",
+ "n": 10,
+ "buildings": {
+  "vie-swv-001": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "supports",
+    "code": "authoritative_outline.supports",
+    "summary": "Ring follows the outer roof edge on all four sides; the courtyard void is correctly cut out; any outward bias <=0.5 m.",
+    "source_assessment": "visually_aligned",
+    "note": "Ring follows the outer roof edge on all four sides; the 238.9 m2 courtyard void is correctly cut out. Any outward bias is <=0.5 m and not separable from a parapet/eave at this GSD."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "supports",
+    "code": "cv_candidate.supports",
+    "summary": "Slight inward trim and a re-cut courtyard hole; auth->CV median 0.26 m, max 0.84 m exterior.",
+    "source_assessment": "visually_aligned",
+    "note": "Slight inward trim on the exterior and a re-cut of the courtyard hole (east side, south bulge). Auth->CV median 0.26 m, max 0.84 m exterior."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "supports",
+    "code": "roof_type.supports",
+    "summary": "Single-level parapeted deck with plant boxes and module rows; no ridge or differently-facing planes.",
+    "source_assessment": "supports",
+    "note": "Single-level deck with parapet, plant boxes and module rows; no ridge, no two differently-facing planes."
+   },
+   {
+    "aspect": "ridge",
+    "status": "supports",
+    "code": "ridge.supports",
+    "summary": "No ridge discernible; the abstention is well founded.",
+    "source_assessment": "visually_plausible",
+    "note": "No ridge discernible; abstention well founded."
+   },
+   {
+    "aspect": "surface",
+    "status": "supports",
+    "code": "surface.supports",
+    "summary": "Most of the visible surface is covered by modules, so the classifier largely describes the panel field and perimeter band.",
+    "source_assessment": "plausible",
+    "note": "Most of the visible surface is covered BY MODULES, so the classifier largely describes the panel field and the reddish perimeter band."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "supports",
+    "code": "image_quality.supports",
+    "summary": "No occlusion or missing tiles; roof interior fully lit.",
+    "source_assessment": "good",
+    "note": "No occlusion, no missing tiles, roof interior fully lit."
+   }
+  ],
+  "vie-swv-002": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "questionable",
+    "code": "authoritative_outline.questionable",
+    "summary": "South-west edge sits ~0.5-1.3 m outside the apparent roof edge; overhang vs the documented re-cut not judgeable at 10 cm/px.",
+    "source_assessment": "questionable",
+    "note": "Along the south-west (plaza) edge the outline sits ~0.5-1.3 m outside the apparent roof edge, with the CV candidate on the visible edge. Overhang or the documented mutual re-cut; not judgeable at 10 cm/px."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "supports",
+    "code": "cv_candidate.supports",
+    "summary": "Exterior auth->CV median 0.36 m, max 1.27 m; the two CV holes differ modestly in size and position.",
+    "source_assessment": "visually_aligned",
+    "note": "Exterior auth->CV median 0.36 m, max 1.27 m. CV hole 1 ~10% larger and shifted west; hole 2 ~6% smaller."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "supports",
+    "code": "roof_type.supports",
+    "summary": "Multiple wings, all flat decks with raised wing roofs; no ridge anywhere.",
+    "source_assessment": "supports",
+    "note": "Multiple wings, all flat decks with raised light-coloured wing roofs; no ridge anywhere."
+   },
+   {
+    "aspect": "ridge",
+    "status": "supports",
+    "code": "ridge.supports",
+    "summary": "149 lines yet the dominant orientation carries only 10% of line length - expected on a many-wing flat complex.",
+    "source_assessment": "visually_plausible",
+    "note": "149 lines but dominant orientation carries only 10% of line length - expected on a many-wing flat complex."
+   },
+   {
+    "aspect": "surface",
+    "status": "questionable",
+    "code": "surface.questionable",
+    "summary": "Published 'mixed'; the 'tiled' component matches warm reddish-brown pixels that on this modern flat roof read as dormant substrate.",
+    "source_assessment": "questionable",
+    "note": "Published 'mixed'; the 'tiled' component is a defensible colour match on warm reddish-brown pixels, but this is a modern flat roof and those same pixels are the dormant-substrate signature."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "supports",
+    "code": "image_quality.supports",
+    "summary": "No occlusion and no missing data; roof interiors lit.",
+    "source_assessment": "good",
+    "note": "No occlusion or missing data; roof interiors lit."
+   }
+  ],
+  "vie-swv-003": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "supports",
+    "code": "authoritative_outline.supports",
+    "summary": "Simple rectangle following the roof edge on all four sides; the gravel border strip is roof, not ground.",
+    "source_assessment": "visually_aligned",
+    "note": "Simple rectangle following the roof edge on all four sides; reddish-brown gravel border strip is roof, not ground."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "supports",
+    "code": "cv_candidate.supports",
+    "summary": "Auth->CV median 0.44 m, max 1.32 m; highest boundary_gradient_ratio in the set (1.805). Evidence only.",
+    "source_assessment": "visually_aligned",
+    "note": "Auth->CV median 0.44 m, max 1.32 m. Highest boundary_gradient_ratio in A's set (1.805): the CV boundary sits on markedly stronger image structure. Evidence only."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "not_judgeable",
+    "code": "roof_type.not_judgeable",
+    "summary": "Reads as one plane with flush module fields; at SLOPE_MEAN 7.94 deg a shallow monopitch and flat-with-fall are not separable.",
+    "source_assessment": "abstain",
+    "note": "Reads as one plane with two flush module fields and a central plant spine; no ridge. But at SLOPE_MEAN 7.94 deg a shallow monopitch and a flat roof with fall are not separable at 10 cm/px. SOFT disagreement, not a conflict."
+   },
+   {
+    "aspect": "ridge",
+    "status": "supports",
+    "code": "ridge.supports",
+    "summary": "Strongest line is within 0.6 deg of the footprint axis - almost certainly the parapet; the contrast gate correctly refused it.",
+    "source_assessment": "visually_plausible",
+    "note": "Strongest line 159.34 deg is within 0.6 deg of footprint axis 158.73 deg - almost certainly the long parapet; plane-contrast gate (12.8% vs 15%) correctly refused it."
+   },
+   {
+    "aspect": "surface",
+    "status": "supports",
+    "code": "surface.supports",
+    "summary": "Low information: most of the visible roof is modules.",
+    "source_assessment": "plausible",
+    "note": "Low information: the majority of the visible roof is modules."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "supports",
+    "code": "image_quality.supports",
+    "summary": "Roof interior fully lit; the large dark area to the east is ground shadow outside the polygon.",
+    "source_assessment": "good",
+    "note": "Roof interior fully lit; the large dark area east is ground shadow outside the polygon."
+   }
+  ],
+  "vie-swv-004": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "questionable",
+    "code": "authoritative_outline.questionable",
+    "summary": "Tracks the curved edge well but has NO interior hole; the enclosed inner area reads as a lower deck. Imagery cannot settle it.",
+    "source_assessment": "questionable",
+    "note": "Line tracks the curved edge well (243 vertices). The issue is that this polygon has NO interior hole while 001 and 002 have theirs cut out; the enclosed inner area reads as a lower landscaped/terrace deck. Evidence favours a built-over podium (FMZK IoU 0.985, symmetric containment 0.992) but imagery cannot settle it."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "supports",
+    "code": "cv_candidate.supports",
+    "summary": "Tightest in the set (median 0.27 m, max 1.00 m); CV reproduces the no-hole topology, adding no evidence on the courtyard question.",
+    "source_assessment": "visually_aligned",
+    "note": "Tightest in A's set: median 0.27 m, max 1.00 m. CV reproduces the no-hole topology, so it adds no independent evidence on the courtyard question."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "not_judgeable",
+    "code": "roof_type.not_judgeable",
+    "summary": "Two large surfaces read flat; the light band on the curved perimeter could be sloping roof or sunlit parapet. SLOPE_MEAN 7.82 deg.",
+    "source_assessment": "abstain",
+    "note": "Two large visible surfaces read flat; the light band following the curved perimeter could be a sloping perimeter roof or a sunlit parapet. SLOPE_MEAN 7.82 deg."
+   },
+   {
+    "aspect": "ridge",
+    "status": "supports",
+    "code": "ridge.supports",
+    "summary": "A curved organic roof has no single ridge; the dominant orientation carries only 9% of line length.",
+    "source_assessment": "visually_plausible",
+    "note": "A curved organic roof has no single ridge; dominant orientation carries only 9% of line length."
+   },
+   {
+    "aspect": "surface",
+    "status": "supports",
+    "code": "surface.supports",
+    "summary": "Neutral light grey, fine texture; a light membrane or paved deck would look similar; 'unclear' equally acceptable.",
+    "source_assessment": "plausible",
+    "note": "Neutral light grey, fine texture. A light membrane or paved deck would look similar; 'unclear' equally acceptable."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "supports",
+    "code": "image_quality.supports",
+    "summary": "Fully lit, no missing tiles; bare-crown street trees do not reach the roof.",
+    "source_assessment": "good",
+    "note": "Fully lit, no missing tiles, bare-crown street trees do not reach the roof."
+   }
+  ],
+  "vie-swv-005": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "supports",
+    "code": "authoritative_outline.supports",
+    "summary": "Follows the roof edge north, west and east; the south-east striped strip the CV excludes is not judgeable on that edge.",
+    "source_assessment": "visually_aligned",
+    "note": "Follows the roof edge north, west and east. The south/south-east edge includes a lighter finely striped strip that the CV excludes - canopy, awning or bright membrane; that specific edge is not_judgeable."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "questionable",
+    "code": "cv_candidate.questionable",
+    "summary": "Lowest agreement in the set: the CV drops the southern strip, 503 vs 547 m2 (~8% smaller). Systematic, not noise.",
+    "source_assessment": "questionable",
+    "note": "Lowest agreement in A's set. The CV drops the southern strip, cutting a straight diagonal across the authoritative step. CV 503 m2 vs auth 547 m2 (~8% smaller). Systematic, not noise."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "supports",
+    "code": "roof_type.supports",
+    "summary": "Uniform single-level pale grey deck with parapet and small units along the eastern edge.",
+    "source_assessment": "supports",
+    "note": "Uniform single-level pale grey deck with parapet and a row of small units along the eastern edge."
+   },
+   {
+    "aspect": "ridge",
+    "status": "supports",
+    "code": "ridge.supports",
+    "summary": "Only 5 co-oriented lines - the rectangular parapet; plane-contrast could not run on a roof this small.",
+    "source_assessment": "visually_plausible",
+    "note": "Only 5 lines, all co-oriented (dominant share 1.0) - the rectangular parapet. Plane-contrast could not be run on a roof this small."
+   },
+   {
+    "aspect": "surface",
+    "status": "supports",
+    "code": "surface.supports",
+    "summary": "Weakest majority in the set (57%); light membrane and light gravel ballast are not separable here; 'unclear' acceptable.",
+    "source_assessment": "plausible",
+    "note": "Weakest majority in A's set (57%). A light single-ply membrane and light gravel ballast are not separable here; 'unclear' acceptable."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "supports",
+    "code": "image_quality.supports",
+    "summary": "Best-lit in the set; adjacent structures shadow the street but not the roof interior.",
+    "source_assessment": "good",
+    "note": "Best-lit in A's set; adjacent structures shadow the street but not the roof interior."
+   }
+  ],
+  "vie-swv-006": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "supports",
+    "code": "authoritative_outline.supports",
+    "summary": "Tracks the parapet band cleanly; open question: zero interior rings yet 3-4 dark voids (~10-12% of area) unclear at this GSD.",
+    "source_assessment": "visually_aligned",
+    "note": "Tracks the parapet band cleanly on all four sides. OPEN QUESTION: the outline has zero interior rings yet the roof contains 3-4 dark rectangular voids (~20, ~27, ~20 m2, of order 10-12% of 597.9 m2). Open light wells or dark-glazed rooflights - unclear at this GSD."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "supports",
+    "code": "cv_candidate.supports",
+    "summary": "CV bulges ~1-1.5 m outward on the west and NE corner and cuts the north notch; 611.5 vs 597.9 m2.",
+    "source_assessment": "visually_aligned",
+    "note": "Magenta bulges ~1-1.5 m outward on the west and at the NE corner and cuts the north notch. CV 611.5 m2 vs auth 597.9 m2."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "supports",
+    "code": "roof_type.supports",
+    "summary": "Large single deck with parapets and plant/rooflight strips; no second plane.",
+    "source_assessment": "supports",
+    "note": "Large single deck with parapets, plant and rooflight strips; no second plane."
+   },
+   {
+    "aspect": "ridge",
+    "status": "supports",
+    "code": "ridge.supports",
+    "summary": "No ridge visible; dominant orientation came from the plant/rooflight spine and the contrast gate correctly refused it.",
+    "source_assessment": "visually_plausible",
+    "note": "No ridge visible. Dominant orientation was driven by the long grey plant/rooflight spine; the 15% contrast gate (8.5% measured) correctly refused it."
+   },
+   {
+    "aspect": "surface",
+    "status": "questionable",
+    "code": "surface.questionable",
+    "summary": "Published bitumen_gravel (85%) but the dominant warm-toned mat could be reddish ballast or dormant sedum - not separable here.",
+    "source_assessment": "questionable",
+    "note": "Published bitumen_gravel (85%). The dominant surface is a fine mottled WARM-toned mat in bays separated by pale paver walkways: R-B +14 to +22 vs grey plant at -13 to -16. Reddish ballast and dormant sedum are not separable here."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "supports",
+    "code": "image_quality.supports",
+    "summary": "No interior shadow, no occlusion, no missing tiles; fully judgeable.",
+    "source_assessment": "good",
+    "note": "No shadow over the interior, no occlusion, no missing tiles, fully judgeable."
+   }
+  ],
+  "vie-swv-007": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "supports",
+    "code": "authoritative_outline.supports",
+    "summary": "Both wings tracked well; two ~1 m2 interior rings are real light shafts. Partial shadow from a taller neighbour on the east flank.",
+    "source_assessment": "visually_aligned",
+    "note": "Both wings tracked well; follows the eaves/gutter line of the street wing and the stepped rear elevation. Two ~1 m2 interior rings are real light shafts visible beside chimney stacks. Partial shadow from a taller neighbour on the east flank."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "questionable",
+    "code": "cv_candidate.questionable",
+    "summary": "Exterior agreement good; the divergence is topological - the CV is a simple polygon while the authoritative geometry has two rings.",
+    "source_assessment": "questionable",
+    "note": "Exterior-ring agreement is good (max 1.48 m auth->cv, 1.043 m cv->auth (remeasured in Phase 4A)). The divergence is TOPOLOGICAL: the CV output is a simple Polygon with no holes while the authoritative geometry carries two interior rings."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "supports",
+    "code": "roof_type.supports",
+    "summary": "The roof-type reading is unambiguous on both wings.",
+    "source_assessment": "supports",
+    "note": "Unambiguous on both wings."
+   },
+   {
+    "aspect": "ridge",
+    "status": "supports",
+    "code": "ridge.supports",
+    "summary": "Could not falsify: a bright continuous ridge line with a self-shadowed and a lit plane; near-square footprint makes the axis arbitrary.",
+    "source_assessment": "visually_plausible",
+    "note": "B looked hard and could not falsify it. A bright continuous ridge line runs lower-left to upper-right on the NW wing with a dark self-shadowed NW-facing plane above and a lit pinkish-tan tiled plane below. The perpendicular-to-long-axis concern carries no weight here: the min-rotated-rectangle is 31.66 x 27.43 m, elongation 1.154 - near-square, so the long axis is essentially arbitrary."
+   },
+   {
+    "aspect": "surface",
+    "status": "questionable",
+    "code": "surface.questionable",
+    "summary": "Published 'mixed'; reads mostly tile with a large self-shadowed plane likely binned into other classes - not three real materials.",
+    "source_assessment": "questionable",
+    "note": "Published 'mixed'. B reads predominantly clay/concrete tile on both lit planes with a very large self-shadowed NW plane; the shadowed tiled plane is likely being binned into bitumen_gravel/metal. 'mixed' is defensible as a label; the shares are not three real materials."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "questionable",
+    "code": "image_quality.questionable",
+    "summary": "The NW plane is in deep self-shadow (~a third of the outline) and the east flank shadowed, yet shadow_fraction publishes 0.0.",
+    "source_assessment": "questionable",
+    "note": "Good over the lit planes, but the NW-facing plane is in deep self-shadow across roughly a third of the outline and the east flank is shadowed by a taller neighbour - while the record publishes shadow_fraction 0.0 / judgeable_fraction 1.0."
+   }
+  ],
+  "vie-swv-008": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "questionable",
+    "code": "authoritative_outline.questionable",
+    "summary": "The ~38 m south-east side encloses what reads as a building facade (windowed band seen obliquely); NW corner over open shadow.",
+    "source_assessment": "questionable",
+    "note": "The entire ~38 m south-east long side of the outline encloses what reads as a BUILDING FACADE, not a roof: a 5-8 m wide mid-grey band containing regularly spaced window openings with visible glazing bars, frames and reveals, seen obliquely. The NW corner sits over open shadow."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "questionable",
+    "code": "cv_candidate.questionable",
+    "summary": "CV 641.0 vs 682.4 m2 (-6%): consistently trims the shadowed NW wedge and the SW strip; no warning fired (Hausdorff 1.69 m).",
+    "source_assessment": "questionable",
+    "note": "CV 641.0 m2 vs auth 682.4 m2 (-6%). Magenta consistently trims the shadowed NW/N wedge and the SW pavement-side strip. Understandable as GrabCut excluding low-luminance regions; no warning fired (Hausdorff 1.69 m)."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "conflicts",
+    "code": "roof_type.conflicts",
+    "summary": "Visual reading is flat (bright deck, skylights, penthouse, plant); no pitched plane pair. The authoritative value is NOT overridden.",
+    "source_assessment": "conflicts",
+    "note": "B's VISUAL reading is flat: a large bright near-uniform deck, skylight strips or roof monitors, a raised penthouse and substantial mechanical plant. No pair of differently-facing pitched planes covers this footprint. The authoritative value is NOT overridden and B recommends no change."
+   },
+   {
+    "aspect": "ridge",
+    "status": "questionable",
+    "code": "ridge.questionable",
+    "summary": "The detected 65.24 deg edge is the bright deck / dark facade boundary, not a ridge; erosion cannot keep the 5-8 m band out.",
+    "source_assessment": "questionable",
+    "note": "The detected 65.24 deg is within 0.24 deg of footprint_axis_orientation_deg 65.00. The strongest ~65 deg brightness edge is the boundary between the bright deck (mean lum ~201) and the dark facade band (~151-116) - a deck/parapet/facade boundary, not a ridge between two roof planes. Interior erosion is 1.5 m and contrast is sampled +/-1.5 m, nowhere near enough to keep a 5-8 m wide band out of the search."
+   },
+   {
+    "aspect": "surface",
+    "status": "questionable",
+    "code": "surface.questionable",
+    "summary": "Plausible for the visible deck, but ~20% 'metal' and the facade band are classified as roof surface when they read as a wall.",
+    "source_assessment": "questionable",
+    "note": "Plausible for the visible deck (light-grey membrane/ballast), but ~20% 'metal' and the whole facade band are being classified as roof surface when they are, on B's reading, a wall."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "questionable",
+    "code": "image_quality.questionable",
+    "summary": "Deck fully readable but the NW third of the outline is open shadow, yet shadow_fraction publishes 0.0.",
+    "source_assessment": "questionable",
+    "note": "The deck is bright and fully readable; the NW third of the outline is open shadow (mean ~116, p05 ~73 on the overlay) yet shadow_fraction publishes 0.0."
+   }
+  ],
+  "vie-swv-009": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "questionable",
+    "code": "authoritative_outline.questionable",
+    "summary": "A dumbbell over a courtyard or low link; the eastern block's outline extends further east than the CV, over a dark strip.",
+    "source_assessment": "questionable",
+    "note": "A dumbbell: two roof blocks joined by a narrow neck over what appears to be a courtyard or low link. The western block is well tracked; on the eastern block the outline extends noticeably further east than the CV, over a strip that is dark in the imagery."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "questionable",
+    "code": "cv_candidate.questionable",
+    "summary": "Max separation 2.44 m at the eastern edge and the neck, which the CV smooths into an arc; 463.5 vs 454.9 m2.",
+    "source_assessment": "questionable",
+    "note": "Max separation 2.44 m at the eastern edge and around the neck; the CV smooths the neck's stepped geometry into an arc. CV 463.5 m2 vs auth 454.9 m2."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "not_judgeable",
+    "code": "roof_type.not_judgeable",
+    "summary": "Articulated surface, but shallow multi-plane geometry and flat-with-raised-strips are not separable at 10 cm/px.",
+    "source_assessment": "abstain",
+    "note": "The surface is articulated with what could be valleys and hips, but at 10 cm/px shallow multi-plane geometry and a flat roof with raised strips are not separable. The immediate neighbour to the north IS an unmistakable red-tiled pitched roof, and 009 does not look like it."
+   },
+   {
+    "aspect": "ridge",
+    "status": "not_judgeable",
+    "code": "ridge.not_judgeable",
+    "summary": "Only 1 of 2 segments agreed, so no ridge was published; the abstention is honest and not evidence of a flat roof.",
+    "source_assessment": "not_judgeable",
+    "note": "Only 1 of 2 segments agreed, so no ridge was published. B cannot assert a ridge either. The abstention is honest and is not evidence of a flat roof."
+   },
+   {
+    "aspect": "surface",
+    "status": "supports",
+    "code": "surface.supports",
+    "summary": "Light beige/grey granular with darker seams; on an 1891, 38.9 deg record tile might be expected - tiled share is 0.08%.",
+    "source_assessment": "plausible",
+    "note": "Light beige/grey granular with darker seams. Worth flagging only that on a BAUJAHR 1891, 38.9 deg record one might have expected tile; tiled share is 0.08%."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "questionable",
+    "code": "image_quality.questionable",
+    "summary": "Lit roof surfaces readable; the eastern and southern margins and the neck sit in shadow; no missing tiles.",
+    "source_assessment": "questionable",
+    "note": "Lit roof surfaces readable; eastern and southern margins and the neck sit in shadow. No missing tiles."
+   }
+  ],
+  "vie-swv-010": [
+   {
+    "aspect": "authoritative_outline",
+    "status": "questionable",
+    "code": "authoritative_outline.questionable",
+    "summary": "Southern ~55% is a legible flat deck; whether the dark northern ~45% is roof at all is not judgeable; tree over the NW corner.",
+    "source_assessment": "questionable",
+    "note": "Roughly the southern 55% is a bright legible flat deck; the northern ~45% is a large dark region (shadowed rear courtyard or dark rear roof) that B cannot resolve, with a bare tree crown overhanging the NW corner. Whether the north half is roof at all is not judgeable."
+   },
+   {
+    "aspect": "cv_candidate",
+    "status": "supports",
+    "code": "cv_candidate.supports",
+    "summary": "Best agreement in absolute terms (383.7 vs 385.0 m2, gradient ratio near parity); separation <=1.5 m everywhere.",
+    "source_assessment": "visually_aligned",
+    "note": "Best agreement in B's set in absolute terms (383.7 vs 385.0 m2; boundary_gradient_ratio 1.0165, closest to parity). Separation <=1.5 m everywhere."
+   },
+   {
+    "aspect": "roof_type",
+    "status": "not_judgeable",
+    "code": "roof_type.not_judgeable",
+    "summary": "Readable southern half reads flat, northern half unreadable; SLOPE_MEAN 12.00 deg sits in the 10-15 deg abstain band.",
+    "source_assessment": "abstain",
+    "note": "The readable southern half reads flat; the northern half is unreadable. SLOPE_MEAN 12.00 deg sits inside the 10-15 deg fallback abstain band."
+   },
+   {
+    "aspect": "ridge",
+    "status": "questionable",
+    "code": "ridge.questionable",
+    "summary": "The lit-deck/dark-region step could satisfy the contrast gate; only 3 segments, and ~74 deg off a meaningfully defined axis is odd.",
+    "source_assessment": "questionable",
+    "note": "The lit deck (~180) against the dark northern region (~91) is a ~2:1 step, comfortably enough for the reported 28.6% plane contrast, and the boundary runs at roughly the reported orientation. Only 3 Hough segments, longest 10.0 m - the minimum viable configuration. Footprint axis 170.33 deg vs ridge 64.74 deg is ~74 deg apart, and here the axis IS meaningfully defined (elongation 1.672), so the perpendicularity is a genuine oddity."
+   },
+   {
+    "aspect": "surface",
+    "status": "questionable",
+    "code": "surface.questionable",
+    "summary": "55% is a bare majority and a large share of the outline is the unreadable dark region; 'mixed' at least as defensible.",
+    "source_assessment": "questionable",
+    "note": "55% is a bare majority and a large share of the outline is the unreadable dark region; 'mixed' would have been at least as defensible."
+   },
+   {
+    "aspect": "image_quality",
+    "status": "questionable",
+    "code": "image_quality.questionable",
+    "summary": "Poorest in the set: ~45% of the outline is dark and unreadable, a tree over the NW corner, yet shadow_fraction publishes 0.0.",
+    "source_assessment": "questionable",
+    "note": "Poorest in B's set: ~45% of the outline is a dark, effectively unreadable region and a bare tree crown overhangs the NW corner - yet shadow_fraction publishes 0.0 and judgeable_fraction 1.0."
+   }
+  ]
+ }
+}

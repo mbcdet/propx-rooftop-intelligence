@@ -15,21 +15,21 @@ care:
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
-import sys
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 import pytest
 
+# The builder is a real package module now (RTI-002); the historical tools/build_cache.py is a
+# thin shim over it, checked as such at the bottom of this file.
+from propx_roofs import cache_build as build_cache
+from propx_roofs import config, units
+from propx_roofs.sources import wfs, wmts
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "tools"))
-
-import build_cache  # noqa: E402
-
-from propx_roofs import config, units  # noqa: E402
-from propx_roofs.sources import wfs, wmts  # noqa: E402
 
 
 def _feature(objectid: int, lon: float = 16.3790, lat: float = 48.1855) -> dict[str, Any]:
@@ -43,7 +43,20 @@ def _feature(objectid: int, lon: float = 16.3790, lat: float = 48.1855) -> dict[
     return {
         "type": "Feature",
         "geometry": {"type": "Polygon", "coordinates": [ring]},
-        "properties": {"OBJECTID": objectid, "BW_GEB_ID": 5000000 + objectid},
+        "properties": {
+            "OBJECTID": objectid,
+            "BW_GEB_ID": 5000000 + objectid,
+            "FMZK_ID": 4000000000 + objectid,
+        },
+    }
+
+
+def _point_feature(objectid: int, lon: float = 16.3790, lat: float = 48.1855) -> dict[str, Any]:
+    """Building-info is a point layer on the live service, and verify() checks for that."""
+    return {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [lon, lat]},
+        "properties": {"OBJECTID": objectid},
     }
 
 
@@ -62,11 +75,12 @@ def fetch_calls(monkeypatch: pytest.MonkeyPatch, cfg: config.Config) -> dict[str
 
     def fake_fetch_features(layer: str, bbox: Any, **kwargs: Any) -> dict[str, Any]:
         calls["wfs"].append((layer, tuple(bbox)))
-        features = (
-            [_feature(oid) for oid in pinned]
-            if layer == wfs.LAYER_ROOF_RECORD_2025
-            else [_feature(1)]
-        )
+        if layer == wfs.LAYER_ROOF_RECORD_2025:
+            features = [_feature(oid) for oid in pinned]
+        elif layer == wfs.LAYER_BUILDING_INFO:
+            features = [_point_feature(1)]
+        else:
+            features = [_feature(1)]
         return {"type": "FeatureCollection", "features": features}
 
     def fake_fetch_parts_live(bbox: Any, _cfg: config.Config, **kwargs: Any) -> dict[str, Any]:
@@ -320,3 +334,211 @@ def test_a_corrupt_cached_tile_is_replaced_rather_than_reused(tmp_path: Path) ->
     # A now-valid tile is served from cache without another request.
     wmts.fetch_tile("lb2024", 20, 571991, 363684, cache, session=session, delay=0)
     assert session.calls == 1
+
+
+# --- RTI-011: content integrity ---------------------------------------------------------------
+
+
+def _tamper_vector(cfg: config.Config, filename: str, mutate) -> None:
+    """Edit one cached vector file, then re-pin the hashes so only semantic checks can fire."""
+    path = cfg.study_area.cache_dir / filename
+    payload = json.loads(path.read_text())
+    mutate(payload)
+    path.write_text(json.dumps(payload))
+    build_cache.cache_hash(cfg)
+
+
+def test_fetch_writes_content_hashes_for_every_file(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """A fresh build hashes at fetch time: every vector file and every tile, plus counts/bbox."""
+    manifest = build_cache.fetch(cfg)
+    integrity = manifest["integrity"]
+
+    assert integrity["hash_algorithm"] == "sha256"
+    assert integrity["basis"] == build_cache.FETCH_TIME_BASIS
+    assert set(integrity["vectors"]) == {*build_cache.BBOX_LAYERS, build_cache.FMZK_FILE}
+    for entry in integrity["vectors"].values():
+        assert len(entry["sha256"]) == 64
+        assert entry["feature_count"] >= 1
+        assert len(entry["bbox_wgs84"]) == 4
+    tiles_on_disk = sorted(cfg.study_area.cache_dir.glob("tiles/*/*/*/*.jpeg"))
+    assert len(integrity["tiles"]) == len(tiles_on_disk) == manifest["counts"]["tiles"]
+    assert all(len(sha) == 64 for sha in integrity["tiles"].values())
+    assert build_cache.verify(cfg) == []
+
+
+def test_verification_rejects_a_modified_vector_file(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """Any changed byte in a cached GeoJSON is a hash mismatch, and a FAIL."""
+    build_cache.fetch(cfg)
+    path = cfg.study_area.cache_dir / build_cache.FMZK_FILE
+    payload = json.loads(path.read_text())
+    payload["features"][0]["properties"]["FMZK_ID"] = 999999999
+    path.write_text(json.dumps(payload))
+
+    problems = build_cache.verify(cfg)
+    assert any(
+        build_cache.FMZK_FILE in p and "sha256" in p and "does not match" in p for p in problems
+    )
+
+
+def test_verification_rejects_a_substituted_tile_that_still_decodes(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """A well-formed but wrong tile passes the decode check; only the hash can catch it."""
+    from PIL import Image
+
+    build_cache.fetch(cfg)
+    tile = next(iter(cfg.study_area.cache_dir.glob("tiles/*/*/*/*.jpeg")))
+    Image.new("RGB", (wmts.TILE_SIZE, wmts.TILE_SIZE), (200, 10, 10)).save(tile, "JPEG")
+    assert build_cache._tile_problem(tile) is None, "the substitute must decode cleanly"
+
+    problems = build_cache.verify(cfg)
+    assert any("sha256 does not match" in p and str(tile.name) in p for p in problems)
+
+
+def test_a_manifest_without_hashes_fails_and_cache_hash_migrates_it(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """The offline migration path: a legacy manifest fails, cache-hash pins it honestly."""
+    build_cache.fetch(cfg)
+    path = cfg.study_area.cache_dir / "manifest.json"
+    manifest = json.loads(path.read_text())
+    generated_at = manifest["generated_at"]
+    del manifest["integrity"]  # simulate a manifest written before RTI-011
+    path.write_text(json.dumps(manifest, indent=2))
+
+    problems = build_cache.verify(cfg)
+    assert any("no content hashes" in p for p in problems)
+
+    integrity = build_cache.cache_hash(cfg)
+    assert integrity["basis"] == build_cache.OFFLINE_MIGRATION_BASIS
+    # The note is the honest part: computed offline, pinned forward, NOT fetch-time proof.
+    assert "OFFLINE" in integrity["note"]
+    assert "do not certify integrity at fetch time" in integrity["note"]
+    assert generated_at[:10] in integrity["note"], "must name the original fetch date"
+
+    migrated = json.loads(path.read_text())
+    assert migrated["generated_at"] == generated_at, "migration must not rewrite provenance"
+    assert migrated["requests"] == manifest["requests"]
+    assert build_cache.verify(cfg) == []
+
+
+def test_cache_hash_refuses_a_cache_with_no_manifest(cfg: config.Config) -> None:
+    with pytest.raises(build_cache.CacheError, match="no manifest"):
+        build_cache.cache_hash(cfg)
+
+
+# --- RTI-026: geometry validation --------------------------------------------------------------
+
+
+def test_verification_rejects_a_self_intersecting_ring_without_repairing_it(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """Invalid geometry FAILS verification; nothing repairs it, not even cache-hash."""
+    build_cache.fetch(cfg)
+    pinned = cfg.study_area.buildings[0].objectid
+    lon, lat, d = 16.3790, 48.1855, 0.0002
+
+    def bowtie(payload: dict[str, Any]) -> None:
+        for feature in payload["features"]:
+            if feature["properties"]["OBJECTID"] == pinned:
+                feature["geometry"]["coordinates"] = [
+                    [
+                        [lon, lat],
+                        [lon + d, lat + d],
+                        [lon + d, lat],
+                        [lon, lat + d],
+                        [lon, lat],
+                    ]
+                ]
+
+    _tamper_vector(cfg, "roof_records_2025.geojson", bowtie)
+
+    problems = build_cache.verify(cfg)
+    assert any("invalid geometry" in p and "Self-intersection" in p for p in problems)
+    # The pinned building is named specifically, not lost in the per-layer sweep.
+    assert any(f"pinned building OBJECTID {pinned}" in p for p in problems)
+    # And the file on disk still holds the bowtie: verification reported, it did not repair.
+    kept = json.loads((cfg.study_area.cache_dir / "roof_records_2025.geojson").read_text())
+    ring = next(
+        f for f in kept["features"] if f["properties"]["OBJECTID"] == pinned
+    )["geometry"]["coordinates"][0]
+    assert ring[1] == [lon + d, lat + d], "the invalid ring must be untouched"
+
+
+def test_verification_rejects_an_empty_geometry(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    build_cache.fetch(cfg)
+
+    def drop_geometry(payload: dict[str, Any]) -> None:
+        payload["features"][0]["geometry"] = None
+
+    _tamper_vector(cfg, build_cache.FMZK_FILE, drop_geometry)
+    assert any("empty geometry" in p for p in build_cache.verify(cfg))
+
+
+def test_verification_rejects_a_missing_required_field(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    build_cache.fetch(cfg)
+
+    def drop_objectid(payload: dict[str, Any]) -> None:
+        del payload["features"][0]["properties"]["OBJECTID"]
+
+    _tamper_vector(cfg, "typology.geojson", drop_objectid)
+    problems = build_cache.verify(cfg)
+    assert any("required field OBJECTID missing or null" in p for p in problems)
+
+
+def test_verification_rejects_swapped_lon_lat_coordinates(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """A lat,lon swap lands near (48.2, 16.4) - far outside the Vienna window, never silent."""
+    build_cache.fetch(cfg)
+
+    def swap_axes(payload: dict[str, Any]) -> None:
+        ring = payload["features"][0]["geometry"]["coordinates"][0]
+        payload["features"][0]["geometry"]["coordinates"] = [
+            [[lat, lon] for lon, lat in ring]
+        ]
+
+    _tamper_vector(cfg, "typology.geojson", swap_axes)
+    problems = build_cache.verify(cfg)
+    assert any("outside plausible WGS84 Vienna bounds" in p for p in problems)
+
+
+def test_verification_rejects_a_wrong_geometry_type_for_the_layer(
+    cfg: config.Config, fetch_calls: dict[str, list]
+) -> None:
+    """building_info is a point layer; a polygon there means the wrong layer was cached."""
+    build_cache.fetch(cfg)
+
+    def to_polygon(payload: dict[str, Any]) -> None:
+        payload["features"][0] = _feature(1)
+
+    _tamper_vector(cfg, "building_info.geojson", to_polygon)
+    problems = build_cache.verify(cfg)
+    assert any("geometry type 'Polygon', expected one of ['Point']" in p for p in problems)
+
+
+def test_the_tools_shim_delegates_to_the_package_module() -> None:
+    """tools/build_cache.py must stay a shim: same fetch/verify objects, no second copy.
+
+    A drifted duplicate is exactly the failure mode moving the builder into the package was
+    meant to end - two verifiers disagreeing about what "fit to run" means.
+    """
+    shim_path = REPO_ROOT / "tools" / "build_cache.py"
+    spec = importlib.util.spec_from_file_location("tools_build_cache_shim", shim_path)
+    assert spec is not None and spec.loader is not None
+    shim = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(shim)
+
+    assert shim.fetch is build_cache.fetch
+    assert shim.verify is build_cache.verify
+    assert shim.main is build_cache.main
+    assert shim.cache_hash is build_cache.cache_hash
+    assert shim.CacheError is build_cache.CacheError

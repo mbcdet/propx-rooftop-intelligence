@@ -11,11 +11,15 @@ study_area_selection section 1):
 
 The two visual candidates from reconnaissance — vie-swv-002 (OBJECTID 358722) and vie-swv-006
 (242275) — are **candidates, not ground truth**. Nothing here is tuned to make them come out
-``True``, no threshold in this module or in ``configs/pipeline.yaml`` was fitted to them, and this
-module contains no per-building special case. If the index says ``False`` or abstains on them,
-that is the correct output and it is reported as a finding about the source and the season.
-Loosening ``exg_threshold`` until the expected answer appeared would be fitting a detector to two
-eyeballed guesses and then reporting the result as detection.
+``"detected"``, no threshold in this module or in ``configs/pipeline.yaml`` was fitted to them,
+and this module contains no per-building special case. If the index says ``"not_detected"`` or
+abstains on them, that is the correct output and it is reported as a finding about the source
+and the season. Loosening ``exg_threshold`` until the expected answer appeared would be fitting
+a detector to two eyeballed guesses and then reporting the result as detection.
+
+The value domain is ``"detected"`` / ``"not_detected"`` / ``None`` (unknown), not a Boolean:
+``"not_detected"`` is a statement about this imagery on a judgeable roof, never a claim that the
+roof has no vegetation.
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ from typing import Any
 
 import numpy as np
 
-from ..imaging import luminance, no_data_mask, shadow_stats, threshold
+from ..imaging import no_data_mask, shadow_mask, shadow_stats, threshold
 from ..types import ImageCrop, ImageObservation
 from . import resolve_asymmetric_detection
 
@@ -38,6 +42,11 @@ LIMITATIONS = (
     "unknown is an accepted output; the two reconnaissance candidates are visual candidates and "
     "were not used to calibrate any threshold",
     "a negative result is absence of evidence, not evidence of absence (design 6.1)",
+    "value domain is detected / not_detected / unknown: not_detected describes this imagery "
+    "over a judgeable roof and is never a claim that the roof has no vegetation",
+    "not_detected additionally requires the imaged, unshadowed share of the outline to reach "
+    "the configured negative judgeability floor; below it the observation abstains, because "
+    "the unread share of the roof could hold the vegetation the negative would deny",
 )
 
 
@@ -58,30 +67,77 @@ def _indices(crop: ImageCrop) -> tuple[np.ndarray, np.ndarray]:
 def observe_green_roof(crop: ImageCrop, cfg: Any) -> ImageObservation:
     """Decide whether the roof surface reads as vegetated in the 2024 orthophoto.
 
-    ``True`` when the vegetated share of the roof reaches ``image.green_roof
-    .min_coverage_fraction``; ``False`` when it does not over an adequately lit roof; ``None``
-    when it does not and the roof is too shadowed to support a negative claim (design 6.1).
+    Three values, and absence of evidence is never one of them (RTI-009 / design 6.1):
+
+    * ``"detected"`` when the vegetated share of the roof reaches
+      ``image.green_roof.min_coverage_fraction``;
+    * ``"not_detected"`` only when it does not *and* the roof is sufficiently judgeable for
+      vegetation — the vegetation-specific judgeability is the unshadowed, imaged share of the
+      outline, and it must clear both the whole-roof abstention threshold and
+      ``image.green_roof.negative_min_judgeable_fraction``, the negative's own floor (set
+      equal to the documented review-quality floor: a negative resting on less of the roof
+      than that is not defensible even as a hedged statement about this imagery);
+    * ``None`` (unknown) when nothing was detected but the roof is too shadowed or too poorly
+      imaged to support a negative claim.
+
+    The value is deliberately a string, not a Boolean: ``False`` reads as "there is no green
+    roof", which the dormant-season RGB evidence cannot establish. ``"not_detected"`` states
+    exactly what was measured. In-season limits stay in ``limitations``.
     """
     exg_min = float(threshold(cfg, "image", "green_roof", "exg_threshold"))
     min_coverage = float(threshold(cfg, "image", "green_roof", "min_coverage_fraction"))
     abstain_above = float(threshold(cfg, "image", "shadow_fraction_abstain"))
+    negative_floor = float(
+        threshold(cfg, "image", "green_roof", "negative_min_judgeable_fraction")
+    )
     quality, coverage, lit_coverage = _evidence(crop, cfg, exg_min)
     quality["thresholds"] = {
         "exg_threshold": exg_min,
         "min_coverage_fraction": min_coverage,
         "shadow_fraction_abstain": abstain_above,
+        "negative_min_judgeable_fraction": negative_floor,
     }
     shadow_fraction = quality.get("shadow_fraction")
+    # Vegetation-specific judgeability: the share of the outline that is imaged and unshadowed
+    # (shadow_fraction counts both causes; see imaging.shadow_stats). Published so the negative
+    # is auditable against the gate that permitted it.
+    vegetation_judgeable = (
+        None if shadow_fraction is None else round(1.0 - float(shadow_fraction), 4)
+    )
+    quality["vegetation_judgeable_fraction"] = vegetation_judgeable
 
     detected = coverage is not None and coverage >= min_coverage
-    value, fragment = resolve_asymmetric_detection(detected, shadow_fraction, abstain_above)
+    resolved, fragment = resolve_asymmetric_detection(detected, shadow_fraction, abstain_above)
+    if resolved is False and (
+        vegetation_judgeable is None or vegetation_judgeable < negative_floor
+    ):
+        # The negative's own judgeability floor (a general threshold, never a building
+        # exception): nothing was detected and the whole-roof abstention gate passed, but the
+        # imaged-and-unshadowed share of the outline is below the documented review-quality
+        # floor. On that little evidence even a hedged not_detected is not defensible — the
+        # unread share of the roof could hold the vegetated coverage the verdict would deny —
+        # so the observation abstains. The raw index diagnostics stay published in quality.
+        resolved = None
+        judgeable_text = (
+            "an unmeasurable share"
+            if vegetation_judgeable is None
+            else f"only {vegetation_judgeable:.1%}"
+        )
+        fragment = (
+            f"abstained: nothing detected, but {judgeable_text} of the roof outline is imaged "
+            f"and unshadowed, below the {negative_floor:.0%} vegetation judgeability floor a "
+            f"negative requires; that low a judgeable share prevents even a defensible "
+            f"not_detected observation, because the unread part of the roof could hold the "
+            f"vegetated coverage the negative would deny"
+        )
+    value = {True: "detected", False: "not_detected", None: None}[resolved]
     if detected:
         lit_text = "no lit pixels" if lit_coverage is None else f"{lit_coverage:.1%} of lit pixels"
         fragment = (
             f"ExG exceeds {exg_min} on {coverage:.1%} of roof pixels "
             f"({lit_text}), at or above the {min_coverage:.0%} threshold"
         )
-    elif value is False and coverage is not None:
+    elif value == "not_detected" and coverage is not None:
         fragment = (
             f"ExG exceeds {exg_min} on only {coverage:.1%} of roof pixels, below the "
             f"{min_coverage:.0%} threshold; {fragment}. Note that dormant March/April "
@@ -142,8 +198,9 @@ def _evidence(
         return quality, None, None
 
     exg, vari = _indices(crop)
-    limit = float(threshold(cfg, "image", "shadow_luminance_threshold"))
-    lit = roof & (luminance(crop) >= limit)
+    # "Lit" by the same adaptive shadow detection every judgeability figure uses, so the
+    # lit-only fraction and the published shadow_fraction cannot disagree about what shadow is.
+    lit = roof & ~shadow_mask(crop, cfg)
     vegetated = roof & (exg >= exg_min)
     coverage = float(vegetated.sum()) / roof_px
     lit_px = int(lit.sum())

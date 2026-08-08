@@ -28,7 +28,7 @@ from typing import Any
 
 import numpy as np
 
-from ..imaging import luminance, no_data_mask, shadow_stats, threshold
+from ..imaging import no_data_mask, shadow_mask, shadow_stats, threshold
 from ..types import ImageCrop
 
 ATTRIBUTE_PARAMS: dict[str, float] = {
@@ -97,16 +97,21 @@ def param(cfg: Any, name: str) -> float:
 def judgeable_mask(crop: ImageCrop, cfg: Any) -> tuple[np.ndarray, dict[str, Any]]:
     """Roof pixels bright enough to judge colour and texture on, with the quality numbers.
 
-    Shadowed pixels are excluded because hue and saturation are meaningless there — a dark blue
+    Shadowed pixels — by the adaptive threshold of :func:`propx_roofs.imaging.shadow_mask`,
+    which combines an absolute floor with a relative test against the roof's own lit
+    reference — are excluded because hue and saturation are meaningless there: a dark blue
     shadow on a tiled roof is not a blue roof. Pixels with no cached imagery are excluded too.
-    **Detectors looking for dark features must not use this**: ``solar.py`` deliberately keeps the
-    whole roof mask minus the no-data area, since a panel is itself dark and excluding dark pixels
-    would exclude the target.
+
+    This is the *chromatic* judgeability shared by the surface and vegetation observations.
+    Judgeability is attribute-specific: the ridge detector builds its own search mask (it
+    additionally erodes the boundary and excludes shadow so an illumination edge cannot pose
+    as a ridge), and **detectors looking for dark features must not use this** — ``solar.py``
+    deliberately keeps the whole roof mask minus the no-data area, since a panel is itself
+    dark and excluding dark pixels would exclude the target.
     """
     stats = shadow_stats(crop, cfg)
-    limit = float(threshold(cfg, "image", "shadow_luminance_threshold"))
     roof = np.asarray(crop.roof_mask, dtype=bool)
-    judgeable = roof & ~no_data_mask(crop) & (luminance(crop) >= limit)
+    judgeable = roof & ~no_data_mask(crop) & ~shadow_mask(crop, cfg)
     # Denominator is the whole authoritative outline, so judgeable_fraction answers "how much of
     # this roof could we actually look at", which is what a confidence penalty needs.
     n_roof = int(roof.sum())

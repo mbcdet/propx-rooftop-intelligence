@@ -221,6 +221,57 @@ def test_shadow_stats_on_dark_and_bright_roofs() -> None:
     assert imaging.shadow_stats(bright, CFG)["mean_luminance"] == pytest.approx(200, abs=1)
 
 
+def test_shadow_detection_is_relative_not_only_absolute() -> None:
+    """The RTI-006 defect: cast shadow in sun-lit orthophotos sits at luminance ~75-95, far
+    above the absolute floor of 55, so an absolute-only threshold reported 0.0 everywhere.
+    A pixel markedly darker than the roof's own lit reference must count as shadow."""
+    floor = float(CFG.threshold("image", "shadow_luminance_threshold"))
+    rgb = np.full((100, 100, 3), 190, np.uint8)
+    rgb[:, :30] = 80  # cast shadow: dark relative to the lit roof, but well above the floor
+    assert floor < 80
+    stats = imaging.shadow_stats(synthetic_crop(rgb), CFG)
+    assert stats["shadow_fraction"] == pytest.approx(0.30, abs=0.02)
+    # The effective threshold and its lit reference are published, so the fraction is
+    # reproducible from the record itself.
+    assert stats["shadow_luminance_threshold_effective"] > floor
+    assert stats["shadow_lit_reference_luminance"] == pytest.approx(190, abs=2)
+
+
+def test_relative_shadow_keeps_self_shaded_pitched_planes_judgeable() -> None:
+    """The darker plane of a pitched roof (encoded ratio ~0.55-0.63 of the lit plane, per the
+    measured plane contrasts in configs/pipeline.yaml) must NOT be classified shadow: it is a
+    lit surface, and excluding it would blind every observation on pitched roofs."""
+    ratio = float(CFG.threshold("image", "shadow_relative_ratio"))
+    rgb = np.full((100, 100, 3), 180, np.uint8)
+    dark_plane = int(180 * (ratio + 0.08))  # just above the relative threshold
+    rgb[:, :50] = dark_plane
+    stats = imaging.shadow_stats(synthetic_crop(rgb), CFG)
+    assert stats["shadow_fraction"] == 0.0, (
+        f"a self-shaded plane at {dark_plane} against a lit reference of 180 was misread "
+        f"as cast shadow"
+    )
+
+
+def test_shadow_ceiling_caps_the_relative_threshold() -> None:
+    """Above the absolute ceiling a pixel carries enough signal to judge, however bright its
+    neighbours are: a specular-bright roof must not shadow-classify its merely-bright half."""
+    ceiling = float(CFG.threshold("image", "shadow_luminance_ceiling"))
+    rgb = np.full((100, 100, 3), 250, np.uint8)
+    rgb[:, :50] = int(ceiling) + 5  # far below 0.5 * 250, but above the ceiling
+    stats = imaging.shadow_stats(synthetic_crop(rgb), CFG)
+    assert stats["shadow_fraction"] == 0.0
+    limit, reference = imaging.shadow_threshold_luminance(synthetic_crop(rgb), CFG)
+    assert limit == ceiling
+    assert reference == pytest.approx(250, abs=1)
+
+
+def test_shadow_mask_marks_only_imaged_roof_pixels() -> None:
+    crop = synthetic_crop(np.full((60, 60, 3), 40, np.uint8), mask=np.zeros((60, 60), bool))
+    assert not imaging.shadow_mask(crop, CFG).any(), "no roof pixels, so nothing to mark"
+    dark = synthetic_crop(np.full((60, 60, 3), 40, np.uint8))
+    assert imaging.shadow_mask(dark, CFG).all(), "a uniformly dark roof is entirely shadow"
+
+
 def test_shadow_stats_separates_missing_imagery_from_darkness() -> None:
     """A cache gap counts as dark for the abstention gate, but is reported separately."""
     layer, zoom = CFG.threshold("imagery", "layer"), CFG.threshold("imagery", "zoom")
@@ -278,6 +329,52 @@ def test_shadow_stats_abstains_on_an_empty_mask() -> None:
 
 # --------------------------------------------------------------------------------------------
 # integration: the committed cache, when it holds real tiles
+
+
+def cached_crop(building_id: str) -> ImageCrop:
+    """Crop for one pinned building from the committed cache. Callers must skip when absent."""
+    import json
+
+    cache = usable_tile_cache()
+    assert cache is not None
+    records = json.loads((cache / "roof_records_2025.geojson").read_text(encoding="utf-8"))
+    by_id = {f["properties"]["OBJECTID"]: f for f in records["features"]}
+    building = next(b for b in CFG.study_area.buildings if b.building_id == building_id)
+    return imaging.build_crop(by_id[building.objectid]["geometry"], cache, CFG)
+
+
+@pytest.mark.skipif(usable_tile_cache() is None, reason="no readable tiles in the committed cache")
+def test_shadowed_roofs_008_and_010_measure_material_shadow_on_the_real_imagery() -> None:
+    """Regression for RTI-006, on the real cache. These two buildings are regression FIXTURES:
+    the thresholds behind the numbers are the general illumination-physics ones in
+    configs/pipeline.yaml, not tuned to either building. Under the old absolute-only threshold
+    both roofs reported shadow_fraction 0.0 while visibly shadowed."""
+    for building_id, at_least in (("vie-swv-008", 0.05), ("vie-swv-010", 0.20)):
+        stats = imaging.shadow_stats(cached_crop(building_id), CFG)
+        assert stats["shadow_fraction"] >= at_least, (
+            f"{building_id}: expected material shadow, measured {stats['shadow_fraction']}"
+        )
+        # ...and it must actually reduce judgeability downstream, not just be printed.
+        from propx_roofs.attributes import judgeable_mask
+
+        _, quality = judgeable_mask(cached_crop(building_id), CFG)
+        assert quality["judgeable_fraction"] <= 1.0 - at_least
+
+
+@pytest.mark.skipif(usable_tile_cache() is None, reason="no readable tiles in the committed cache")
+def test_well_lit_roofs_001_and_007_stay_judgeable_on_the_real_imagery() -> None:
+    """Positive control for the adaptive shadow detector: it must not manufacture shadow on
+    well-lit roofs, including 007 whose darker pitched planes are self-shaded but lit."""
+    from propx_roofs.attributes import judgeable_mask
+
+    for building_id in ("vie-swv-001", "vie-swv-007"):
+        stats = imaging.shadow_stats(cached_crop(building_id), CFG)
+        assert stats["shadow_fraction"] < 0.05, (
+            f"{building_id}: expected a mostly judgeable roof, measured "
+            f"{stats['shadow_fraction']}"
+        )
+        _, quality = judgeable_mask(cached_crop(building_id), CFG)
+        assert quality["judgeable_fraction"] > 0.9
 
 
 @pytest.mark.skipif(usable_tile_cache() is None, reason="no readable tiles in the committed cache")

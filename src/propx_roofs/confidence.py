@@ -25,6 +25,17 @@ not probabilities; ``Confidence.as_dict`` stamps that on every record it emits, 
 deliberately does not repeat the sentence in ``limitations`` where it would read as a second,
 independent claim.
 
+**Image-derived attributes carry evidence-sensitive factors; authoritative attributes do not**
+(RTI-008). :func:`evidence_factor` maps a measured per-building quality quantity (judgeable
+fraction, dominance margin, gate margin, index distance-from-threshold) linearly onto a named
+penalty factor, so scores co-vary with the published evidence instead of being one constant
+across buildings whose evidence differs. Authoritative and enrichment attributes deliberately
+stay category-based: their reliability derives from the *source* (an official cadastre read
+verbatim), not from anything this pipeline measured about this building's pixels, so a
+per-building factor there would be a number with no measurement behind it. The exceptions are
+already-measured properties of the *join*, not the source — the typology overlap share and the
+image-conflict penalty — which stay as they are.
+
 Caps for attributes that are *not* image detections (``roof_area_m2``, ``mean_slope_deg``, …)
 are listed in the design section 5 table but not all of them appear in ``configs/pipeline.yaml``.
 ``positive_cap`` therefore fails loudly on an unknown key instead of inventing a ceiling: the
@@ -53,6 +64,23 @@ FACTOR_MAX = 1.0
 SCORE_DECIMALS = 3
 
 _ABSENCE_CLAUSE = "absence of evidence is weak evidence of absence"
+
+# Observation values that mean "looked and found nothing" (section 6.1). Explicit rather than
+# `is False`, because detection observations now carry three-state string values
+# ("detected" / "not_detected" / None) and a negative that stopped looking like `False` must
+# not silently start scoring as a positive. `False` stays for any remaining Boolean detectors.
+NEGATIVE_OBSERVATION_VALUES = (False, "not_detected")
+
+
+def is_negative_observation_value(value: object) -> bool:
+    """Whether an observation value means "looked and found nothing".
+
+    Type-aware on purpose: ``0.0 == False`` is true in Python, so an equality test would score
+    a measured 0.0 (a legal azimuth, a legal fraction) as a negative detection.
+    """
+    if isinstance(value, bool):
+        return value is False
+    return isinstance(value, str) and value in NEGATIVE_OBSERVATION_VALUES
 _ABSTAIN_LIMITATION = (
     "no value was determined, so no score is published; this is an abstention, not a negative "
     "finding"
@@ -105,6 +133,34 @@ def positive_cap(attribute: str, *, cfg: Config | None = None) -> float:
 
 def negative_detection_cap(*, cfg: Config | None = None) -> float:
     return float(_resolve(cfg).threshold("confidence", "negative_detection_cap"))
+
+
+def evidence_factor(name: str, measured: float, *, cfg: Config | None = None) -> float:
+    """An evidence-sensitive penalty factor from a measured quality quantity (RTI-008).
+
+    Linear map of ``measured`` from the configured anchors
+    ``confidence.evidence_factor.<name>.{lo, hi}`` onto [:data:`FACTOR_MIN`,
+    :data:`FACTOR_MAX`], clipped at both ends::
+
+        factor = 0.5 + 0.5 * clip((measured - lo) / (hi - lo), 0, 1)
+
+    The anchors follow one principle (documented at each entry in ``configs/pipeline.yaml``):
+    ``lo`` is the publishability gate for that quantity — evidence that only just clears the
+    gate is the weakest evidence permitted to publish, so it earns the strongest discount the
+    section 6 factor rules allow — and ``hi`` is the ideal measurement, which earns none. A
+    linear map with published anchors is deliberately the simplest shape that makes the score
+    co-vary with the evidence: any curve would imply a fitted relationship no ground truth
+    supports. This is **not calibration** and the result is not a probability.
+
+    The caller must ensure the measured input is published in the attribute's
+    ``image_evidence.quality`` so a reader can reproduce the factor by hand.
+    """
+    anchors = _resolve(cfg).threshold("confidence", "evidence_factor", name)
+    lo, hi = float(anchors["lo"]), float(anchors["hi"])
+    if not hi > lo:
+        raise ValueError(f"evidence_factor {name}: anchors lo={lo} hi={hi} must satisfy lo < hi")
+    position = min(max((float(measured) - lo) / (hi - lo), 0.0), 1.0)
+    return round(FACTOR_MIN + (FACTOR_MAX - FACTOR_MIN) * position, 4)
 
 
 def validate_factors(factors: Mapping[str, float] | None) -> dict[str, float]:
@@ -221,7 +277,8 @@ def from_image_observation(
 
     * ``obs.value is None`` — the image stage abstained. ``UNAVAILABLE`` with **no score**:
       an abstention is not a negative finding and must not be scored as one.
-    * ``obs.value is False`` — nothing detected on a readable roof. Capped at
+    * ``obs.value`` in ``NEGATIVE_OBSERVATION_VALUES`` (``"not_detected"``, or ``False`` for
+      Boolean detectors) — nothing detected on a readable roof. Capped at
       ``negative_detection_cap``.
     * anything else — a positive detection, capped at
       ``confidence.positive_cap.<positive_cap_key>``.
@@ -263,7 +320,7 @@ def from_image_observation(
             f"{availability.value} is wrong; that value is reserved for absent data"
         )
 
-    if obs.value is False:
+    if is_negative_observation_value(obs.value):
         confidence = negative_detection(
             obs.method,
             obs.rationale,

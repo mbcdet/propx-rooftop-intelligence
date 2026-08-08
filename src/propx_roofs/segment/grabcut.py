@@ -1,15 +1,29 @@
 """Footprint-seeded GrabCut plus geometric refinement — the approved baseline (design 4.3).
 
+**This is cadastre-seeded refinement and QC, not independent detection.** The trimap that
+initialises GrabCut is built from the authoritative outline, so the candidate polygon is a
+*refinement of the seed*, not an independent re-detection of the roof: it can disagree with the
+outline only within the trimap band, and every agreement metric downstream
+(:mod:`propx_roofs.segment.agreement`) compares two statistically **dependent** estimates.
+High agreement therefore means "the imagery did not contradict the cadastre near its
+boundary", never "the cadastre was independently confirmed". Design 4 fixes this division of
+labour — authoritative geodata delineates; CV provides consistency evidence — and this module
+has no code path that returns the candidate as a primary outline.
+
 OpenCV only. No deep learning, no model weights, no downloads: a segmenter that cannot run from
 a committed cache on a laptop with no network is not reproducible, and SAM is explicitly a
 post-baseline stretch item behind an opt-in flag (design 4.3).
 
 Two properties are deliberate and tested:
 
-* **Determinism.** OpenCV's GrabCut initialises its GMMs with k-means++, which draws from the
-  global OpenCV RNG. Two calls in one process would therefore not be byte-identical. The seed is
-  set immediately before every call and the iteration count is fixed, so repeated runs produce
-  the same mask bit for bit.
+* **Determinism, including under threads.** OpenCV's GrabCut initialises its GMMs with
+  k-means++, which draws from the global OpenCV RNG, and ``cv2.setRNGSeed`` is
+  **process-global** — a second thread seeding between another thread's seed and its
+  ``grabCut`` call would silently change that call's result. All GrabCut work therefore runs
+  behind a module-level lock, and the seed is (re)set *inside* the lock immediately before
+  every call, so repeated and concurrent runs produce the same mask bit for bit. The lock
+  serialises segmentation within one process; scaling out is done with multiple *processes*
+  (each with its own OpenCV RNG), which is the documented parallelism path.
 * **Failure is a value, not an exception.** A degenerate result returns ``(None, meta)`` with a
   ``failure_reason``. Design 4 treats a null ``cv_candidate_polygon`` as a reportable outcome —
   the authoritative outline is the primary geometry either way, so a failed candidate costs the
@@ -18,6 +32,7 @@ Two properties are deliberate and tested:
 
 from __future__ import annotations
 
+import threading
 from typing import Any
 
 import cv2
@@ -33,6 +48,12 @@ from ..imaging import (
 )
 from ..types import ImageCrop
 from . import SEGMENTER_NAME, param
+
+# cv2.setRNGSeed is PROCESS-GLOBAL: concurrent per-building threads would trample each other's
+# seeds between the seeding and the grabCut call, silently breaking determinism. Every
+# seed-then-segment pair runs inside this lock; multi-process parallelism is the documented
+# scale-out path (see the module docstring).
+_GRABCUT_LOCK = threading.Lock()
 
 
 def _ellipse(radius_px: int) -> np.ndarray:
@@ -60,17 +81,30 @@ def build_trimap(crop: ImageCrop, cfg: Any) -> np.ndarray:
     return trimap
 
 
-def _largest_component(mask_u8: np.ndarray) -> np.ndarray | None:
-    """The largest 8-connected component, or ``None`` if there is none.
+def _components_near_seed(
+    mask_u8: np.ndarray, near: np.ndarray
+) -> tuple[np.ndarray | None, int, int]:
+    """Keep the 8-connected components that touch ``near``: ``(mask, n_kept, n_dropped)``.
 
-    A roof is one connected surface. Keeping every component would let a co-coloured neighbouring
-    roof or a patch of pavement join the candidate polygon.
+    A MultiPolygon roof record is several surfaces, so "keep the largest component" (the
+    previous rule) silently discarded every other part while the area gate could still pass.
+    Instead, every foreground component that intersects the dilated authoritative outline is
+    retained, and only components touching no input part — a co-coloured neighbouring roof, a
+    patch of pavement — are dropped as noise. ``None`` when nothing survives.
     """
-    count, labels, stats, _ = cv2.connectedComponentsWithStats(mask_u8, connectivity=8)
-    if count <= 1:
-        return None
-    largest = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
-    return (labels == largest).astype(np.uint8) * 255
+    count, labels, _, _ = cv2.connectedComponentsWithStats(mask_u8, connectivity=8)
+    kept = np.zeros(mask_u8.shape, dtype=bool)
+    n_kept = n_dropped = 0
+    for label in range(1, count):
+        component = labels == label
+        if (component & near).any():
+            kept |= component
+            n_kept += 1
+        else:
+            n_dropped += 1
+    if n_kept == 0:
+        return None, 0, n_dropped
+    return kept.astype(np.uint8) * 255, n_kept, n_dropped
 
 
 def segment(crop: ImageCrop, cfg: Any) -> tuple[np.ndarray | None, dict[str, Any]]:
@@ -128,61 +162,97 @@ def segment(crop: ImageCrop, cfg: Any) -> tuple[np.ndarray | None, dict[str, Any
 
     # Channel order is irrelevant to the colour GMMs, so the crop's RGB goes in unconverted.
     image = np.ascontiguousarray(crop.rgb)
-    cv2.setRNGSeed(rng_seed)  # k-means++ inside initGMMs draws from the global RNG
     labels = trimap.copy()
-    cv2.grabCut(
-        image,
-        labels,
-        None,
-        np.zeros((1, 65), np.float64),
-        np.zeros((1, 65), np.float64),
-        iterations,
-        cv2.GC_INIT_WITH_MASK,
-    )
+    # setRNGSeed is process-global, so the seed-then-segment pair is atomic under the lock:
+    # another thread must not be able to reseed between these two lines (see module docstring).
+    with _GRABCUT_LOCK:
+        cv2.setRNGSeed(rng_seed)  # k-means++ inside initGMMs draws from the global RNG
+        cv2.grabCut(
+            image,
+            labels,
+            None,
+            np.zeros((1, 65), np.float64),
+            np.zeros((1, 65), np.float64),
+            iterations,
+            cv2.GC_INIT_WITH_MASK,
+        )
     foreground = ((labels == cv2.GC_FGD) | (labels == cv2.GC_PR_FGD)).astype(np.uint8) * 255
 
-    component = _largest_component(foreground)
-    if component is None:
+    # Input components of the authoritative outline (a MultiPolygon record has several), so the
+    # output can be checked against them part by part rather than only by total area.
+    n_input, seed_labels = cv2.connectedComponents(seed.astype(np.uint8), connectivity=8)
+    n_input -= 1  # label 0 is background
+    meta["n_input_components"] = n_input
+
+    dilated_seed = cv2.dilate(
+        seed.astype(np.uint8), _ellipse(px_from_m(crop, param(cfg, "trimap_dilate_m")))
+    ) > 0
+    kept, n_kept, n_dropped = _components_near_seed(foreground, dilated_seed)
+    meta["n_foreground_components_kept"] = n_kept
+    meta["n_noise_components_removed"] = n_dropped
+    if kept is None:
         meta["failure_reason"] = "empty_segmentation"
         return None, meta
 
     closed = cv2.morphologyEx(
-        component, cv2.MORPH_CLOSE, _ellipse(px_from_m(crop, param(cfg, "close_m")))
+        kept, cv2.MORPH_CLOSE, _ellipse(px_from_m(crop, param(cfg, "close_m")))
     )
-    # RETR_CCOMP so interior rings survive: the immediate children of the outer contour are the
+    # RETR_CCOMP so interior rings survive: the immediate children of each outer contour are the
     # courtyard voids, which must be punched out rather than filled (design 1.3, 3.2).
     contours, hierarchy = cv2.findContours(closed, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     if not contours or hierarchy is None:
         meta["failure_reason"] = "no_contour_after_refinement"
         return None, meta
     tree = hierarchy[0]
-    outer = [i for i in range(len(contours)) if tree[i][3] < 0]
-    if not outer:
-        meta["failure_reason"] = "no_contour_after_refinement"
-        return None, meta
-    outer_index = max(outer, key=lambda i: cv2.contourArea(contours[i]))
     min_hole_px = param(cfg, "min_hole_area_m2") / pixel_area_m2(crop)
-    hole_indices = [
-        i
-        for i in range(len(contours))
-        if tree[i][3] == outer_index and cv2.contourArea(contours[i]) >= min_hole_px
-    ]
-
     epsilon_px = simplify_m / ground_pixel_size_m(crop)
-    approx = cv2.approxPolyDP(contours[outer_index], epsilon_px, True)
-    meta["n_vertices"] = int(len(approx))
-    if len(approx) < 3:
+
+    # Every outer contour is a candidate part: a MultiPolygon roof keeps all its parts. A part
+    # that simplifies below three vertices is dropped as degenerate; losing every part is the
+    # failure it always was.
+    parts: list[tuple[np.ndarray, list[np.ndarray]]] = []
+    for outer_index in (i for i in range(len(contours)) if tree[i][3] < 0):
+        approx = cv2.approxPolyDP(contours[outer_index], epsilon_px, True)
+        if len(approx) < 3:
+            continue
+        holes = [
+            cv2.approxPolyDP(contours[i], epsilon_px, True)
+            for i in range(len(contours))
+            if tree[i][3] == outer_index and cv2.contourArea(contours[i]) >= min_hole_px
+        ]
+        parts.append((approx, [h for h in holes if len(h) >= 3]))
+    meta["n_vertices"] = int(sum(len(approx) for approx, _ in parts))
+    meta["n_interior_rings"] = int(sum(len(holes) for _, holes in parts))
+    meta["n_output_components"] = len(parts)
+    if not parts:
         meta["failure_reason"] = "degenerate_contour_after_simplification"
         return None, meta
-    holes = [cv2.approxPolyDP(contours[i], epsilon_px, True) for i in hole_indices]
-    holes = [h for h in holes if len(h) >= 3]
-    meta["n_interior_rings"] = len(holes)
 
     refined = np.zeros(seed.shape, dtype=np.uint8)
-    cv2.fillPoly(refined, [approx.reshape(-1, 2)], 255)
-    if holes:
-        cv2.fillPoly(refined, [h.reshape(-1, 2) for h in holes], 0)
+    cv2.fillPoly(refined, [approx.reshape(-1, 2) for approx, _ in parts], 255)
+    all_holes = [h.reshape(-1, 2) for _, holes in parts for h in holes]
+    if all_holes:
+        cv2.fillPoly(refined, all_holes, 0)
     mask = refined.astype(bool)
+
+    # Per-input-component recall: the share of each authoritative part the candidate covers.
+    # This is what makes a lost MultiPolygon part *visible* — the whole-roof area ratio can sit
+    # comfortably inside its band while one part of several has vanished entirely.
+    recalls = [
+        round(float((mask & part).sum() / part.sum()), 4)
+        for label in range(1, n_input + 1)
+        for part in [seed_labels == label]
+    ]
+    meta["input_component_recall"] = recalls
+    lost = [i for i, recall in enumerate(recalls) if recall < 0.5]
+    if n_input > 1:
+        meta["multipolygon_input"] = True
+        if lost:
+            meta["component_count_warning"] = (
+                f"{len(lost)} of {n_input} authoritative outline components are less than "
+                f"half covered by the candidate (component recalls: {recalls}); the candidate "
+                f"is degraded evidence for those parts even where the total area ratio passes"
+            )
 
     # Both counts come from the same crop, so the Web Mercator scale factor cancels and this is
     # a true area ratio without any projection step.
@@ -192,10 +262,20 @@ def segment(crop: ImageCrop, cfg: Any) -> tuple[np.ndarray | None, dict[str, Any
         meta["failure_reason"] = "area_ratio_outside_sane_band"
         return None, meta
 
-    polygon = rings_to_polygon_wgs84(crop, approx, holes)
-    if polygon is None:
+    polygons = [rings_to_polygon_wgs84(crop, approx, holes) for approx, holes in parts]
+    polygons = [p for p in polygons if p is not None]
+    if not polygons:
         meta["failure_reason"] = "contour_not_convertible_to_polygon"
         return None, meta
-    meta["polygon"] = polygon
-    meta["contour_px"] = approx.reshape(-1, 2).astype(int).tolist()
+    meta["polygon"] = (
+        polygons[0]
+        if len(polygons) == 1
+        else {
+            "type": "MultiPolygon",
+            "coordinates": [p["coordinates"] for p in polygons],
+        }
+    )
+    # The largest part's exterior, for the overlay debug path; the full geometry is `polygon`.
+    largest = max(parts, key=lambda part: cv2.contourArea(part[0]))
+    meta["contour_px"] = largest[0].reshape(-1, 2).astype(int).tolist()
     return mask, meta

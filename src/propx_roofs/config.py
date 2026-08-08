@@ -13,17 +13,91 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from collections.abc import Mapping
-from dataclasses import dataclass
+import os
+from collections.abc import Mapping  # noqa: I001 — kept adjacent to the stdlib block above
+from dataclasses import dataclass, field
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+
+def _looks_like_a_checkout(candidate: Path) -> bool:
+    """True when ``candidate`` holds the data files a run needs, not merely the right names."""
+    return (candidate / "configs" / "study_area.yaml").is_file() and (
+        candidate / "configs" / "pipeline.yaml"
+    ).is_file()
+
+
+def _resolve_data_root() -> Path:
+    """Where ``configs/`` and ``data/cache/`` live, for a run that was given no explicit paths.
+
+    ``Path(__file__).parents[2]`` used to be taken as the project root unconditionally. Inside a
+    checkout that is correct — ``src/propx_roofs/config.py`` really is two levels below the root.
+    After a non-editable install it is nonsense: the file lands in ``site-packages`` and the same
+    arithmetic points at whatever directory happens to sit above it, so ``propx-roofs run`` from
+    ``/tmp`` went looking for ``/tmp/configs/study_area.yaml`` and failed. That is a packaging
+    defect, not a user error, and it is why the search below is explicit and ordered:
+
+    1. ``PROPX_ROOFS_DATA_ROOT``, for deployments that place the data deliberately;
+    2. the current working directory, so running from a checkout keeps working with no flags;
+    3. the checkout inferred from ``__file__``, which is right for an editable install and is
+       accepted **only if it actually contains the config files**.
+
+    Every candidate is checked for content rather than assumed, so a wrong guess fails loudly at
+    startup with a path in the message instead of surfacing later as a missing file. When nothing
+    matches, the CWD is returned so the error names somewhere the caller recognises.
+    """
+    env = os.environ.get(DATA_ROOT_ENV)
+    if env:
+        return Path(env).expanduser().resolve()
+    cwd = Path.cwd()
+    if _looks_like_a_checkout(cwd):
+        return cwd
+    inferred = Path(__file__).resolve().parents[2]
+    if _looks_like_a_checkout(inferred):
+        return inferred
+    return cwd
+
+
+DATA_ROOT_ENV = "PROPX_ROOFS_DATA_ROOT"
+
+#: Kept as a module attribute because tools/ and the tests import it, but it is now resolved
+#: rather than assumed. Prefer passing explicit paths; the CLI exposes flags for all three.
+REPO_ROOT = _resolve_data_root()
 DEFAULT_STUDY_AREA = REPO_ROOT / "configs" / "study_area.yaml"
 DEFAULT_PIPELINE = REPO_ROOT / "configs" / "pipeline.yaml"
 DEFAULT_CACHE_ROOT = REPO_ROOT / "data" / "cache"
+
+
+def _packaged_config(name: str) -> Path | None:
+    """The copy of ``configs/<name>`` shipped inside the wheel, if it is present on disk.
+
+    The two YAML configs are small and static, so they are packaged as package data
+    (``src/propx_roofs/configs/``) and used as a **last resort**: an installed package with no
+    checkout in sight and no ``PROPX_ROOFS_DATA_ROOT`` can still load its default
+    configuration. The repository-root ``configs/`` stays canonical — a test asserts the
+    packaged copies are byte-identical, so the two cannot drift. The cache is real fetched
+    data, cannot be packaged, and still requires an explicit location.
+    """
+    try:
+        candidate = resources.files(__package__).joinpath("configs").joinpath(name)
+    except (ModuleNotFoundError, TypeError):  # pragma: no cover - only on a broken install
+        return None
+    # Wheels install as plain directories here, so the Traversable is a real path. A zip
+    # import would need as_file(); refusing it (returning None) keeps the failure explicit.
+    path = Path(str(candidate))
+    return path if path.is_file() else None
+
+
+def _default_config_path(name: str, checkout_default: Path) -> Path:
+    """The checkout's config when it exists, else the packaged copy, else the checkout path
+    (so the resulting error message names the location the caller can actually create)."""
+    if checkout_default.is_file():
+        return checkout_default
+    packaged = _packaged_config(name)
+    return packaged if packaged is not None else checkout_default
 
 ATTRIBUTION = "Datenquelle: Stadt Wien - data.wien.gv.at"
 LICENCE = "CC BY 4.0"
@@ -103,7 +177,7 @@ def algorithm_parameters_hash(
     """
     if segment_params is None or attribute_params is None:
         # Function-scoped: segment reaches cv2/numpy/shapely through imaging, and config must
-        # stay cheap to import (tools/build_cache.py imports it).
+        # stay cheap to import (propx_roofs.cache_build imports it).
         from .attributes import ATTRIBUTE_PARAMS
         from .segment import SEGMENT_PARAMS
 
@@ -158,10 +232,14 @@ class StudyArea:
     imagery_zoom: int
     sources: dict[str, Any]
     buildings: tuple[PinnedBuilding, ...]
+    #: Explicit cache location override (``--cache-root``), carried on the config rather than
+    #: set through a mutated global, so two configs in one process can point at two caches.
+    cache_root: Path | None = field(default=None)
 
     @property
     def cache_dir(self) -> Path:
-        return DEFAULT_CACHE_ROOT / self.name
+        root = self.cache_root if self.cache_root is not None else DEFAULT_CACHE_ROOT
+        return root / self.name
 
 
 @dataclass(frozen=True)
@@ -183,11 +261,34 @@ class Config:
 
 
 def load(
-    study_area_path: Path | str = DEFAULT_STUDY_AREA,
-    pipeline_path: Path | str = DEFAULT_PIPELINE,
+    study_area_path: Path | str | None = None,
+    pipeline_path: Path | str | None = None,
+    cache_root: Path | str | None = None,
 ) -> Config:
+    """Load and cross-check both config files.
+
+    With no arguments, each config resolves to the checkout's ``configs/`` when present and
+    falls back to the copy packaged inside the wheel — so an installed package with no
+    checkout and no ``PROPX_ROOFS_DATA_ROOT`` still starts. ``cache_root`` overrides where
+    ``data/cache/<area>/`` is looked for; the cache itself is never packaged.
+    """
+    if study_area_path is None:
+        study_area_path = _default_config_path("study_area.yaml", DEFAULT_STUDY_AREA)
+    if pipeline_path is None:
+        pipeline_path = _default_config_path("pipeline.yaml", DEFAULT_PIPELINE)
     study_area_path = Path(study_area_path)
     pipeline_path = Path(pipeline_path)
+    # Fail here, naming the file and how to point at it, rather than letting a bare
+    # FileNotFoundError from read_text surface with no indication that the data root was guessed.
+    for label, path in (("study area", study_area_path), ("pipeline", pipeline_path)):
+        if not path.is_file():
+            # FileNotFoundError is an OSError, which cli.main already maps to exit code 2. The
+            # message carries the resolved root because that is the part the caller cannot see.
+            raise FileNotFoundError(
+                f"{label} config not found at {path}. The data root was resolved to "
+                f"{REPO_ROOT}. Run from a checkout, pass --study-area/--pipeline-config, or "
+                f"set {DATA_ROOT_ENV}."
+            )
     area_raw = yaml.safe_load(study_area_path.read_text(encoding="utf-8"))
     thresholds = yaml.safe_load(pipeline_path.read_text(encoding="utf-8"))
 
@@ -232,6 +333,7 @@ def load(
             imagery_zoom=int(area["imagery_zoom"]),
             sources=area_raw.get("sources", {}),
             buildings=buildings,
+            cache_root=Path(cache_root).expanduser().resolve() if cache_root else None,
         ),
         thresholds=thresholds,
         config_hash=digest,

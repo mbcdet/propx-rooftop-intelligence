@@ -9,9 +9,10 @@ them about the mocks.
 Two rules govern what is asserted about content:
 
 * **Nothing is asserted into existence.** The vie-swv-008 test asserts what the implemented
-  detector actually produces (a ridge that *supports* the authoritative ``Schraegdach``), and
-  explicitly asserts that no conflict is flagged. Writing a test that demanded a conflict there
-  would have forced the detector to be retuned until it produced one.
+  detector actually produces (since RTI-007's quality gates: a withheld ridge, so no image
+  reading and no conflict), and explicitly asserts that no conflict is flagged. Writing a test
+  that demanded a conflict there would have forced the detector to be retuned until it
+  produced one.
 * **The mechanisms that have no exemplar in the sample are tested synthetically** — the CV
   failure path and the authoritative-versus-image conflict — so their correctness never depends
   on a real building behaving a particular way.
@@ -21,12 +22,13 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from typing import Any
 
 import pytest
 from shapely.geometry import box
 
-from propx_roofs import config, geometry, pipeline, provenance, units
+from propx_roofs import audit, config, geometry, pipeline, provenance, units
 from propx_roofs.segment import agreement
 from propx_roofs.types import CARDINALITY_BASIS, ImageObservation
 
@@ -328,7 +330,11 @@ def test_absent_enrichment_is_null_and_not_in_source_never_zero(buildings):
 
 
 def test_the_sparse_authoritative_context_is_reported_as_it_is(buildings):
-    """Design risk 2b: 3 of 10 have typology, 1 of 10 has a BAUJAHR. Assert the real coverage."""
+    """Design risk 2b, after RTI-012: only 1 of 10 keeps a typology, 1 of 10 has a BAUJAHR.
+
+    vie-swv-007 (49.1%) and vie-swv-010 (44.8%) sat below the 50% minimum overlap and are now
+    withheld rather than published with a discounted confidence.
+    """
     with_typology = [
         bid
         for bid, b in buildings.items()
@@ -339,23 +345,71 @@ def test_the_sparse_authoritative_context_is_reported_as_it_is(buildings):
         for bid, b in buildings.items()
         if b["attributes"]["year_built"]["availability"] == "authoritative"
     ]
-    assert with_typology == ["vie-swv-005", "vie-swv-007", "vie-swv-010"]
+    assert with_typology == ["vie-swv-005"]
     assert with_year == ["vie-swv-009"]
     assert buildings["vie-swv-009"]["attributes"]["year_built"]["value"] == 1891
 
 
 def test_typology_confidence_reflects_the_published_overlap(buildings):
-    """A weak best-overlap match must not keep full authoritative confidence."""
-    expected = {
-        "vie-swv-005": (0.6649, 0.6649, 0.600),
-        "vie-swv-007": (0.4910, 0.5000, 0.451),
-        "vie-swv-010": (0.4479, 0.5000, 0.451),
+    """The one surviving match keeps its measured share as its confidence factor."""
+    attribute = buildings["vie-swv-005"]["attributes"]["building_typology"]
+    assert attribute["availability"] == "authoritative"
+    assert attribute["source_detail"]["overlap_fraction_of_roof"] == 0.6649
+    assert attribute["source_detail"]["overlap_fraction_of_source_polygon"] == 0.9984
+    assert attribute["confidence"]["factors"]["typology_overlap"] == 0.6649
+    assert attribute["confidence"]["score"] == 0.600
+
+
+def test_a_below_floor_typology_overlap_is_withheld_not_discounted(buildings):
+    """RTI-012 on the real cache: 007 at 49.1% and 010 at 44.8% abstain below the 50% floor.
+
+    The floor was chosen on the majority principle (the polygon must describe at least half
+    the roof), not tuned to these buildings; both shares, the floor and every candidate stay
+    recorded so the withholding is auditable. No review flag fires: nothing questionable was
+    published, which is the point.
+    """
+    expected = {"vie-swv-007": (0.4910, 0.9813), "vie-swv-010": (0.4479, 0.9972)}
+    for building_id, (share_roof, share_source) in expected.items():
+        for name in ("building_typology", "construction_epoch"):
+            attribute = buildings[building_id]["attributes"][name]
+            assert attribute["value"] is None
+            assert attribute["availability"] == "not_in_source"
+            assert attribute["confidence"]["score"] is None
+            assert "withheld" in attribute["confidence"]["rationale"]
+            assert "50%" in attribute["confidence"]["rationale"]
+            detail = attribute["source_detail"]
+            assert detail["overlap_fraction_of_roof"] == share_roof
+            assert detail["overlap_fraction_of_source_polygon"] == share_source
+            assert detail["min_overlap_fraction_of_roof"] == 0.5
+            assert detail["candidate_count"] > 1
+            assert detail["candidates"][0]["overlap_fraction_of_roof"] == share_roof
+            # Two similar candidates: the ambiguity is recorded, but with everything withheld
+            # no ambiguous_enrichment review flag fires.
+            assert detail["ambiguous"] is True
+        triggers = {f["trigger"] for f in buildings[building_id]["review_flags"]}
+        assert "ambiguous_enrichment" not in triggers
+    # The raw value is preserved verbatim so the withholding is traceable, never promoted.
+    detail = buildings["vie-swv-010"]["attributes"]["building_typology"]["source_detail"]
+    assert detail["raw_value"] == "W4.1.-soz.u.gemeinn.Wohnb.-Baulückenbebauungen"
+
+
+def test_the_point_join_decision_is_recorded_on_the_real_sample(buildings):
+    """RTI-013: candidate_count is auditable even when it is 0 or 1, on every building."""
+    expected_counts = {
+        "vie-swv-005": 1,
+        "vie-swv-007": 1,
+        "vie-swv-008": 1,
+        "vie-swv-009": 1,
+        "vie-swv-010": 1,
     }
-    for building_id, (overlap, factor, score) in expected.items():
-        attribute = buildings[building_id]["attributes"]["building_typology"]
-        assert attribute["source_detail"]["overlap_fraction_of_roof"] == overlap
-        assert attribute["confidence"]["factors"]["typology_overlap"] == factor
-        assert attribute["confidence"]["score"] == score
+    for building_id, building in buildings.items():
+        detail = building["attributes"]["year_built"]["source_detail"]
+        assert detail["candidate_count"] == expected_counts.get(building_id, 0)
+        assert detail["matched_by"] == "point_covered_by_authoritative_roof_polygon"
+        assert detail["selection_rule"] == "nearest_to_roof_centroid_in_metric_crs"
+        assert len(detail["candidates"]) == detail["candidate_count"]
+        for candidate in detail["candidates"]:
+            assert candidate["distance_to_roof_centroid_m"] >= 0
 
 
 def test_a_present_record_with_a_null_field_is_still_not_in_source(buildings):
@@ -379,6 +433,279 @@ def test_an_abstaining_image_observation_publishes_no_score(buildings):
         assert attribute["availability"] == "unavailable"
         assert attribute["confidence"]["score"] is None
         assert "abstention" in " ".join(attribute["confidence"]["limitations"])
+
+
+# ---------------------------------------------------------------------------------------
+# stage 6 enrichment joins: the floor, the margin, and the point rule (RTI-012 / RTI-013)
+# ---------------------------------------------------------------------------------------
+
+# A building-sized patch of the study area for synthetic join geometry.
+_LON0, _LON1, _LAT0, _LAT1 = 16.3790, 16.3800, 48.1850, 48.1860
+
+
+def _polygon_feature(objectid: int, lon_lo: float, lon_hi: float, **props: Any) -> dict:
+    return {
+        "type": "Feature",
+        "properties": {"OBJECTID": objectid, **props},
+        "geometry": box(lon_lo, _LAT0, lon_hi, _LAT1).__geo_interface__,
+    }
+
+
+def _point_feature(objectid: int, lon: float, lat: float, **props: Any) -> dict:
+    return {
+        "type": "Feature",
+        "properties": {"OBJECTID": objectid, **props},
+        "geometry": {"type": "Point", "coordinates": [lon, lat]},
+    }
+
+
+def test_match_typology_measures_both_shares_and_counts_candidates(cfg):
+    roof = box(_LON0, _LAT0, _LON1, _LAT1)
+    # One polygon covering ~70% of the roof and extending beyond it, one ~10% sliver.
+    features = [
+        _polygon_feature(1, _LON0, _LON0 + 0.0007),
+        _polygon_feature(2, _LON1 - 0.0001, _LON1 + 0.0004),
+    ]
+    match = pipeline.match_typology(roof, features, cfg)
+
+    assert match.candidate_count == 2
+    assert match.properties["OBJECTID"] == 1
+    assert match.share_of_roof == pytest.approx(0.7, abs=0.01)
+    # intersection over the SOURCE polygon: the winner lies entirely on the roof, the sliver
+    # only 1/5 on it — the second number a reader needs to see a neighbour's polygon for what
+    # it is.
+    assert match.share_of_source == pytest.approx(1.0, abs=0.01)
+    assert match.candidates[1]["overlap_fraction_of_source_polygon"] == pytest.approx(
+        0.2, abs=0.01
+    )
+    assert match.below_floor is False
+    assert match.ambiguous is False
+
+
+def test_match_typology_below_the_floor_is_withheld_not_published(cfg):
+    """A 30% overlap is more likely a neighbour's polygon than this roof's typology."""
+    roof = box(_LON0, _LAT0, _LON1, _LAT1)
+    features = [_polygon_feature(1, _LON0, _LON0 + 0.0003, BAUTYP_TXT="synthetic")]
+    match = pipeline.match_typology(roof, features, cfg)
+
+    assert match.share_of_roof == pytest.approx(0.3, abs=0.01)
+    assert match.below_floor is True
+    assert match.min_overlap == 0.5
+
+
+def test_match_typology_flags_two_competing_candidates(cfg):
+    """Two polygons each covering ~half the roof: the winner is not evidence of anything."""
+    roof = box(_LON0, _LAT0, _LON1, _LAT1)
+    features = [
+        _polygon_feature(1, _LON0, _LON0 + 0.00055),
+        _polygon_feature(2, _LON0 + 0.00055, _LON1),
+    ]
+    match = pipeline.match_typology(roof, features, cfg)
+
+    assert match.candidate_count == 2
+    assert match.below_floor is False
+    assert match.ambiguous is True
+    assert "compete for this roof" in match.ambiguity_reason
+    assert match.ambiguity_margin == 0.70
+
+
+def test_match_typology_with_no_overlap_reports_zero_candidates(cfg):
+    match = pipeline.match_typology(box(_LON0, _LAT0, _LON1, _LAT1), [], cfg)
+    assert match.properties is None
+    assert match.candidate_count == 0
+    assert match.candidates == ()
+    assert match.below_floor is False and match.ambiguous is False
+
+
+def test_match_info_point_includes_a_boundary_point(cfg):
+    """``covers`` is boundary-inclusive: a point exactly on the outline is this building."""
+    roof = box(_LON0, _LAT0, _LON1, _LAT1)
+    on_edge = _point_feature(7, _LON0, (_LAT0 + _LAT1) / 2, BAUJAHR=1900)
+    match = pipeline.match_info_point(roof, [on_edge], cfg)
+
+    assert match.candidate_count == 1
+    assert match.chosen_objectid == 7
+    assert match.properties["BAUJAHR"] == 1900
+    assert match.ambiguous is False
+
+
+def test_match_info_point_two_candidates_nearest_to_the_centroid_wins(cfg):
+    roof = box(_LON0, _LAT0, _LON1, _LAT1)
+    near = _point_feature(2, _LON0 + 0.00045, (_LAT0 + _LAT1) / 2, BAUJAHR=1900)
+    far = _point_feature(1, _LON0 + 0.0001, (_LAT0 + _LAT1) / 2, BAUJAHR=1900)
+    match = pipeline.match_info_point(roof, [far, near], cfg)
+
+    assert match.candidate_count == 2
+    # Nearest wins — NOT the lowest OBJECTID, which was the old undocumented rule.
+    assert match.chosen_objectid == 2
+    distances = [c["distance_to_roof_centroid_m"] for c in match.candidates]
+    assert distances == sorted(distances)
+    # Clearly separated (~26 m apart) and agreeing on the published fields: no ambiguity.
+    assert match.ambiguous is False
+
+
+def test_match_info_point_near_tie_is_flagged(cfg):
+    """Two points nearly equidistant from the centroid: the ordering proves nothing."""
+    roof = box(_LON0, _LAT0, _LON1, _LAT1)
+    mid_lat = (_LAT0 + _LAT1) / 2
+    left = _point_feature(1, _LON0 + 0.00048, mid_lat, BAUJAHR=1900)
+    right = _point_feature(2, _LON0 + 0.00052, mid_lat, BAUJAHR=1900)
+    match = pipeline.match_info_point(roof, [left, right], cfg)
+
+    assert match.candidate_count == 2
+    assert match.ambiguous is True
+    assert "tie epsilon" in match.ambiguity_reason
+    # Published from the chosen point all the same — flagged, not withheld.
+    assert match.properties["BAUJAHR"] == 1900
+
+
+def test_match_info_point_material_disagreement_is_flagged(cfg):
+    roof = box(_LON0, _LAT0, _LON1, _LAT1)
+    mid_lat = (_LAT0 + _LAT1) / 2
+    near = _point_feature(1, _LON0 + 0.00045, mid_lat, BAUJAHR=1890)
+    far = _point_feature(2, _LON0 + 0.0001, mid_lat, BAUJAHR=1955)
+    match = pipeline.match_info_point(roof, [near, far], cfg)
+
+    assert match.ambiguous is True
+    assert "disagree on published field BAUJAHR" in match.ambiguity_reason
+    assert match.properties["BAUJAHR"] == 1890
+
+
+def test_an_accepted_ambiguous_enrichment_publishes_with_a_review_flag(cfg, monkeypatch):
+    """The above-the-floor ambiguity path end to end, on synthetic matches (no real building
+    exercises it): the best candidate is published, the flag fires, the document validates."""
+    monkeypatch.setattr(pipeline, "segment_roof", lambda crop, cfg: (None, "not_under_test"))
+    monkeypatch.setattr(
+        pipeline,
+        "match_typology",
+        lambda roof, features, cfg_: pipeline.TypologyMatch(
+            properties={"OBJECTID": 1, "BAUTYP_TXT": "synthetic typology", "OBJ_STR_TXT": None},
+            share_of_roof=0.55,
+            share_of_source=0.9,
+            candidate_count=2,
+            candidates=(
+                {
+                    "OBJECTID": 1,
+                    "overlap_fraction_of_roof": 0.55,
+                    "overlap_fraction_of_source_polygon": 0.9,
+                },
+                {
+                    "OBJECTID": 2,
+                    "overlap_fraction_of_roof": 0.45,
+                    "overlap_fraction_of_source_polygon": 0.8,
+                },
+            ),
+            below_floor=False,
+            ambiguous=True,
+            ambiguity_reason="synthetic: two typology polygons compete for this roof.",
+            min_overlap=0.5,
+            ambiguity_margin=0.7,
+        ),
+    )
+    monkeypatch.setattr(
+        pipeline,
+        "match_info_point",
+        lambda roof, features, cfg_: pipeline.PointMatch(
+            properties={"OBJECTID": 11, "BAUJAHR": 1900},
+            candidate_count=2,
+            candidates=(
+                {"OBJECTID": 11, "distance_to_roof_centroid_m": 3.1},
+                {"OBJECTID": 12, "distance_to_roof_centroid_m": 3.4},
+            ),
+            chosen_objectid=11,
+            selection_rule=pipeline.POINT_SELECTION_RULE,
+            ambiguous=True,
+            ambiguity_reason="synthetic: 2 points nearly equidistant from the roof centroid.",
+        ),
+    )
+    document = pipeline.run(cfg, generated_at=GENERATED_AT_A, write_overlays=False)
+    pipeline.validate_output(document)
+
+    for building in document["buildings"]:
+        typology = building["attributes"]["building_typology"]
+        assert typology["value"] == "synthetic typology"
+        assert typology["availability"] == "authoritative"
+        assert typology["confidence"]["factors"]["typology_overlap"] == 0.55
+        assert typology["source_detail"]["ambiguous"] is True
+
+        year = building["attributes"]["year_built"]
+        assert year["value"] == 1900
+        assert year["source_detail"]["OBJECTID"] == 11
+        assert year["source_detail"]["candidate_count"] == 2
+
+        triggers = [f["trigger"] for f in building["review_flags"]]
+        assert "ambiguous_enrichment" in triggers
+        assert "multiple_point_candidates" in triggers
+        enrichment = next(
+            f for f in building["review_flags"] if f["trigger"] == "ambiguous_enrichment"
+        )
+        assert "compete for this roof" in enrichment["reason"]
+        assert "recorded in source_detail" in enrichment["reason"]
+
+
+# ---------------------------------------------------------------------------------------
+# failure isolation: degrade one attribute, never the run (RTI-027)
+# ---------------------------------------------------------------------------------------
+
+
+def test_an_observation_exception_degrades_that_attribute_and_flags_it(cfg, monkeypatch):
+    """One attribute's image path exploding must cost that attribute, not the run."""
+    monkeypatch.setattr(pipeline, "segment_roof", lambda crop, cfg: (None, "not_under_test"))
+
+    def explode(crop, cfg_):
+        raise RuntimeError("synthetic image-path failure")
+
+    monkeypatch.setattr(pipeline.surface, "observe_surface_appearance", explode)
+    document = pipeline.run(cfg, generated_at=GENERATED_AT_A, write_overlays=False)
+    pipeline.validate_output(document)
+
+    assert len(document["buildings"]) == 10
+    for building in document["buildings"]:
+        attribute = building["attributes"]["visual_surface_appearance"]
+        assert attribute["value"] is None
+        assert attribute["availability"] == "unavailable"
+        assert attribute["confidence"]["score"] is None
+        assert "processing_error" in " ".join(attribute["confidence"]["limitations"])
+        assert "RuntimeError" in attribute["confidence"]["rationale"]
+
+        flags = [f for f in building["review_flags"] if f["trigger"] == "processing_error"]
+        assert len(flags) == 1
+        assert flags[0]["attribute"] == "visual_surface_appearance"
+        assert "not a finding about the roof" in flags[0]["reason"]
+
+        # The failure is isolated: the other image attributes are untouched.
+        assert building["attributes"]["green_roof"]["value"] is not None or (
+            building["attributes"]["green_roof"]["availability"] == "unavailable"
+        )
+        assert building["attributes"]["roof_area_m2"]["value"] > 0
+
+
+def test_a_broken_pinned_geometry_is_fatal_and_names_the_building(cfg):
+    """Input geometry is validated at load time: the pipeline must not depend on the cache
+    verifier having been run (RTI-027)."""
+    from dataclasses import replace as dc_replace
+
+    bowtie = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [16.3790, 48.1850],
+                [16.3800, 48.1860],
+                [16.3800, 48.1850],
+                [16.3790, 48.1860],
+                [16.3790, 48.1850],
+            ]
+        ],
+    }
+    empty = {"type": "Polygon", "coordinates": []}
+
+    for bad, expectation in ((bowtie, "invalid"), (empty, "empty")):
+        records = pipeline.load_roof_records(cfg)
+        target = cfg.study_area.buildings[2]
+        records[target.objectid] = dc_replace(records[target.objectid], geometry=bad)
+        with pytest.raises(pipeline.PipelineError, match=expectation) as raised:
+            pipeline.select_pinned(records, cfg)
+        assert target.building_id in str(raised.value)
 
 
 # ---------------------------------------------------------------------------------------
@@ -455,20 +782,81 @@ def test_a_fired_boundary_alignment_warning_reaches_the_top_level_review_flags(c
     assert provenance.review_flags(cfg, boundary_alignment_warning=quiet) == []
 
 
-def test_no_real_building_fires_a_boundary_warning_or_carries_a_review_flag(buildings):
-    """The honest post-Phase-4A state of the sample: zero fired warnings, zero review flags."""
+def test_the_real_sample_review_flag_map_is_exactly_the_evidence_driven_one(buildings):
+    """The honest post-RTI-004 state: no boundary warning fires, and every review flag on the
+    real sample comes from the evidence-driven triggers plus the transcribed visual audit —
+    never from a conflict, a slope excursion or an ambiguous join, none of which the sample
+    exercises. The per-building expectations below are the measured outcomes reported in the
+    remediation notes; the thresholds behind them were fixed on principle first."""
+    expected_evidence_triggers = {
+        "vie-swv-001": set(),
+        "vie-swv-002": set(),
+        "vie-swv-003": set(),
+        "vie-swv-004": set(),
+        "vie-swv-005": set(),
+        "vie-swv-006": set(),
+        "vie-swv-007": {"weak_cv_agreement"},  # topology mismatch (2 rings vs 0)
+        "vie-swv-008": set(),
+        "vie-swv-009": {"weak_cv_agreement"},  # IoU 0.8971 < 0.90 floor
+        # shadow_fraction 0.3175 > 0.25, and two image observations (ridge, green_roof)
+        # abstain once the vegetation negative falls under its judgeability floor.
+        "vie-swv-010": {"low_judgeability", "withheld_attributes"},
+    }
     for building_id, building in buildings.items():
         warning = building["delineation"]["boundary_alignment_warning"] or {}
         assert warning.get("flag") is not True, f"{building_id} unexpectedly fired the warning"
-        assert building["review_flags"] == [], f"{building_id} carries an unexpected review flag"
+        triggers = {f["trigger"] for f in building["review_flags"]}
+        assert triggers - {"visual_audit_questionable"} == expected_evidence_triggers[
+            building_id
+        ], f"{building_id}: unexpected evidence triggers {triggers}"
 
 
-def test_vie_swv_007_reports_a_topology_mismatch_without_a_review_flag(buildings):
+def test_embedded_audit_annotations_are_slim_and_point_at_the_full_trail(buildings):
+    """RTI-004 slimming: the document embeds aspect/status/code/summary plus a detail_ref
+    pointer per building — never the verbatim audit paragraphs, which stay (and stay verbatim)
+    in validation/audit_annotations.json. Each embedded summary must be the annotations file's
+    own summary for that building/aspect/status: a faithful copy of the distillation, not a
+    re-summary and not the note."""
+    source = json.loads(
+        (Path(__file__).resolve().parents[1] / "validation" / "audit_annotations.json")
+        .read_text(encoding="utf-8")
+    )
+    for building_id, building in buildings.items():
+        block = building["manual_review"]
+        assert block["detail_ref"] == f"validation/audit_annotations.json#{building_id}"
+        source_entries = {entry["aspect"]: entry for entry in source["buildings"][building_id]}
+        assert len(block["annotations"]) == len(source_entries)
+        for entry in block["annotations"]:
+            assert set(entry) == {"aspect", "status", "code", "summary"}
+            recorded = source_entries[entry["aspect"]]
+            assert entry["status"] == recorded["status"]
+            assert entry["code"] == f"{recorded['aspect']}.{recorded['status']}"
+            assert entry["summary"] == recorded["summary"]
+            assert entry["summary"] != recorded["note"]  # a distillation, not the paragraph
+
+
+def test_embedded_review_payload_is_capped(buildings):
+    """The machine-readable review payload stays concise: audit-derived reasons and embedded
+    summaries are pointers plus distillations (< 300 chars), and even the wordiest measured
+    evidence reason stays bounded (< 500 chars). The full paragraphs live in validation/."""
+    for building in buildings.values():
+        for flag in building["review_flags"]:
+            assert len(flag["reason"]) < 500, flag["trigger"]
+            if flag["trigger"] == "visual_audit_questionable":
+                assert len(flag["reason"]) < 300
+                assert "Full note: validation/audit_annotations.json" in flag["reason"]
+        for entry in building["manual_review"]["annotations"]:
+            assert len(entry["summary"]) < 300
+
+
+def test_vie_swv_007_topology_mismatch_routes_to_weak_cv_agreement(buildings):
     """The real diagnostic that replaced the mis-measured warning.
 
     Two ~1 m² light shafts in the authoritative outline have no counterpart in the candidate,
-    because GrabCut discards holes below its configured minimum area. That is expected segmenter
-    behaviour, so it is reported as a diagnostic and deliberately routes nowhere.
+    because GrabCut discards holes below its configured minimum area. The diagnostic itself
+    still carries no requires_visual_review status of its own, but since RTI-004 the
+    structural disagreement is routed into review_flags as weak_cv_agreement, so a reader
+    scanning only review_flags no longer misses it.
     """
     building = buildings["vie-swv-007"]
     topology = building["delineation"]["topology_mismatch"]
@@ -478,9 +866,10 @@ def test_vie_swv_007_reports_a_topology_mismatch_without_a_review_flag(buildings
     assert topology["authoritative_interior_ring_areas_m2"] == [1.21, 0.69]
     assert topology["cv_interior_ring_areas_m2"] == []
     assert topology["crs"] == "EPSG:31256"
-    # A diagnostic, not a review trigger: no status key, and nothing in review_flags.
     assert "status" not in topology
-    assert building["review_flags"] == []
+    flags = [f for f in building["review_flags"] if f["trigger"] == "weak_cv_agreement"]
+    assert len(flags) == 1
+    assert "topology" in flags[0]["reason"]
 
     # The two Hausdorff figures must disagree here, or the fix did nothing.
     agree = building["delineation"]["agreement_with_authoritative_geometry"]
@@ -522,11 +911,13 @@ def test_no_forced_conflict_on_vie_swv_008(buildings):
     """Assert what the detector ACTUALLY produces on this building — not what was hypothesised.
 
     Reconnaissance recorded a manual reading that the roof looks predominantly flat against
-    ``DACHFORM = "Schraegdach"``. The implemented ridge detector does not support that reading:
-    it finds a ridge at ~65.2 deg, which is evidence *for* the authoritative class. So this test
-    asserts the absence of a conflict. It is deliberately **not** written the other way round —
-    a test demanding a conflict here would only be satisfiable by retuning the detector until
-    the earlier guess reappeared (design section 5.1).
+    ``DACHFORM = "Schraegdach"``. The pre-RTI-007 detector reported a ridge at ~65.2 deg there;
+    the visual audit identified that line as a deck/facade edge, and the general quality gates
+    (medial-axis crest test) now withhold it. So the image evidence abstains: no ridge, no
+    image reading, no conflict — and the withheld candidate's gate values stay published in
+    the evidence quality. It is deliberately **not** asserted the other way round — a test
+    demanding a conflict here would only be satisfiable by retuning the detector until the
+    earlier manual guess reappeared (design section 5.1).
     """
     attributes = buildings["vie-swv-008"]["attributes"]
     roof_type = attributes["roof_type"]
@@ -535,11 +926,12 @@ def test_no_forced_conflict_on_vie_swv_008(buildings):
     assert roof_type["value"] == "pitched"
     assert attributes["mean_slope_deg"]["value"] == pytest.approx(42.92, abs=0.01)
 
-    ridge = attributes["ridge_orientation_deg"]["value"]
-    assert ridge is not None
-    assert ridge == pytest.approx(65.2, abs=1.0)
+    ridge = attributes["ridge_orientation_deg"]
+    assert ridge["value"] is None, "008's deck/facade edge must be withheld by the gates"
+    gates = ridge["image_evidence"]["quality"]["gates"]
+    assert gates["medial_axis_ratio"]["passed"] is False
 
-    assert roof_type["image_evidence"]["indicates"] == "pitched"
+    assert roof_type["image_evidence"]["indicates"] is None
     assert roof_type.get("conflict") is None
     assert "image_conflict" not in roof_type["confidence"]["factors"]
     triggers = {flag["trigger"] for flag in buildings["vie-swv-008"]["review_flags"]}
@@ -575,9 +967,14 @@ def test_a_synthetic_conflict_produces_the_expected_review_flag(cfg, monkeypatch
     """
     monkeypatch.setattr(pipeline, "segment_roof", lambda crop, cfg: (None, "not_under_test"))
     monkeypatch.setattr(
-        pipeline,
-        "image_roof_type",
-        lambda ridge: ("flat", "synthetic evidence: one dominant plane, no ridge"),
+        pipeline.roof_form,
+        "observe_roof_form",
+        lambda crop, cfg, geom=None: ImageObservation(
+            name="image_roof_form",
+            value="flat",
+            method="synthetic_flatness_evidence",
+            rationale="synthetic evidence: one dominant plane, no ridge",
+        ),
     )
     document = pipeline.run(cfg, generated_at=GENERATED_AT_A, write_overlays=False)
     pipeline.validate_output(document)
@@ -608,9 +1005,15 @@ def test_a_synthetic_conflict_produces_the_expected_review_flag(cfg, monkeypatch
         ]
         assert len(flags) == 1
         assert flags[0]["attribute"] == "roof_type"
+        # RTI-004: a conflicted roof_type also carries machine-readable attribute-level
+        # review routing.
+        assert roof_type["requires_review"] is True
+        assert roof_type["review_reasons"]
 
     for building in roof_type_is("flat"):
+        # Authoritative flat + image flat is agreement, not a conflict.
         assert building["attributes"]["roof_type"].get("conflict") is None
+        assert "requires_review" not in building["attributes"]["roof_type"]
 
 
 def test_build_conflict_cannot_alter_the_authoritative_value():
@@ -621,15 +1024,65 @@ def test_build_conflict_cannot_alter_the_authoritative_value():
     assert set(conflict) == {"flag", "status", "description"}
 
 
-def test_image_roof_type_abstains_without_a_ridge():
-    absent = ImageObservation(
-        name="ridge_orientation_deg", value=None, method="m", rationale="no ridge detected"
+def _roof_type_for(dachform, indicates, cfg):
+    """build_roof_type on a minimal record + constructed roof-form evidence."""
+    from propx_roofs.types import RoofRecord
+
+    record = RoofRecord(
+        objectid=1,
+        geometry={"type": "Polygon", "coordinates": [[[0, 0], [0, 1], [1, 1], [0, 0]]]},
+        dachform=dachform,
+        slope_mean=None,
+        anlagenleistung=None,
+        pot_ertrag_y_min=None,
+        pot_ertrag_y_max=None,
+        suitability_m2={},
+        adresse=None,
     )
-    present = ImageObservation(
-        name="ridge_orientation_deg", value=65.24, method="m", rationale="a ridge was detected"
+    form = ImageObservation(
+        name="image_roof_form",
+        value=indicates,
+        method="synthetic",
+        rationale="constructed evidence for the conflict matrix",
+        quality={"margin": 0.2},
     )
-    assert pipeline.image_roof_type(absent)[0] is None
-    assert pipeline.image_roof_type(present)[0] == "pitched"
+    return pipeline.build_roof_type(record, form, cfg, pipeline.source_names(cfg))
+
+
+def test_the_conflict_matrix_is_symmetric_and_abstention_is_not_disagreement(cfg):
+    """RTI-005: both disagreement directions fire; abstention and agreement never do.
+
+    Synthetic on purpose (see the module docstring): on the current cache the roof-form
+    observation indicates pitched only on vie-swv-007 and abstains elsewhere, so neither real
+    direction fires — and no threshold is moved to force one.
+    """
+    # authoritative flat + image pitched -> conflict (the previously reachable direction)
+    conflicted = _roof_type_for("Flachdach", "pitched", cfg)
+    assert conflicted.conflict and conflicted.conflict["flag"] is True
+    # authoritative pitched + image flat -> conflict (previously structurally unreachable)
+    conflicted = _roof_type_for("Schraegdach", "flat", cfg)
+    assert conflicted.conflict and conflicted.conflict["flag"] is True
+    assert conflicted.value == "pitched"  # the authoritative value is never modified
+    assert conflicted.requires_review is True
+    # agreement in both classes -> no conflict
+    assert _roof_type_for("Flachdach", "flat", cfg).conflict is None
+    assert _roof_type_for("Schraegdach", "pitched", cfg).conflict is None
+    # image abstention -> never a disagreement
+    assert _roof_type_for("Flachdach", None, cfg).conflict is None
+    assert _roof_type_for("Schraegdach", None, cfg).conflict is None
+
+
+def test_an_unknown_authoritative_class_never_conflicts_but_the_evidence_stands(cfg):
+    """A disagreement with a non-answer is not a disagreement; the image evidence is still
+    published on its own so nothing measured is lost."""
+    for indicates in ("flat", "pitched", None):
+        attribute = _roof_type_for(None, indicates, cfg)
+        assert attribute.value == "unknown"
+        assert attribute.conflict is None
+        assert attribute.image_evidence["indicates"] == indicates
+    attribute = _roof_type_for("Tonnendach", "flat", cfg)  # unrecognised raw string
+    assert attribute.value == "unknown"
+    assert attribute.conflict is None
 
 
 # ---------------------------------------------------------------------------------------
@@ -667,7 +1120,16 @@ def test_the_run_block_carries_the_config_hash_and_the_required_notes(cfg, docum
     assert run_block["config_hash"] == cfg.config_hash
     assert run_block["confidence_note"] == provenance.CONFIDENCE_NOTE
     assert run_block["sample_note"] == provenance.SAMPLE_NOTE
-    assert run_block["manual_review"] == {"status": "not_yet_reviewed", "reviewer": None, "n": None}
+    # The default run attaches the model-assisted baseline QA and its audit trail. A later
+    # human review may bind the final artifacts, but does not turn the baseline QA itself into
+    # human ground truth or change its reviewer field.
+    manual_review = run_block["manual_review"]
+    assert manual_review["status"] == "visual_qa_of_baseline_attached"
+    assert manual_review["reviewer"] is None
+    assert manual_review["n"] == 10
+    assert manual_review["audit_basis"]["baseline_commit"] == "c86cbf4"
+    annotations = audit.load_annotations(audit.default_annotations_path())
+    assert manual_review["audit_basis"] == audit.audit_basis(annotations)
     assert {s["licence"] for s in run_block["sources"]} == {"CC BY 4.0"}
     assert {s["attribution"] for s in run_block["sources"]} == {
         "Datenquelle: Stadt Wien - data.wien.gv.at"
@@ -707,6 +1169,115 @@ def test_overlay_is_null_when_no_overlay_is_written(cfg, tmp_path):
         assert building["overlay"] is None
 
 
+def _exact_colour_pixels(path: Path, colour_bgr: tuple[int, int, int]) -> int:
+    """How many pixels of an overlay PNG are exactly ``colour_bgr``."""
+    import cv2
+    import numpy as np
+
+    image = cv2.imread(str(path), cv2.IMREAD_COLOR)
+    assert image is not None, f"unreadable overlay {path}"
+    return int((image == np.array(colour_bgr, dtype=np.uint8)).all(axis=2).sum())
+
+
+def test_the_accepted_ridge_segment_is_published_beside_every_published_ridge(buildings):
+    """The overlay draws observed evidence, so the evidence must travel in the record: a
+    published ridge carries the accepted segment's endpoints, a withheld one carries none."""
+    published = 0
+    for building_id, building in buildings.items():
+        ridge = building["attributes"]["ridge_orientation_deg"]
+        quality = ridge["image_evidence"]["quality"]
+        if ridge["value"] is None:
+            assert "accepted_segment" not in quality, building_id
+            continue
+        published += 1
+        segment = quality["accepted_segment"]
+        assert segment["crs"] == "EPSG:4326"
+        endpoints = segment["endpoints_lonlat"]
+        assert len(endpoints) == 2 and endpoints[0] != endpoints[1]
+        # The published azimuth reproduces from the endpoints: the segment IS the evidence.
+        reproduced = geometry.azimuth_deg(
+            tuple(endpoints[0]), tuple(endpoints[1]), "EPSG:31256"
+        )
+        assert reproduced == pytest.approx(ridge["value"], abs=0.01)
+    assert published >= 1, "expected at least one published ridge in the sample"
+
+
+def test_the_ridge_segment_is_drawn_on_published_and_never_on_withheld_overlays(
+    document, run_a
+):
+    """Pixel-level check of the rendered PNGs: the observed-ridge colour appears exactly on
+    the overlays whose building publishes a ridge (vie-swv-007 here) and on no other —
+    withheld cases such as vie-swv-008 and vie-swv-010 must show no ridge line at all."""
+    _, out = run_a
+    drawn = set()
+    for building in document["buildings"]:
+        count = _exact_colour_pixels(
+            out / building["overlay"], pipeline.OVERLAY_RIDGE_BGR
+        )
+        if building["attributes"]["ridge_orientation_deg"]["value"] is not None:
+            assert count > 0, f"{building['building_id']}: published ridge but no line drawn"
+            drawn.add(building["building_id"])
+        else:
+            assert count == 0, f"{building['building_id']}: withheld ridge but pixels drawn"
+    assert drawn == {"vie-swv-007"}
+    for withheld_id in ("vie-swv-008", "vie-swv-010"):
+        assert withheld_id not in drawn
+
+
+def test_a_published_ridge_without_endpoints_draws_nothing_rather_than_synthesising():
+    """No fallback to a line invented from the azimuth: if the accepted segment is absent,
+    ``_accepted_ridge_segment`` yields None and the overlay draws no ridge — and a withheld
+    ridge never draws, even if a segment were somehow present in the quality dict."""
+    no_segment = {"ridge_orientation_deg": {"value": 65.0, "image_evidence": {"quality": {}}}}
+    assert pipeline._accepted_ridge_segment(no_segment) is None
+
+    endpoints = [[16.376, 48.187], [16.377, 48.188]]
+    withheld = {
+        "ridge_orientation_deg": {
+            "value": None,
+            "image_evidence": {
+                "quality": {"accepted_segment": {"endpoints_lonlat": endpoints}}
+            },
+        }
+    }
+    assert pipeline._accepted_ridge_segment(withheld) is None
+
+    accepted = {
+        "ridge_orientation_deg": {
+            "value": 65.0,
+            "image_evidence": {
+                "quality": {"accepted_segment": {"endpoints_lonlat": endpoints}}
+            },
+        }
+    }
+    assert pipeline._accepted_ridge_segment(accepted) == endpoints
+
+
+def test_a_vegetation_negative_below_the_judgeability_floor_abstains_in_the_document(
+    buildings,
+):
+    """The general negative judgeability floor, seen end to end on the real sample:
+    vie-swv-010 (68.2% judgeable, under the 75% floor) publishes null with abstention
+    semantics and its diagnostics intact; the well-illuminated negatives stand."""
+    green = buildings["vie-swv-010"]["attributes"]["green_roof"]
+    assert green["value"] is None
+    assert green["availability"] == "unavailable"
+    assert green["confidence"]["score"] is None
+    assert "abstention" in " ".join(green["confidence"]["limitations"])
+    quality = green["image_evidence"]["quality"]
+    floor = quality["thresholds"]["negative_min_judgeable_fraction"]
+    assert quality["vegetation_judgeable_fraction"] < floor
+    # Raw vegetation diagnostics are preserved through the abstention.
+    assert quality["vegetated_fraction"] is not None
+    assert quality["mean_exg"] is not None
+
+    for building_id in ("vie-swv-001", "vie-swv-007"):
+        other = buildings[building_id]["attributes"]["green_roof"]
+        assert other["value"] == "not_detected", building_id
+        other_quality = other["image_evidence"]["quality"]
+        assert other_quality["vegetation_judgeable_fraction"] >= floor
+
+
 def test_the_overlay_green_roof_caption_keeps_abstention_distinct_from_a_negative():
     """``None`` must not be drawn as "not detected".
 
@@ -714,8 +1285,8 @@ def test_the_overlay_green_roof_caption_keeps_abstention_distinct_from_a_negativ
     identical words on the image — the one conflation the whole abstention design exists to
     prevent. Thresholds and JSON values are not involved here; only the caption text is.
     """
-    detected = pipeline._green_roof_caption(True)
-    absent = pipeline._green_roof_caption(False)
+    detected = pipeline._green_roof_caption("detected")
+    absent = pipeline._green_roof_caption("not_detected")
     unknown = pipeline._green_roof_caption(None)
 
     assert detected.startswith("detected")

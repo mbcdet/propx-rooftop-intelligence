@@ -93,6 +93,72 @@ def test_run_block_carries_the_identifiers_the_output_is_reproducible_from(
     assert run["study_area"]["bbox_wgs84"] == [16.3760, 48.1830, 16.3820, 48.1880]
 
 
+def test_run_block_records_schema_version_from_the_packaged_schema(run: dict[str, Any]) -> None:
+    """RTI-020: the version is the schema's own const, never a second copy in Python."""
+    declared = schema.load_schema()["$defs"]["run"]["properties"]["schema_version"]["const"]
+    assert run["schema_version"] == declared
+    assert run["schema_version"] == provenance.schema_version()
+    # And the schema refuses any other value, so a stale stamp cannot validate.
+    assert "schema_version" in schema.load_schema()["$defs"]["run"]["required"]
+
+
+def test_run_block_records_the_git_commit_and_dirty_flag(run: dict[str, Any]) -> None:
+    """This test runs inside the checkout, so a real SHA must be captured."""
+    git = run["git"]
+    assert isinstance(git["commit"], str) and re.fullmatch(r"[0-9a-f]{40}", git["commit"])
+    assert isinstance(git["dirty"], bool)
+
+
+def test_git_provenance_records_an_honest_null_when_git_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An installed wheel outside a repo must get nulls with a reason, never a crash."""
+    import subprocess as subprocess_module
+
+    def no_git(*_args: Any, **_kwargs: Any):
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(provenance.subprocess, "run", no_git)
+    block = provenance.git_provenance()
+    assert block["commit"] is None
+    assert block["dirty"] is None
+    assert "git executable not available" in block["note"]
+
+    def not_a_repo(*args: Any, **kwargs: Any):
+        raise subprocess_module.CalledProcessError(128, args[0])
+
+    monkeypatch.setattr(provenance.subprocess, "run", not_a_repo)
+    block = provenance.git_provenance()
+    assert block["commit"] is None
+    assert "not a git checkout" in block["note"]
+
+
+def test_run_block_records_runtime_and_dependency_versions(run: dict[str, Any]) -> None:
+    """RTI-001/020: matching hashes are not enough; the runtime and libraries are recorded."""
+    import platform as platform_module
+
+    assert run["runtime"]["python"] == platform_module.python_version()
+    assert run["runtime"]["platform"] == platform_module.platform()
+
+    dependencies = run["dependencies"]
+    assert set(dependencies) == set(provenance.TRACKED_DEPENDENCIES)
+    # Everything is installed in the test environment, so every version must be a real string.
+    for name, version in dependencies.items():
+        assert isinstance(version, str) and version, f"{name} has no recorded version"
+    # requests is deliberately untracked: the offline run never imports it.
+    assert "requests" not in dependencies
+
+
+def test_a_run_block_with_the_new_provenance_fields_validates(
+    cfg: config.Config, run: dict[str, Any]
+) -> None:
+    """The schema requires the RTI-020 fields, so run_block and the schema move together."""
+    required = schema.load_schema()["$defs"]["run"]["required"]
+    for fields in ("schema_version", "git", "runtime", "dependencies"):
+        assert fields in required
+        assert fields in run
+
+
 def test_every_source_carries_the_licence_and_the_exact_attribution(run: dict[str, Any]) -> None:
     """CC BY obligations travel with the data, so they are per-source, not a footnote."""
     assert len(run["sources"]) == 5
@@ -101,6 +167,70 @@ def test_every_source_carries_the_licence_and_the_exact_attribution(run: dict[st
         assert source["attribution"] == "Datenquelle: Stadt Wien - data.wien.gv.at"
         assert source["accessed"] == "2026-08-03"
         assert source["url"].startswith("https://")
+
+
+def test_licence_and_attribution_are_read_per_source_from_the_config(
+    cfg: config.Config,
+) -> None:
+    """RTI-019: the recorded terms are each source's own config fields, not a global constant.
+
+    A future differently-licensed source must be a config edit; the constants in config.py are
+    only the documented defaults for entries that omit the fields.
+    """
+    sources = {k: dict(v) for k, v in cfg.study_area.sources.items()}
+    # Every committed entry now carries the fields explicitly.
+    for key, raw in sources.items():
+        assert raw["licence"] == "CC BY 4.0", key
+        assert raw["attribution"] == "Datenquelle: Stadt Wien - data.wien.gv.at", key
+
+    # A hypothetical differently-licensed source is honoured verbatim...
+    sources["typology"]["licence"] = "CC BY-SA 4.0"
+    sources["typology"]["attribution"] = "Datenquelle: Beispielanbieter"
+    sources["typology"]["terms_url"] = "https://example.org/terms"
+    # ...and an entry that omits the fields falls back to the documented defaults.
+    del sources["building_info"]["licence"]
+    del sources["building_info"]["attribution"]
+
+    edited = replace(cfg, study_area=replace(cfg.study_area, sources=sources))
+    by_layer = {s.layer: s for s in provenance.source_descriptors(edited)}
+
+    typology = by_layer["ogdwien:GEBAEUDETYPOGD"]
+    assert typology.licence == "CC BY-SA 4.0"
+    assert typology.attribution == "Datenquelle: Beispielanbieter"
+    assert typology.terms_url == "https://example.org/terms"
+    assert typology.as_dict()["terms_url"] == "https://example.org/terms"
+
+    info = by_layer["ogdwien:GEBAEUDEINFOOGD"]
+    assert info.licence == config.LICENCE
+    assert info.attribution == config.ATTRIBUTION
+    assert info.terms_url is None
+    assert "terms_url" not in info.as_dict()
+
+    # Distinct terms produce distinct attribution lines for the README/overlays.
+    lines = provenance.attribution_lines(provenance.source_descriptors(edited))
+    assert any("Beispielanbieter" in line and "CC BY-SA 4.0" in line for line in lines)
+
+
+def test_run_block_pins_the_cache_manifest_and_records_a_real_verification(
+    cfg: config.Config, run: dict[str, Any]
+) -> None:
+    """RTI-011: run.cache carries the manifest's sha256 and a measured (not asserted) verdict."""
+    import hashlib
+
+    manifest_path = cfg.study_area.cache_dir / "manifest.json"
+    expected = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    assert run["cache"]["manifest_sha256"] == expected
+    assert run["cache"]["verified"] is True, "the committed, hash-pinned cache must verify"
+
+
+def test_cache_provenance_reports_an_honest_null_for_a_missing_cache(
+    cfg: config.Config, tmp_path: Any
+) -> None:
+    edited = replace(cfg, study_area=replace(cfg.study_area, cache_root=tmp_path / "nowhere"))
+    block = provenance.cache_provenance(edited)
+    assert block["manifest_sha256"] is None
+    assert block["verified"] is False
+    assert "no cache manifest" in block["note"]
 
 
 def test_the_roof_record_source_states_the_model_basis(run: dict[str, Any]) -> None:
@@ -226,6 +356,38 @@ def test_an_ambiguous_join_is_flagged_with_its_reasons(cfg: config.Config) -> No
     assert [f["trigger"] for f in flags] == ["ambiguous_join"]
     assert "0.81 > 0.70" in flags[0]["reason"]
     assert "documented heuristics" in flags[0]["reason"]
+
+
+def test_the_enrichment_and_processing_triggers_fire_with_reasons(cfg: config.Config) -> None:
+    """The RTI-012/013/027 triggers: reasons pre-built by the pipeline, shaped here."""
+    flags = provenance.review_flags(
+        cfg,
+        ambiguous_enrichment=("synthetic: two GEBAEUDETYPOGD polygons compete for this roof.",),
+        multiple_point_candidates=(
+            "synthetic: 2 GEBAEUDEINFOOGD points fall on this roof outline and are nearly "
+            "equidistant."
+        ),
+        processing_errors=(("green_roof", "ValueError: synthetic image failure"),),
+    )
+
+    assert [f["trigger"] for f in flags] == [
+        "ambiguous_enrichment",
+        "multiple_point_candidates",
+        "processing_error",
+    ]
+    assert all(f["status"] == "requires_visual_review" for f in flags)
+    assert "compete for this roof" in flags[0]["reason"]
+    assert "documented heuristic" in flags[0]["reason"]
+    assert "recorded in source_detail" in flags[1]["reason"]
+    assert flags[2]["attribute"] == "green_roof"
+    assert "ValueError: synthetic image failure" in flags[2]["reason"]
+    assert "not a finding about the roof" in flags[2]["reason"]
+
+    # The packaged schema's trigger vocabulary accepts all three, so a record carrying them
+    # is publishable.
+    triggers = schema.load_schema()["$defs"]["review_flag"]["properties"]["trigger"]["enum"]
+    for flag in flags:
+        assert flag["trigger"] in triggers
 
 
 def test_all_three_triggers_can_fire_together(cfg: config.Config) -> None:
@@ -412,3 +574,131 @@ def test_the_conflict_does_not_touch_the_slope_or_the_polygon(cfg: config.Config
     assert building["authoritative_roof_polygon"]["polygon_source"] == (
         "ogdwien:ANLAGENLEISTUNG2025OGD"
     )
+
+
+# --- evidence-driven review triggers (RTI-004) ------------------------------------------------
+
+
+def test_low_judgeability_fires_on_either_measurement(cfg: config.Config) -> None:
+    """Both the judgeable fraction and the shadow fraction can cross their line; either is
+    enough, and the reason names the measured number and its threshold."""
+    flags = provenance.review_flags(
+        cfg, image_quality={"judgeable_fraction": 0.60, "shadow_fraction": 0.10}
+    )
+    assert [f["trigger"] for f in flags] == ["low_judgeability"]
+    assert "60.0%" in flags[0]["reason"]
+
+    flags = provenance.review_flags(
+        cfg, image_quality={"judgeable_fraction": 0.90, "shadow_fraction": 0.30}
+    )
+    assert [f["trigger"] for f in flags] == ["low_judgeability"]
+    assert "30.0%" in flags[0]["reason"]
+
+    # Both crossing still fires exactly once, with both measurements in the reason.
+    flags = provenance.review_flags(
+        cfg, image_quality={"judgeable_fraction": 0.60, "shadow_fraction": 0.30}
+    )
+    assert [f["trigger"] for f in flags] == ["low_judgeability"]
+
+
+def test_a_readable_roof_fires_no_low_judgeability(cfg: config.Config) -> None:
+    assert (
+        provenance.review_flags(
+            cfg, image_quality={"judgeable_fraction": 1.0, "shadow_fraction": 0.0}
+        )
+        == []
+    )
+    # Unmeasurable quantities never fire: an unknown is not evidence of a problem.
+    assert (
+        provenance.review_flags(
+            cfg, image_quality={"judgeable_fraction": None, "shadow_fraction": None}
+        )
+        == []
+    )
+
+
+def test_weak_cv_agreement_fires_below_the_iou_floor(cfg: config.Config) -> None:
+    flags = provenance.review_flags(cfg, cv_agreement={"iou": 0.85, "topology_mismatch": None})
+    assert [f["trigger"] for f in flags] == ["weak_cv_agreement"]
+    assert "0.8500" in flags[0]["reason"]
+    assert "not that either is wrong" in flags[0]["reason"]
+
+
+def test_weak_cv_agreement_fires_on_a_topology_mismatch(cfg: config.Config) -> None:
+    flags = provenance.review_flags(
+        cfg, cv_agreement={"iou": 0.97, "topology_mismatch": {"flag": True}}
+    )
+    assert [f["trigger"] for f in flags] == ["weak_cv_agreement"]
+    assert "topology" in flags[0]["reason"]
+
+
+def test_strong_cv_agreement_fires_nothing(cfg: config.Config) -> None:
+    assert (
+        provenance.review_flags(
+            cfg, cv_agreement={"iou": 0.97, "topology_mismatch": {"flag": False}}
+        )
+        == []
+    )
+    # No candidate at all: there is no agreement to be weak, and the null CV outcome is
+    # already reported in the delineation.
+    assert provenance.review_flags(cfg, cv_agreement=None) == []
+
+
+def test_withheld_attributes_fires_at_the_configured_count(cfg: config.Config) -> None:
+    minimum = int(cfg.threshold("review", "withheld_attributes_min"))
+    below = ("ridge_orientation_deg",) * (minimum - 1)
+    assert provenance.review_flags(cfg, withheld_attributes=below) == []
+
+    at = ("visual_surface_appearance", "ridge_orientation_deg")[:minimum] + (
+        ("green_roof",) * max(0, minimum - 2)
+    )
+    flags = provenance.review_flags(cfg, withheld_attributes=at)
+    assert [f["trigger"] for f in flags] == ["withheld_attributes"]
+    assert "never a negative" in flags[0]["reason"]
+
+
+def test_visual_audit_routing_flags_doubt_and_only_doubt(cfg: config.Config) -> None:
+    """supports/not_judgeable route nothing; questionable/conflicts each become one flag that
+    carries the audit's code + concise summary and points at the full verbatim note in
+    validation/audit_annotations.json — never the duplicated paragraph itself."""
+    entries = [
+        {
+            "aspect": "authoritative_outline",
+            "status": "supports",
+            "code": "authoritative_outline.supports",
+            "summary": "fine",
+        },
+        {
+            "aspect": "ridge",
+            "status": "not_judgeable",
+            "code": "ridge.not_judgeable",
+            "summary": "cannot assert a ridge",
+        },
+        {
+            "aspect": "roof_type",
+            "status": "conflicts",
+            "code": "roof_type.conflicts",
+            "summary": "reads flat to the auditor",
+        },
+        {
+            "aspect": "surface",
+            "status": "questionable",
+            "code": "surface.questionable",
+            "summary": "bare majority",
+        },
+    ]
+    flags = provenance.review_flags(cfg, visual_audit=entries)
+    assert [f["trigger"] for f in flags] == [
+        "visual_audit_questionable",
+        "visual_audit_questionable",
+    ]
+    by_aspect = {f.get("attribute"): f for f in flags}
+    assert by_aspect["roof_type"]["reason"].count("reads flat to the auditor") == 1
+    assert "[roof_type.conflicts]" in by_aspect["roof_type"]["reason"]
+    assert by_aspect["visual_surface_appearance"]["reason"].count("bare majority") == 1
+    assert "[surface.questionable]" in by_aspect["visual_surface_appearance"]["reason"]
+    for flag in flags:
+        assert "not human ground truth" in flag["reason"]
+        assert "changes no value" in flag["reason"]
+        assert "Full note: validation/audit_annotations.json" in flag["reason"]
+        assert len(flag["reason"]) < 300  # a pointer plus a distillation, never the paragraph

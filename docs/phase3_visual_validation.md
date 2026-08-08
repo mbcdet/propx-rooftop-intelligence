@@ -1,5 +1,12 @@
 # Phase 3 — Visual and Manual Validation
 
+> **Document status: HISTORICAL (findings actioned).** This audit examined the Phase 2B
+> baseline artefacts. Its per-building findings have since been converted into machine-readable
+> review routing and detector gates: the questionable ridges it identified for vie-swv-008 and
+> vie-swv-010 are now withheld by general quality gates, the shadow fractions it disputed are
+> now measured adaptively, and its per-building assessments feed `review_flags` in the current
+> output. The observations below are the audit-time state, retained verbatim.
+
 **Status: model-assisted visual QA complete; this is not ground truth or human validation.**
 Baseline commit `c86cbf4`. Nothing was changed by *Phase 3*; `run.manual_review` remains
 `not_yet_reviewed` because no human validation is claimed.

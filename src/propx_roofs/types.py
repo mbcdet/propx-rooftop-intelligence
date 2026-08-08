@@ -67,7 +67,14 @@ class Confidence:
 
 @dataclass(frozen=True)
 class Attribute:
-    """One published attribute with its provenance, evidence and confidence."""
+    """One published attribute with its provenance, evidence and confidence.
+
+    ``requires_review`` / ``review_reasons`` (RTI-004) are machine-readable per-attribute
+    review routing: the value is published unchanged, but its own evidence is marginal enough
+    that a human should look before relying on it. The two travel together by construction —
+    a bare flag with no reason would be unauditable, and reasons without the flag would be
+    invisible to a consumer filtering on it.
+    """
 
     value: Any
     availability: Availability
@@ -77,6 +84,8 @@ class Attribute:
     source_detail: dict[str, Any] | None = None  # layer / field / raw value
     image_evidence: dict[str, Any] | None = None  # independent image observation
     conflict: dict[str, Any] | None = None  # authoritative vs image disagreement
+    requires_review: bool = False  # marginal evidence: a human should look (never an edit)
+    review_reasons: tuple[str, ...] = ()  # non-empty exactly when requires_review
 
     def __post_init__(self) -> None:
         if self.value is None and not self.availability.permits_null():
@@ -84,6 +93,10 @@ class Attribute:
                 f"null value requires availability unavailable/not_in_source, "
                 f"got {self.availability.value}"
             )
+        if self.requires_review and not self.review_reasons:
+            raise ValueError("requires_review without review_reasons would be unauditable")
+        if self.review_reasons and not self.requires_review:
+            raise ValueError("review_reasons are only legal with requires_review")
 
     def as_dict(self) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -100,6 +113,9 @@ class Attribute:
         ):
             if val is not None:
                 out[key] = val
+        if self.requires_review:
+            out["requires_review"] = True
+            out["review_reasons"] = list(self.review_reasons)
         return out
 
 
