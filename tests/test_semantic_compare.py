@@ -15,7 +15,12 @@ from pathlib import Path
 from typing import Any
 
 from propx_roofs import semantic_compare
-from propx_roofs.semantic_compare import EXCLUDED_RUN_FIELDS, byte_compare, compare
+from propx_roofs.semantic_compare import (
+    EXCLUDED_REAUDIT_FIELDS,
+    EXCLUDED_RUN_FIELDS,
+    byte_compare,
+    compare,
+)
 
 
 def _document() -> dict[str, Any]:
@@ -88,6 +93,42 @@ def test_the_runs_biography_is_not_a_difference() -> None:
     changed["run"]["dependencies"] = {"numpy": "2.5.0"}
     assert compare(_document(), changed) == []
     assert set(EXCLUDED_RUN_FIELDS) == {"generated_at", "git", "runtime", "dependencies"}
+
+
+def test_post_publication_review_binding_is_not_scientific_content() -> None:
+    """A review hash is written only after the reviewed document exists. Fresh pipeline runs
+    must not fail semantic reproduction because that post-publication binding changed, while
+    the baseline audit identity must remain strictly compared."""
+    original = _document()
+    changed = _document()
+    for document, digest, reviewer in (
+        (original, "a" * 64, "First Reviewer"),
+        (changed, "b" * 64, "Second Reviewer"),
+    ):
+        basis = {
+            "baseline_commit": "c86cbf4",
+            "audited_document_sha256": "c" * 64,
+            "reaudit_of_artifact_sha256": digest,
+            "reaudit_overlays": {"overlays/vie-swv-001.png": digest},
+            "reaudit_reviewer": reviewer,
+            "reaudit_date": "2026-08-08",
+        }
+        document["run"]["manual_review"] = {"audit_basis": copy.deepcopy(basis)}
+        document["buildings"][0]["manual_review"] = {"audit_basis": copy.deepcopy(basis)}
+
+    assert compare(original, changed) == []
+    assert set(EXCLUDED_REAUDIT_FIELDS) == {
+        "reaudit_of_artifact_sha256",
+        "reaudit_overlays",
+        "reaudit_reviewer",
+        "reaudit_date",
+    }
+
+    changed["run"]["manual_review"]["audit_basis"]["baseline_commit"] = "different"
+    changed["buildings"][0]["manual_review"]["audit_basis"]["baseline_commit"] = "different"
+    diffs = compare(original, changed)
+    assert len(diffs) == 2
+    assert all("baseline_commit" in diff for diff in diffs)
 
 
 def test_a_changed_config_hash_is_a_semantic_difference() -> None:

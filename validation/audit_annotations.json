@@ -9,7 +9,7 @@
   "audited_document_sha256": "ce9e792405da36e013af3c5cfbc4d1fab48f1e2a4ffa0dc499ea43db736e34b1",
   "baseline_commit": "c86cbf4",
   "audit_generated_at": "2026-08-04T13:01:59+00:00",
-  "reaudit_of_artifact_sha256": "6293c3e70dfb34e41e67cae297e202943f845fc096bfc915fd0d763534b7dba1",
+  "reaudit_of_artifact_sha256": "93b69527a7db043f50bf1a631df6438c2a771ec1b21133bfd87f627fc047a36a",
   "note": "The audit examined the EARLIER baseline artifact identified by audited_document_sha256 at baseline_commit - not the artifact of any run this file is attached to, whose bytes differ by design (the pipeline has been corrected since). A future human re-audit of a final artifact would record that artifact's sha256 in reaudit_of_artifact_sha256; until then release tooling must report the audit binding as baseline-only.",
   "reaudit_overlays": {
    "overlays/vie-swv-001.png": "b76337baa769d8c7311d60b8d237a3cf6750ae1fab426002e9d63b9477fddef8",

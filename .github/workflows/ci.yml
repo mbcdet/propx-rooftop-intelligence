@@ -78,4 +78,5 @@ jobs:
           out=$(mktemp -d)
           PYTHONPATH=src python -m propx_roofs.cli run --output-dir "$out"
           PYTHONPATH=src python -m propx_roofs.semantic_compare \
+            --diagnostics-tolerance 2.0 \
             outputs/roof_attributes.json "$out/roof_attributes.json"

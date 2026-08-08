@@ -3,8 +3,8 @@
 Model-assisted QA covered an earlier baseline; **this checklist is the human review of the current artifacts**. Work through it, then record the review — the strict release gate (`propx-roofs release-check --require-current-audit`) stays at exit code 3 until a completed review of exactly these bytes is recorded.
 
 - Document: `outputs/roof_attributes.json`
-- Document sha256: `6293c3e70dfb34e41e67cae297e202943f845fc096bfc915fd0d763534b7dba1`
-- Generated at (cited from the document): `2026-08-08T17:14:19.566891+02:00`
+- Document sha256: `93b69527a7db043f50bf1a631df6438c2a771ec1b21133bfd87f627fc047a36a`
+- Generated at (cited from the document): `2026-08-08T17:43:51.148133+02:00`
 
 ## How to review
 

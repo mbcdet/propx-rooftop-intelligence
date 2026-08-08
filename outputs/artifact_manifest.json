@@ -11,8 +11,8 @@
   "overlays/vie-swv-008.png": "ef6866d91b5240b70ef36aaa679d72cb91408bff9c43ac3b52ac7afeeb89d477",
   "overlays/vie-swv-009.png": "3ccc380ad1588cb1a2636a6f26e3a2050188cdd3725bcb245b643c58cadaa54c",
   "overlays/vie-swv-010.png": "30dc3fdcc8f10b45f8a83f559aa375581cb319ec3e8ffe9b9a0d6f39fb4c1264",
-  "roof_attributes.json": "6293c3e70dfb34e41e67cae297e202943f845fc096bfc915fd0d763534b7dba1"
+  "roof_attributes.json": "93b69527a7db043f50bf1a631df6438c2a771ec1b21133bfd87f627fc047a36a"
  },
- "generated_at": "2026-08-08T17:14:19.566891+02:00",
+ "generated_at": "2026-08-08T17:43:51.148133+02:00",
  "note": "sha256 fingerprints of this run's artifacts, written in the same atomic swap that published them. The manifest does not hash itself."
 }

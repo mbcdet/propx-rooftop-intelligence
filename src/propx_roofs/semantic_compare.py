@@ -15,6 +15,10 @@ What is compared, and how:
 * ``run.generated_at``, ``run.git``, ``run.runtime`` and ``run.dependencies`` are **excluded**:
   they record *when/what produced* the document, not what it says, and two honest reproductions
   differ there by construction.
+* Human ``reaudit_*`` bindings inside ``manual_review.audit_basis`` are also excluded. They are
+  written after an artifact is produced and bind a reviewer to those bytes; including them in a
+  fresh run would create an unavoidable self-reference. Baseline-audit identity and all review
+  findings remain part of the semantic comparison.
 * Published attribute ``value`` fields, availability, flags and strings must match exactly;
   numbers anywhere are compared with ``--tolerance`` (default ``1e-9``, i.e. semantic equality
   including geometry coordinates).
@@ -44,6 +48,16 @@ from typing import Any
 
 #: run-level fields that describe the act of running, not the result. Never compared.
 EXCLUDED_RUN_FIELDS = ("generated_at", "git", "runtime", "dependencies")
+
+#: Post-publication review metadata. These fields bind a human review to already-written bytes,
+#: so they cannot be reproduced by the run that creates those bytes. Only these fields, and only
+#: below a manual-review audit_basis, are excluded; the baseline audit trail remains compared.
+EXCLUDED_REAUDIT_FIELDS = (
+    "reaudit_of_artifact_sha256",
+    "reaudit_overlays",
+    "reaudit_reviewer",
+    "reaudit_date",
+)
 
 #: The exact serialization pipeline.write_outputs uses. Byte mode re-serializes with this to
 #: prove the comparison it makes is about the same bytes the pipeline writes.
@@ -109,7 +123,10 @@ def _walk(
         return
 
     if isinstance(a, dict):
-        for key in sorted(set(a) | set(b), key=str):
+        keys = set(a) | set(b)
+        if path and path[-1] == "audit_basis" and "manual_review" in path:
+            keys -= set(EXCLUDED_REAUDIT_FIELDS)
+        for key in sorted(keys, key=str):
             if key not in a:
                 diffs.append(f"{_fmt_path((*path, key))}: only in second document")
             elif key not in b:

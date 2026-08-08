@@ -54,6 +54,10 @@ flag while ignoring runtime metadata. It is the portable check across supported 
 `verify-repro` is stricter: under [`requirements.lock`](requirements.lock), it compares the JSON
 and overlays byte-for-byte, apart from the Git state recorded in run metadata.
 
+CI runs the semantic check on Linux. It permits up to 2.0 units of cross-platform drift only in
+raw image diagnostics (the observed maximum is a 1.92-degree Hough-angle difference); published
+values, geometry, availability and review flags still use the strict base tolerance.
+
 Installing the package also provides the `propx-roofs` command. When it is used outside the
 checkout, set `PROPX_ROOFS_DATA_ROOT` or pass `--cache-root` so it can find the cached data. Normal
 pipeline runs are offline; only `propx-roofs cache-build` and `make recon` contact Vienna's data
@@ -200,7 +204,7 @@ joins.
 | [`docs/design_and_reasoning.md`](docs/design_and_reasoning.md) | One-page design and trade-offs |
 | [`docs/solar_evaluation.md`](docs/solar_evaluation.md) | Solar-detector evaluation |
 | [`src/propx_roofs/`](src/propx_roofs/) | Pipeline, image analysis, confidence, CLI and schema |
-| [`tests/`](tests/) | 410 offline tests |
+| [`tests/`](tests/) | 411 offline tests |
 
 ## AI assistance
 
